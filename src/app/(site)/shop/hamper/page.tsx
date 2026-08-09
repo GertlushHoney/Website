@@ -1,12 +1,20 @@
 import type { Metadata } from 'next'
 import { ComingSoonProduct } from '@/components/shop/coming-soon-product'
+import { MerchProductPage } from '@/components/shop/merch-product-page'
+import { getMerchProductBySlug } from '@/lib/sanity/merch'
 
 export const metadata: Metadata = {
   title: 'Gift Hampers',
-  description: 'Gert Lush Honey gift hampers — coming soon.',
+  description: 'Gert Lush Honey gift hampers.',
 }
 
-export default function HamperPage() {
+export default async function HamperPage() {
+  const product = await getMerchProductBySlug('hamper')
+
+  if (product) {
+    return <MerchProductPage product={product} />
+  }
+
   return (
     <ComingSoonProduct
       eyebrow="Shop · Hampers"

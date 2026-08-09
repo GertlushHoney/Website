@@ -1,12 +1,20 @@
 import type { Metadata } from 'next'
 import { ComingSoonProduct } from '@/components/shop/coming-soon-product'
+import { MerchProductPage } from '@/components/shop/merch-product-page'
+import { getMerchProductBySlug } from '@/lib/sanity/merch'
 
 export const metadata: Metadata = {
   title: 'Lip Balm',
-  description: 'Beeswax lip balm from Gert Lush Honey — coming soon.',
+  description: 'Beeswax lip balm from Gert Lush Honey.',
 }
 
-export default function LipBalmPage() {
+export default async function LipBalmPage() {
+  const product = await getMerchProductBySlug('lip-balm')
+
+  if (product) {
+    return <MerchProductPage product={product} />
+  }
+
   return (
     <ComingSoonProduct
       eyebrow="Shop · Lip Balm"

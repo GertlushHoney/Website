@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getHoneyProducts } from '@/lib/sanity/products'
+import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
@@ -11,6 +12,14 @@ export const metadata: Metadata = {
   description: 'Gert Lush Honey postcode honey, and what else is coming.',
 }
 
+const MERCH_SLUGS = ['candles', 'hamper', 'soap', 'lip-balm'] as const
+const MERCH_LABELS: Record<(typeof MERCH_SLUGS)[number], string> = {
+  candles: 'Candles',
+  hamper: 'Gift Hampers',
+  soap: 'Soap',
+  'lip-balm': 'Lip Balm',
+}
+
 export default async function ShopPage() {
   const products = await getHoneyProducts()
   const cards = await Promise.all(
@@ -18,6 +27,14 @@ export default async function ShopPage() {
       product,
       shopifyProduct: await getProductByHandle(product.shopifyHandle),
       imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
+    }))
+  )
+
+  const merchTiles = await Promise.all(
+    MERCH_SLUGS.map(async (slug) => ({
+      slug,
+      label: MERCH_LABELS[slug],
+      product: await getMerchProductBySlug(slug),
     }))
   )
 
@@ -66,24 +83,28 @@ export default async function ShopPage() {
         ))}
       </div>
 
-      <h2 className="text-porcelain mt-16 text-xl font-bold tracking-tight">Coming soon</h2>
-      <p className="text-porcelain/60 mt-1 max-w-lg text-sm">
-        More than honey, eventually — nothing here is for sale until it&apos;s real.
-      </p>
+      {merchTiles.some((tile) => tile.product) && (
+        <p className="text-porcelain/50 mt-16 text-xs">More from Gert Lush:</p>
+      )}
+      {merchTiles.every((tile) => !tile.product) && (
+        <>
+          <h2 className="text-porcelain mt-16 text-xl font-bold tracking-tight">Coming soon</h2>
+          <p className="text-porcelain/60 mt-1 max-w-lg text-sm">
+            More than honey, eventually — nothing here is for sale until it&apos;s real.
+          </p>
+        </>
+      )}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { href: '/shop/candles', label: 'Candles' },
-          { href: '/shop/hamper', label: 'Gift Hampers' },
-          { href: '/shop/soap', label: 'Soap' },
-          { href: '/shop/lip-balm', label: 'Lip Balm' },
-        ].map((item) => (
+        {merchTiles.map(({ slug, label, product }) => (
           <Link
-            key={item.href}
-            href={item.href}
+            key={slug}
+            href={`/shop/${slug}`}
             className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber rounded-xl border p-5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
           >
-            <span className="text-porcelain">{item.label}</span>
-            <span className="text-porcelain/50 mt-1 block text-xs font-normal">Coming soon</span>
+            <span className="text-porcelain">{product ? product.name : label}</span>
+            <span className="text-porcelain/50 mt-1 block text-xs font-normal">
+              {product ? product.tagline : 'Coming soon'}
+            </span>
           </Link>
         ))}
       </div>

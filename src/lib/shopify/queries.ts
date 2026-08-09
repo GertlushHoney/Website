@@ -1,23 +1,19 @@
-export const PRODUCT_BY_QUERY = /* GraphQL */ `
-  query ProductSearch($query: String!) {
-    products(first: 1, query: $query) {
-      edges {
-        node {
-          id
-          title
-          handle
-          availableForSale
-          variants(first: 1) {
-            edges {
-              node {
-                id
-                availableForSale
-                quantityAvailable
-                price {
-                  amount
-                  currencyCode
-                }
-              }
+export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
+  query ProductByHandle($handle: String!) {
+    product(handle: $handle) {
+      id
+      title
+      handle
+      availableForSale
+      variants(first: 1) {
+        edges {
+          node {
+            id
+            availableForSale
+            quantityAvailable
+            price {
+              amount
+              currencyCode
             }
           }
         }

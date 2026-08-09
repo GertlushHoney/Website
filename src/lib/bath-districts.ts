@@ -38,6 +38,3 @@ export const bathDistricts: { code: string; coverage: string }[] = [
   },
 ]
 
-// No real stock from the Bath area yet — matches src/lib/postcode-areas.ts's
-// activePostcodeAreas as the single source of truth for what's real.
-export const activeBathDistrict: string | undefined = undefined

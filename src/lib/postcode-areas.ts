@@ -129,16 +129,18 @@ export const postcodeAreaNames: Record<string, string> = {
   ZE: 'Lerwick',
 }
 
-export type ActivePostcodeArea = {
-  productHandle: string
-  productName: string
-}
-
-// Only Bristol has real stock right now — do not add other areas here
-// speculatively. This is deliberately the single source of truth for which
-// areas show a live product vs. the generic waiting-list state.
-export const activePostcodeAreas: Record<string, ActivePostcodeArea> = {
-  BS: { productHandle: 'bee-s3', productName: 'Bee S3' },
-}
-
 export const postcodeAreaCodes = Object.keys(postcodeAreaNames).sort()
+
+// Which areas/districts have a real product is Sanity-driven now — see
+// src/lib/sanity/products.ts (getActivePostcodeCodes) — not hardcoded here.
+
+// A postcodeCode on a honeyProduct can be an area ("M") or, for
+// Bristol/Bath, a district ("BS3"). Strips trailing digits to resolve the
+// parent area code, so a district code can still look up its area's name
+// (e.g. "BS3" -> "BS" -> "Bristol") for display purposes like a product's
+// "Origin" line.
+export function getAreaNameForCode(code: string): string | undefined {
+  if (code in postcodeAreaNames) return postcodeAreaNames[code]
+  const areaCode = code.replace(/\d+$/, '')
+  return postcodeAreaNames[areaCode]
+}

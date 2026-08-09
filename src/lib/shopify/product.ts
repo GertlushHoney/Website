@@ -1,5 +1,5 @@
 import { isShopifyConfigured, shopifyFetch, ShopifyError } from './client'
-import { PRODUCT_BY_QUERY } from './queries'
+import { PRODUCT_BY_HANDLE_QUERY } from './queries'
 
 export type ShopifyProduct = {
   productId: string
@@ -11,43 +11,40 @@ export type ShopifyProduct = {
   quantityAvailable: number
 }
 
-type ProductSearchResponse = {
-  products: {
-    edges: {
-      node: {
-        id: string
-        handle: string
-        availableForSale: boolean
-        variants: {
-          edges: {
-            node: {
-              id: string
-              availableForSale: boolean
-              quantityAvailable: number | null
-              price: { amount: string; currencyCode: string }
-            }
-          }[]
+type ProductByHandleResponse = {
+  product: {
+    id: string
+    handle: string
+    availableForSale: boolean
+    variants: {
+      edges: {
+        node: {
+          id: string
+          availableForSale: boolean
+          quantityAvailable: number | null
+          price: { amount: string; currencyCode: string }
         }
-      }
-    }[]
-  }
+      }[]
+    }
+  } | null
 }
 
-// Matches by title fragment rather than a hardcoded handle, since the
-// handle Shopify generates from a product title isn't something we control
-// or want to hardcode/guess. Returns null (never throws) on any failure —
-// product pages fall back to their static price/mailto content rather than
-// breaking when Shopify is unreachable or the product isn't found yet.
-export async function getProductByTitle(titleFragment: string): Promise<ShopifyProduct | null> {
+// Looks up by the exact Shopify handle stored on the matching Sanity
+// honeyProduct document — never a fuzzy title search, which breaks down
+// once there's more than one similarly-named product. Returns null (never
+// throws) on any failure — product pages fall back to an honest
+// "pricing temporarily unavailable" state rather than breaking when
+// Shopify is unreachable or the handle doesn't match a real product yet.
+export async function getProductByHandle(handle: string): Promise<ShopifyProduct | null> {
   if (!isShopifyConfigured()) return null
 
   try {
-    const data = await shopifyFetch<ProductSearchResponse>({
-      query: PRODUCT_BY_QUERY,
-      variables: { query: `title:*${titleFragment}*` },
+    const data = await shopifyFetch<ProductByHandleResponse>({
+      query: PRODUCT_BY_HANDLE_QUERY,
+      variables: { handle },
     })
 
-    const product = data.products.edges[0]?.node
+    const product = data.product
     const variant = product?.variants.edges[0]?.node
     if (!product || !variant) return null
 

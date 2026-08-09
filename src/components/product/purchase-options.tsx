@@ -32,7 +32,9 @@ export function PurchaseOptions({
 }: {
   productName: string
   unitPrice: number
-  subscriptionUnitPrice: number
+  // Omit entirely to offer one-time purchase only — e.g. a product with no
+  // Sanity-configured subscription price yet.
+  subscriptionUnitPrice?: number
   deliveryPrice: number
   contactEmail?: string
   // Real Shopify variant to check out with a live cart, when available.
@@ -63,11 +65,12 @@ export function PurchaseOptions({
     })
   }
 
-  const isSubscription = type === 'subscription'
+  const hasSubscription = subscriptionUnitPrice !== undefined
+  const isSubscription = hasSubscription && type === 'subscription'
   const canCheckoutLive = Boolean(variantId) && !isSubscription
   const subtotal = unitPrice * quantity
   const total = subtotal + deliveryPrice
-  const monthlyTotal = subscriptionUnitPrice + deliveryPrice
+  const monthlyTotal = (subscriptionUnitPrice ?? 0) + deliveryPrice
   const minimumTermTotal = monthlyTotal * SUBSCRIPTION_MINIMUM_MONTHS
 
   const subject = isSubscription
@@ -80,51 +83,55 @@ export function PurchaseOptions({
 
   return (
     <div className="border-ink-line bg-honeycomb-surface mt-8 rounded-xl border p-5">
-      <fieldset>
-        <legend className="text-porcelain text-sm font-semibold">How would you like it?</legend>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <label
-            className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-offset-2 ${
-              type === 'one-time'
-                ? 'border-comb-gold bg-ink-surface text-porcelain'
-                : 'border-ink-line text-porcelain/70 hover:text-porcelain'
-            }`}
-          >
-            <input
-              type="radio"
-              name="purchase-type"
-              value="one-time"
-              checked={type === 'one-time'}
-              onChange={() => setType('one-time')}
-              className="sr-only"
-            />
-            <span className="font-semibold">One-time purchase</span>
-            <span className="block text-xs opacity-70">{formatGBP(unitPrice)} a jar</span>
-          </label>
+      {hasSubscription ? (
+        <fieldset>
+          <legend className="text-porcelain text-sm font-semibold">How would you like it?</legend>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <label
+              className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-offset-2 ${
+                type === 'one-time'
+                  ? 'border-comb-gold bg-ink-surface text-porcelain'
+                  : 'border-ink-line text-porcelain/70 hover:text-porcelain'
+              }`}
+            >
+              <input
+                type="radio"
+                name="purchase-type"
+                value="one-time"
+                checked={type === 'one-time'}
+                onChange={() => setType('one-time')}
+                className="sr-only"
+              />
+              <span className="font-semibold">One-time purchase</span>
+              <span className="block text-xs opacity-70">{formatGBP(unitPrice)} a jar</span>
+            </label>
 
-          <label
-            className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-offset-2 ${
-              type === 'subscription'
-                ? 'border-comb-gold bg-ink-surface text-porcelain'
-                : 'border-ink-line text-porcelain/70 hover:text-porcelain'
-            }`}
-          >
-            <input
-              type="radio"
-              name="purchase-type"
-              value="subscription"
-              checked={type === 'subscription'}
-              onChange={() => setType('subscription')}
-              className="sr-only"
-            />
-            <span className="font-semibold">Subscribe monthly</span>
-            <span className="block text-xs opacity-70">
-              {formatGBP(subscriptionUnitPrice)}/jar &middot; {SUBSCRIPTION_MINIMUM_MONTHS}-month
-              minimum
-            </span>
-          </label>
-        </div>
-      </fieldset>
+            <label
+              className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-offset-2 ${
+                type === 'subscription'
+                  ? 'border-comb-gold bg-ink-surface text-porcelain'
+                  : 'border-ink-line text-porcelain/70 hover:text-porcelain'
+              }`}
+            >
+              <input
+                type="radio"
+                name="purchase-type"
+                value="subscription"
+                checked={type === 'subscription'}
+                onChange={() => setType('subscription')}
+                className="sr-only"
+              />
+              <span className="font-semibold">Subscribe monthly</span>
+              <span className="block text-xs opacity-70">
+                {formatGBP(subscriptionUnitPrice)}/jar &middot; {SUBSCRIPTION_MINIMUM_MONTHS}-month
+                minimum
+              </span>
+            </label>
+          </div>
+        </fieldset>
+      ) : (
+        <p className="text-porcelain text-sm font-semibold">{formatGBP(unitPrice)} a jar</p>
+      )}
 
       {!isSubscription && (
         <div className="mt-4 flex items-center gap-3">

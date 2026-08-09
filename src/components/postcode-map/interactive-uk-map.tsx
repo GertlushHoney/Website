@@ -3,9 +3,16 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { activePostcodeAreas, postcodeAreaCodes, postcodeAreaNames } from '@/lib/postcode-areas'
-import { activeBristolDistrict, bristolDistricts } from '@/lib/bristol-districts'
-import { activeBathDistrict, bathDistricts } from '@/lib/bath-districts'
+import { postcodeAreaCodes, postcodeAreaNames } from '@/lib/postcode-areas'
+import { bristolDistricts } from '@/lib/bristol-districts'
+import { bathDistricts } from '@/lib/bath-districts'
+
+export type ActiveMapProduct = {
+  slug: string
+  name: string
+  tagline: string
+  imageUrl: string | null
+}
 
 // Matches "BS_areapath" -> "BS", "BRlondon_insetareapath" -> "BR",
 // "BB_manchester_insetareatext" -> "BB", and duplicate-label ids for
@@ -19,22 +26,32 @@ function extractCode(id: string): string | null {
   return match ? match[1].toUpperCase() : null
 }
 
-// Areas with a real district-level breakdown to drill into on click. Only
-// BS has a live product (see activeBristolDistrict); BA is included with no
-// active district yet, same "waiting list" treatment as every other
-// district. Add further areas here only once real district data exists for
-// them — see docs/third-party-assets.md.
+// Areas with a real district-level breakdown to drill into on click. This
+// is just real geography (which areas have a real district list at all) —
+// which specific district has a live product comes from the activeProducts
+// prop (Sanity-driven), not from this table. Add further areas here only
+// once real district data exists for them — see docs/third-party-assets.md.
 const districtDataByArea: Record<
   string,
-  { districts: { code: string; coverage: string }[]; activeDistrict?: string; areaLabel: string }
+  { districts: { code: string; coverage: string }[]; areaLabel: string }
 > = {
-  BS: { districts: bristolDistricts, activeDistrict: activeBristolDistrict, areaLabel: 'Bristol' },
-  BA: { districts: bathDistricts, activeDistrict: activeBathDistrict, areaLabel: 'Bath' },
+  BS: { districts: bristolDistricts, areaLabel: 'Bristol' },
+  BA: { districts: bathDistricts, areaLabel: 'Bath' },
 }
 
 type View = 'uk' | 'district'
 
-export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
+export function InteractiveUkMap({
+  svgMarkup,
+  activeProducts,
+}: {
+  svgMarkup: string
+  // Keyed by exact postcode code — either a UK area ("M") or, for
+  // Bristol/Bath, a district ("BS3"). Comes from Sanity honeyProduct
+  // documents (see src/lib/sanity/products.ts) — this component has no
+  // hardcoded knowledge of which postcodes have real stock.
+  activeProducts: Record<string, ActiveMapProduct>
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [view, setView] = useState<View>('uk')
   const [drilledArea, setDrilledArea] = useState<string | null>(null)
@@ -49,6 +66,13 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
   useEffect(() => {
     viewRef.current = view
   }, [view])
+
+  // An area is "active" for the resting-state highlight either directly
+  // (an area-level product) or because one of its districts has a product.
+  function isAreaActive(code: string): boolean {
+    if (code in activeProducts) return true
+    return districtDataByArea[code]?.districts.some((d) => d.code in activeProducts) ?? false
+  }
 
   // One-time setup: wrap the injected SVG's content in a single group so it
   // can be zoomed as one unit, and wire up every real postcode-area path as
@@ -69,7 +93,7 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
       const code = extractCode(el.id)
       if (!code) continue
       const name = postcodeAreaNames[code]
-      const isActive = code in activePostcodeAreas
+      const isActive = isAreaActive(code)
 
       el.setAttribute('tabindex', '0')
       el.setAttribute('role', 'button')
@@ -122,6 +146,11 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
     for (const el of container.querySelectorAll<SVGTextElement>('[id$="areatext"]')) {
       el.classList.add('pc-label')
     }
+    // activeProducts intentionally not a dependency — this effect wires up
+    // the SVG once; isAreaActive reads the prop's current closure value at
+    // wiring time, which is fine since the map re-renders as a fresh
+    // Server Component fetch when the underlying content actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function zoomToArea(code: string) {
@@ -173,7 +202,7 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
 
   const currentAreaData = drilledArea ? districtDataByArea[drilledArea] : undefined
   const isDistrictSelection = view === 'district' && selectedCode !== null
-  const activeArea = selectedCode ? activePostcodeAreas[selectedCode] : undefined
+  const activeProduct = selectedCode ? activeProducts[selectedCode] : undefined
   const areaName = selectedCode
     ? isDistrictSelection
       ? currentAreaData?.districts.find((d) => d.code === selectedCode)?.coverage
@@ -242,7 +271,7 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
               {postcodeAreaCodes.map((code) => (
                 <option key={code} value={code}>
                   {code} — {postcodeAreaNames[code]}
-                  {code in activePostcodeAreas ? ' (honey available)' : ''}
+                  {isAreaActive(code) ? ' (honey available)' : ''}
                 </option>
               ))}
             </select>
@@ -254,7 +283,7 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
             </p>
             <div className="mt-2 grid max-h-64 grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4">
               {currentAreaData?.districts.map((d) => {
-                const isActive = d.code === currentAreaData.activeDistrict
+                const isActive = d.code in activeProducts
                 const isSelected = d.code === selectedCode
                 return (
                   <button
@@ -297,27 +326,29 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
                 .
               </p>
             </>
-          ) : activeArea || (isDistrictSelection && selectedCode === currentAreaData?.activeDistrict) ? (
+          ) : activeProduct ? (
             <>
               <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
                 {selectedCode} &middot; {areaName}
               </p>
-              <div className="from-ink-surface to-ink relative mt-4 aspect-square rounded-xl bg-gradient-to-b">
-                <Image
-                  src="/images/source/bee-s3-jar-single-professional-blended.png"
-                  alt="A jar of Bee S3 honey"
-                  fill
-                  sizes="320px"
-                  className="object-contain p-8"
-                />
-              </div>
-              <p className="text-porcelain mt-4 text-lg font-semibold">Bee S3</p>
-              <p className="text-porcelain/60 mt-1 text-sm">Pure honey from the Northern Slopes</p>
+              {activeProduct.imageUrl && (
+                <div className="from-ink-surface to-ink relative mt-4 aspect-square rounded-xl bg-gradient-to-b">
+                  <Image
+                    src={activeProduct.imageUrl}
+                    alt={`A jar of ${activeProduct.name} honey`}
+                    fill
+                    sizes="320px"
+                    className="object-contain p-8"
+                  />
+                </div>
+              )}
+              <p className="text-porcelain mt-4 text-lg font-semibold">{activeProduct.name}</p>
+              <p className="text-porcelain/60 mt-1 text-sm">{activeProduct.tagline}</p>
               <Link
-                href="/shop/bee-s3"
+                href={`/shop/${activeProduct.slug}`}
                 className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-5 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
               >
-                View Bee S3
+                View {activeProduct.name}
               </Link>
             </>
           ) : (
@@ -329,9 +360,8 @@ export function InteractiveUkMap({ svgMarkup }: { svgMarkup: string }) {
                 No honey from {selectedCode} yet.
               </p>
               <p className="text-porcelain/60 mt-2 text-sm">
-                We&apos;re only sourcing from Bristol (BS3) so far. Let us know you&apos;d like
-                honey from here and we&apos;ll get in touch when a beekeeper joins from your area —
-                or if that&apos;s you, get in touch directly.
+                Let us know you&apos;d like honey from here and we&apos;ll get in touch when a
+                beekeeper joins from your area — or if that&apos;s you, get in touch directly.
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <a

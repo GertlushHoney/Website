@@ -78,6 +78,3 @@ export const bristolDistricts: { code: string; coverage: string }[] = [
   { code: 'BS49', coverage: 'Congresbury, Yatton' },
 ]
 
-// Only BS3 has real stock — matches src/lib/postcode-areas.ts's
-// activePostcodeAreas as the single source of truth for what's real.
-export const activeBristolDistrict = 'BS3'

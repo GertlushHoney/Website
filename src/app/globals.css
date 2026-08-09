@@ -1,0 +1,144 @@
+@import 'tailwindcss';
+
+/*
+  Gert Lush Honey design tokens — dark/moody theme (2026-08-07 direction change).
+  Source: /docs/brand-alignment-board.md — extracted from real jar/label
+  photography (black label, gold foil, hexagon + bee mark). Dark is now the
+  default site background, not just the footer/dark-panel accent, per the
+  user's "dark, warm and moody, inviting but premium" direction.
+*/
+:root {
+  --color-porcelain: #f7f5ef;
+  --color-ink: #14110d;
+  --color-ink-surface: #211b14;
+  --color-honey-amber: #d99614;
+  --color-comb-gold: #f2c35b;
+  --color-bristol-brick: #a94e38;
+  --color-garden-green: #4e6549;
+  --color-soft-stone: #e8e4db;
+  --color-ink-line: #33291d;
+
+  --background: var(--color-ink);
+  --foreground: var(--color-porcelain);
+}
+
+@theme inline {
+  --color-porcelain: var(--color-porcelain);
+  --color-ink: var(--color-ink);
+  --color-ink-surface: var(--color-ink-surface);
+  --color-honey-amber: var(--color-honey-amber);
+  --color-comb-gold: var(--color-comb-gold);
+  --color-bristol-brick: var(--color-bristol-brick);
+  --color-garden-green: var(--color-garden-green);
+  --color-soft-stone: var(--color-soft-stone);
+  --color-ink-line: var(--color-ink-line);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-fraunces);
+}
+
+body {
+  /*
+    Layered premium background: a faint honeycomb tile (real hexagon
+    geometry, not decoration-for-its-own-sake — echoes the jar's own mark)
+    under a warm off-centre glow, over a subtle vertical depth gradient.
+    Everything is low-opacity/low-contrast so it reads as texture, not
+    pattern — deliberately avoiding the "generic yellow-and-black
+    honeycomb" look the brand guidelines warn against.
+  */
+  background-color: var(--color-ink);
+  background-image:
+    url('/images/patterns/honeycomb.svg'),
+    radial-gradient(ellipse 1100px 750px at 15% -8%, rgba(217, 150, 20, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--color-ink-surface) 0%, var(--color-ink) 45%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+  color: var(--foreground);
+}
+
+/* Same honeycomb texture, on the slightly-lighter ink-surface tone used for
+   panels that need to read as "raised" above the base background (footer,
+   feature panels) while still feeling part of the same textured surface. */
+.bg-honeycomb-surface {
+  background-color: var(--color-ink-surface);
+  background-image: url('/images/patterns/honeycomb.svg');
+  background-repeat: repeat;
+}
+
+/* Interactive UK postcode-area map (/postcode-honey) — recoloured via
+   src/lib/uk-map-svg.ts, interactivity wired up in
+   src/components/postcode-map/interactive-uk-map.tsx. */
+.pc-map svg {
+  overflow: visible;
+}
+/* Decorative "see inset" shading boxes sit above the area paths in the
+   source file's paint order and would otherwise swallow clicks/hover
+   intended for the postcode areas beneath them. */
+#zoompaths,
+#areatexts,
+#london_insetareatexts,
+#manchester_insetareatexts {
+  pointer-events: none;
+}
+.pc-area {
+  cursor: pointer;
+  /* The source SVG gives these paths fill="none" — by SVG default, a
+     transparent fill doesn't receive pointer events at all, so clicks would
+     otherwise fall through to the solid land shape underneath. */
+  pointer-events: all;
+  transition:
+    fill 0.15s ease,
+    stroke 0.15s ease;
+  outline: none;
+}
+.pc-area:hover,
+.pc-area:focus-visible {
+  fill: var(--color-comb-gold) !important;
+  fill-opacity: 0.55;
+}
+.pc-area:focus-visible {
+  stroke: var(--color-porcelain) !important;
+  stroke-width: 2px !important;
+}
+/* Areas with real stock get a distinguishing gold outline at rest — never a
+   filled shape, per the "outline only until clicked" direction. */
+.pc-area--active {
+  stroke: var(--color-honey-amber) !important;
+  stroke-width: 1.5px !important;
+}
+.pc-area--selected {
+  stroke: var(--color-comb-gold) !important;
+  stroke-width: 2.5px !important;
+}
+
+/* Area code labels are hidden until their area is hovered, focused or
+   selected — keeps the resting map clean instead of 122 labels at once. */
+.pc-label {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.pc-label--visible {
+  opacity: 1 !important;
+}
+
+#pc-zoom-wrapper {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-box: view-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

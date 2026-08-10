@@ -6,6 +6,7 @@ export const primaryNav = [
   { label: 'Our Beekeepers', href: '/beekeepers' },
   { label: 'Our Story', href: '/our-story' },
   { label: 'Stockists', href: '/stockists' },
+  { label: 'Information', href: '/information' },
 ] as const
 
 // Some footer links intentionally point at the same page as a related item

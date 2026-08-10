@@ -46,7 +46,10 @@ type RawCart = {
       node: {
         id: string
         quantity: number
-        sellingPlanAllocation: { sellingPlan: { id: string; name: string } } | null
+        sellingPlanAllocation: {
+          sellingPlan: { id: string; name: string }
+          checkoutChargeAmount: { amount: string; currencyCode: string }
+        } | null
         merchandise: {
           id: string
           title: string
@@ -73,7 +76,15 @@ function normalizeCart(raw: RawCart): Cart {
       productTitle: node.merchandise.product.title,
       productHandle: node.merchandise.product.handle,
       imageUrl: node.merchandise.image?.url ?? null,
-      price: Number(node.merchandise.price.amount),
+      // A subscription line's real charge can differ from the variant's
+      // plain price (Shopify applies the selling plan's own price
+      // adjustment) — use checkoutChargeAmount when this line has a selling
+      // plan attached, never the unadjusted variant price, or the basket
+      // shows the wrong recurring amount even though the cart's own total
+      // is correct.
+      price: Number(
+        node.sellingPlanAllocation?.checkoutChargeAmount.amount ?? node.merchandise.price.amount
+      ),
       currencyCode: node.merchandise.price.currencyCode,
       sellingPlanName: node.sellingPlanAllocation?.sellingPlan.name ?? null,
     })),

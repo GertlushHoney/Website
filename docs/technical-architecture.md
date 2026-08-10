@@ -125,46 +125,42 @@ against Shopify's own docs (not assumed):
   policy is now "cancel any time, 7 days' notice," **the free app is sufficient** and is the
   chosen provider — no paid subscriptions app needed.
 
-**Code side is built (2026-08-10)** — this is the automated part, wired end to end, but it's
-inert until a real Selling Plan exists in Shopify (see "What's still needed" below):
+**Real subscriptions are live (2026-08-10).** The user installed the free Shopify Subscriptions
+app and created a real Selling Plan in Shopify admin (an admin-only step this codebase has never
+had credentials to do itself). Verified end-to-end for Bee S3: choosing "Subscribe monthly" now
+adds a real recurring line to the same Shopify basket as one-time purchases, going through the
+same live checkout.
 
-- `PRODUCT_BY_HANDLE_QUERY` (`src/lib/shopify/queries.ts`) now also fetches the product's
+- `PRODUCT_BY_HANDLE_QUERY` (`src/lib/shopify/queries.ts`) fetches the product's
   `sellingPlanGroups` → `sellingPlans`, so `getProductByHandle`
-  (`src/lib/shopify/product.ts`) returns a real `subscriptionSellingPlanId` (or `null` if no plan
-  exists for that product yet — never invented).
+  (`src/lib/shopify/product.ts`) returns a real `subscriptionSellingPlanId` (`null` for any
+  product with no plan attached yet — never invented).
 - `addToCart` (`src/lib/shopify/cart.ts`) takes an optional `sellingPlanId` third argument,
-  passed straight into the `cartCreate`/`cartLinesAdd` line item alongside
-  `merchandiseId`/`quantity` — the Storefront API's real subscription mechanism (not the old
-  checkout mutation, which Shopify deprecated for subscriptions). `CartLine` now also carries
-  `sellingPlanName` (from `sellingPlanAllocation`) so the basket drawer can label a line
-  "monthly" instead of guessing from price.
-- `PurchaseOptions` takes a `subscriptionSellingPlanId` prop: when it's set, choosing "Subscribe
-  monthly" and adding to basket creates a **real** recurring cart line, going through the same
-  live Shopify checkout as one-time purchases. When it's `null` (no plan set up in Shopify yet),
-  the subscription option still shows (if `subscriptionUnitPrice` is set in Sanity) but falls back
-  to the same honest mailto used everywhere else — never a fake "subscribed" confirmation.
-- Requires the `unauthenticated_read_selling_plans` Storefront API scope on the Headless channel
-  — check this is enabled if the selling plan query ever comes back empty unexpectedly once a
-  plan has been created.
+  passed into the `cartCreate`/`cartLinesAdd` line item alongside `merchandiseId`/`quantity` — the
+  Storefront API's real subscription mechanism (not the old checkout mutation, which Shopify
+  deprecated for subscriptions).
+- `PurchaseOptions` takes a `subscriptionSellingPlanId` prop: when set, "Subscribe monthly" +
+  "Add to basket" creates a real recurring cart line; when `null`, the subscription option still
+  shows (if `subscriptionUnitPrice` is set in Sanity) but falls back to the same honest mailto
+  used everywhere else — verified this fallback still works correctly for any product without a
+  plan attached.
+- **Real bug found and fixed during verification:** the cart line's displayed price initially came
+  from the plain `merchandise.price` (the variant's base price, £8.00), not the price the selling
+  plan actually charges — so a subscription line showed "£8.00/month" while the cart's own
+  subtotal correctly totalled £7.00. Also hit a wrong field-name guess
+  (`SellingPlanAllocation.perDeliveryPrice` doesn't exist in this API version) — confirmed the
+  real field name via a live introspection query against the store rather than guessing twice:
+  `checkoutChargeAmount`. `CartLine.price` now reads
+  `sellingPlanAllocation.checkoutChargeAmount` when present, falling back to the variant price for
+  ordinary one-time lines. `CartLine.sellingPlanName` labels a line "monthly" in the basket
+  drawer.
+- Requires the `unauthenticated_read_selling_plans` Storefront API scope on the Headless channel —
+  confirmed working, no scope changes were needed.
 
-**What's still needed (an admin task, not a code task — this assistant has no Shopify admin
-access, deliberately, per the "no Admin API credentials" rule above):**
-
-1. Install the free **Shopify Subscriptions** app (Shopify admin → Apps → Shopify App Store →
-   search "Shopify Subscriptions" → Add app).
-2. Create a selling plan (Shopify admin → the app's settings → add a plan): monthly delivery
-   interval, no discount required (the £7 vs £8 price difference is set on the Sanity side via
-   `subscriptionPrice`, not necessarily as a Shopify-side discount — decide which honestly reflects
-   the real price before publishing).
-3. Attach the plan to each honey product that should offer it (Bee S3, Bee S4, and any future
-   ones with a `subscriptionPrice` set in Sanity).
-4. Confirm the Headless channel's Storefront API has `unauthenticated_read_selling_plans` — it may
-   need adding explicitly under the channel's API scopes.
-
-Once that's done, no code changes are needed — `subscriptionSellingPlanId` will start coming back
-non-null from `getProductByHandle` automatically, and the subscribe flow goes live product by
-product, without needing a redeploy. Until then, subscriptions are fulfilled manually (the
-customer emails, Gert Lush arranges recurring dispatch and billing by hand).
+Any future honey product needs its own Selling Plan attached in Shopify admin before its
+subscription option goes live — until then it correctly falls back to the mailto flow, same as
+Bee S4 does today (no `subscriptionPrice` set in Sanity yet, so its subscription option doesn't
+show at all).
 
 ## Form submission architecture
 

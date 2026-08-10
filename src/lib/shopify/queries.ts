@@ -66,6 +66,10 @@ const CART_FRAGMENT = /* GraphQL */ `
               id
               name
             }
+            checkoutChargeAmount {
+              amount
+              currencyCode
+            }
           }
           merchandise {
             ... on ProductVariant {

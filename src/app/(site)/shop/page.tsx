@@ -39,6 +39,13 @@ const PLACEHOLDER_IMAGE: Partial<Record<MerchCategory, string>> = {
   hamper: '/images/shop-tiles/gift-hamper-materials.png',
 }
 
+// Every tile shows the same kind of subtitle — a plain count, never a
+// specific product's tagline (even when there's only one) — so all six
+// read consistently at a glance.
+function availabilitySubtitle(count: number) {
+  return count > 0 ? `${count} available` : 'Coming soon'
+}
+
 // One tile per category (honey included, not given special treatment) so
 // every category behaves the same way: a tile here, a listing page with
 // however many real products exist, then each product's own page. Product
@@ -61,12 +68,7 @@ export default async function ShopPage() {
     {
       href: '/shop/honey',
       label: 'Honey',
-      subtitle:
-        honeyProducts.length === 1
-          ? (honeyProducts[0].tagline ?? honeyProducts[0].name)
-          : honeyProducts.length > 1
-            ? `${honeyProducts.length} available`
-            : 'Coming soon',
+      subtitle: availabilitySubtitle(honeyProducts.length),
       imageUrl: honeyImageUrl,
       objectFit: 'contain' as const,
     },
@@ -79,11 +81,7 @@ export default async function ShopPage() {
       return {
         href: `/shop/${category}`,
         label,
-        subtitle: single
-          ? (single.tagline ?? single.name)
-          : products.length > 1
-            ? `${products.length} available`
-            : 'Coming soon',
+        subtitle: availabilitySubtitle(products.length),
         imageUrl: homeTile?.src ?? realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
         objectFit: homeTile ? homeTile.fit : realImageUrl ? ('contain' as const) : ('cover' as const),
       }

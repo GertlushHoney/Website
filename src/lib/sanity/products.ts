@@ -70,7 +70,7 @@ export async function getHoneyProductBySlug(slug: string): Promise<HoneyProductF
     groq`*[_type == "honeyProduct" && slug.current == $slug][0] {
       ${summaryFields},
       originStory,
-      seasons,
+      "seasons": coalesce(seasons, []),
       beekeeper -> {
         _id,
         name,

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { ComingSoonProduct } from '@/components/shop/coming-soon-product'
-import { MerchProductPage } from '@/components/shop/merch-product-page'
-import { getMerchProductBySlug } from '@/lib/sanity/merch'
+import { MerchCategoryListing } from '@/components/shop/merch-category-listing'
+import { getMerchProductsByCategory } from '@/lib/sanity/merch'
 
 export const metadata: Metadata = {
   title: 'Lip Balm',
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 }
 
 export default async function LipBalmPage() {
-  const product = await getMerchProductBySlug('lip-balm')
+  const products = await getMerchProductsByCategory('lip-balm')
 
-  if (product) {
-    return <MerchProductPage product={product} />
+  if (products.length > 0) {
+    return <MerchCategoryListing categoryLabel="Lip Balm" products={products} />
   }
 
   return (

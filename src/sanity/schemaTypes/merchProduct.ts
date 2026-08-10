@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
 
 // For non-honey shop items (candles, soap, hampers, lip balm) — standalone
-// products with no postcode/beekeeper link, unlike `honeyProduct`. Each of
-// /shop/{candles,hamper,soap,lip-balm} checks for a matching, active
-// document here by a fixed slug; if none exists yet, the page falls back to
-// the honest "coming soon" content (ComingSoonProduct) instead of breaking.
+// products with no postcode/beekeeper link, unlike `honeyProduct`. Each
+// product gets its own real slug/page at /shop/[slug] (same route
+// honeyProduct uses); /shop/{candles,hamper,soap,lip-balm} are category
+// LISTING pages showing every active product in that category — never
+// gate a category page on a product's own slug, since a product's slug is
+// its own identity (e.g. "beeswax-candle-skep-and-bees"), not the category.
 export const merchProduct = defineType({
   name: 'merchProduct',
   title: 'Merch Product',
@@ -13,24 +15,31 @@ export const merchProduct = defineType({
     defineField({
       name: 'name',
       title: 'Name',
-      description: 'e.g. "Beeswax Candle — Small"',
+      description: 'e.g. "Beeswax Candle — Skep and Bees"',
       type: 'string',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
-      description:
-        'Must exactly match one of the existing category pages: candles, hamper, soap, or lip-balm.',
+      description: "This product's own page: /shop/[slug]. Fine to auto-generate from the name.",
       type: 'slug',
       options: { source: 'name', maxLength: 96 },
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'category',
-      title: 'Category label',
-      description: 'e.g. "Candles" — shown as the page eyebrow.',
+      title: 'Category',
+      description: 'Which shop category page this appears on.',
       type: 'string',
+      options: {
+        list: [
+          { title: 'Candles', value: 'candles' },
+          { title: 'Gift Hampers', value: 'hamper' },
+          { title: 'Soap', value: 'soap' },
+          { title: 'Lip Balm', value: 'lip-balm' },
+        ],
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({

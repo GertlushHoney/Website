@@ -4,30 +4,43 @@ import { notFound } from 'next/navigation'
 import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
 import { PurchaseOptions } from '@/components/product/purchase-options'
+import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
+import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 
+// Tries a honeyProduct first (postcode honey, the common case), then a
+// merchProduct (candles/soap/etc, each with its own real slug rather than a
+// fixed category slug — see /shop/{candles,hamper,soap,lip-balm} for the
+// category listing pages). One shared URL space, two possible document
+// types behind it.
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const product = await getHoneyProductBySlug(slug)
-  if (!product) return { title: 'Shop' }
-  return { title: product.name, description: product.tagline }
+  const honeyProduct = await getHoneyProductBySlug(slug)
+  if (honeyProduct) return { title: honeyProduct.name, description: honeyProduct.tagline }
+  const merchProduct = await getMerchProductBySlug(slug)
+  if (merchProduct) return { title: merchProduct.name, description: merchProduct.tagline }
+  return { title: 'Shop' }
 }
 
-export default async function HoneyProductPage({
+export default async function ShopProductPage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
   const product = await getHoneyProductBySlug(slug)
-  if (!product) notFound()
+  if (!product) {
+    const merchProduct = await getMerchProductBySlug(slug)
+    if (merchProduct) return <MerchProductPage product={merchProduct} />
+    notFound()
+  }
 
   const shopifyProduct = await getProductByHandle(product.shopifyHandle)
   const heroImageUrl = urlForImage(product.heroImage ?? undefined)?.width(1200).height(1200).url()

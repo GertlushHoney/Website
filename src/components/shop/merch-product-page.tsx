@@ -3,7 +3,7 @@ import { PortableText } from 'next-sanity'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
-import type { MerchProduct } from '@/lib/sanity/merch'
+import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
 
 // Shared real-product layout for candles/soap/hamper/lip-balm once each
 // actually has a matching, active Sanity document — see each category's
@@ -30,7 +30,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
 
         <div className="flex flex-col justify-center">
           <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
-            Shop &middot; {product.category}
+            Shop &middot; {MERCH_CATEGORY_LABELS[product.category]}
           </p>
           <p className="font-display text-comb-gold mt-2 text-3xl italic">{product.name}</p>
           <h1 className="text-porcelain mt-2 text-3xl font-bold tracking-tight text-balance">

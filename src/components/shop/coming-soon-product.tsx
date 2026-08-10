@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 // Shared shell for shop categories that don't have real products yet — same
-// "honest, no invented pricing" pattern as /gifts and /stockists. Each
-// category page supplies its own copy; nothing here asserts ingredients,
-// pricing or a launch date that hasn't been confirmed.
+// "honest, no invented pricing" pattern as /stockists. Each category page
+// supplies its own copy; nothing here asserts ingredients, pricing or a
+// launch date that hasn't been confirmed.
 export function ComingSoonProduct({
   eyebrow,
   title,

@@ -3,13 +3,14 @@ import { sanityFetch } from './client'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
 
-export type MerchCategory = 'candles' | 'hamper' | 'soap' | 'lip-balm'
+export type MerchCategory = 'candles' | 'hamper' | 'soap' | 'lip-balm' | 'experiences'
 
 export const MERCH_CATEGORY_LABELS: Record<MerchCategory, string> = {
   candles: 'Candles',
   hamper: 'Gift Hampers',
   soap: 'Soap',
   'lip-balm': 'Lip Balm',
+  experiences: 'Experiences',
 }
 
 export type MerchProductSummary = {

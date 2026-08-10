@@ -7,20 +7,28 @@ import { urlForImage } from '@/lib/sanity/image'
 
 export const metadata: Metadata = {
   title: 'Shop',
-  description: 'Gert Lush Honey — postcode honey, candles, soap, lip balm and gift hampers.',
+  description:
+    'Gert Lush Honey — postcode honey, candles, soap, lip balm, gift hampers and experiences.',
 }
 
-const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-balm']
+// Six categories, six tiles — a deliberate even number for the grid (was
+// five before Experiences existed, which left an unbalanced last row).
+const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-balm', 'experiences']
 
-// Real, purpose-made tile photography supplied by the user (2026-08-10,
-// from Media/{Candles,Soap,Lip Balm}, already feathered) — takes priority
-// over a real product's own hero photo, since these are composed
-// specifically for the shop tile rather than being a single product's
-// listing image. See docs/brand-alignment-board.md.
-const HOME_TILE_IMAGE: Partial<Record<MerchCategory, string>> = {
-  candles: '/images/shop-tiles/candles-home-tile.png',
-  soap: '/images/shop-tiles/soap-home-tile.png',
-  'lip-balm': '/images/shop-tiles/lip-balm-home-tile.png',
+// Real, purpose-made tile photography — takes priority over a real
+// product's own hero photo, since these are composed specifically for the
+// shop tile rather than being a single product's listing image. See
+// docs/brand-alignment-board.md. The Candles/Soap/Lip Balm images
+// (2026-08-10, from Media/{Candles,Soap,Lip Balm}, already feathered) are
+// isolated product-style cutouts, shown with padding like a jar photo;
+// Experiences uses the existing real Bramble Farm landscape photo (already
+// on the Experiences page itself), which needs a full-bleed crop instead —
+// hence the separate `fit` per entry rather than one blanket rule.
+const HOME_TILE_IMAGE: Partial<Record<MerchCategory, { src: string; fit: 'contain' | 'cover' }>> = {
+  candles: { src: '/images/shop-tiles/candles-home-tile.png', fit: 'contain' },
+  soap: { src: '/images/shop-tiles/soap-home-tile.png', fit: 'contain' },
+  'lip-balm': { src: '/images/shop-tiles/lip-balm-home-tile.png', fit: 'contain' },
+  experiences: { src: '/images/source/bramble-farm-view.jpg', fit: 'cover' },
 }
 
 // Gift Hampers has no real product or curated tile photo yet — rather than
@@ -67,8 +75,7 @@ export default async function ShopPage() {
       const realImageUrl = single
         ? (urlForImage(single.heroImage ?? undefined)?.width(600).height(600).url() ?? null)
         : null
-      const homeTileUrl = HOME_TILE_IMAGE[category] ?? null
-      const isPhotographic = Boolean(homeTileUrl) || Boolean(realImageUrl)
+      const homeTile = HOME_TILE_IMAGE[category] ?? null
       return {
         href: `/shop/${category}`,
         label,
@@ -77,8 +84,8 @@ export default async function ShopPage() {
           : products.length > 1
             ? `${products.length} available`
             : 'Coming soon',
-        imageUrl: homeTileUrl ?? realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
-        objectFit: isPhotographic ? ('contain' as const) : ('cover' as const),
+        imageUrl: homeTile?.src ?? realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
+        objectFit: homeTile ? homeTile.fit : realImageUrl ? ('contain' as const) : ('cover' as const),
       }
     }),
   ]

@@ -4,7 +4,6 @@ export const primaryNav = [
   { label: 'Shop', href: '/shop' },
   { label: 'Postcode Honey', href: '/postcode-honey' },
   { label: 'Our Beekeepers', href: '/beekeepers' },
-  { label: 'Gifts', href: '/gifts' },
   { label: 'Our Story', href: '/our-story' },
   { label: 'Stockists', href: '/stockists' },
 ] as const
@@ -17,8 +16,7 @@ export const footerNav = {
   Shop: [
     { label: 'Latest Harvest', href: '/shop/honey' },
     { label: 'All Honey', href: '/shop/honey' },
-    { label: 'Gifts', href: '/gifts' },
-    { label: 'Gift Cards', href: '/gifts' },
+    { label: 'Experiences', href: '/shop/experiences' },
   ],
   Discover: [
     { label: 'Postcode Honey', href: '/postcode-honey' },
@@ -36,8 +34,8 @@ export const footerNav = {
   ],
   Trade: [
     { label: 'Wholesale', href: '/stockists' },
-    { label: 'Corporate Gifts', href: '/gifts' },
-    { label: 'Weddings and Events', href: '/gifts' },
+    { label: 'Corporate Gifts', href: '/stockists' },
+    { label: 'Weddings and Events', href: '/stockists' },
     { label: 'Become a Stockist', href: '/stockists' },
     { label: 'Become a Supplier', href: '/become-a-supplier' },
   ],

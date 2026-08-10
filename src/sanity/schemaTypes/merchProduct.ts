@@ -38,6 +38,7 @@ export const merchProduct = defineType({
           { title: 'Gift Hampers', value: 'hamper' },
           { title: 'Soap', value: 'soap' },
           { title: 'Lip Balm', value: 'lip-balm' },
+          { title: 'Experiences', value: 'experiences' },
         ],
       },
       validation: (rule) => rule.required(),

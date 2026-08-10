@@ -117,10 +117,6 @@ const sections: FaqSection[] = [
             order, see{' '}
             <Link href="/stockists" className="text-comb-gold underline underline-offset-2">
               Stockists
-            </Link>{' '}
-            or{' '}
-            <Link href="/gifts" className="text-comb-gold underline underline-offset-2">
-              Gifts
             </Link>
             .
           </>

@@ -77,6 +77,15 @@ qualified to confirm they meet UK requirements (Honey (England) Regulations 2015
 etc.). I can draft first passes once real business details exist, but cannot substitute for
 that review.
 
+## 8. Before going live: remove or protect `/tools`
+
+`/tools/feather-image` (added 2026-08-10) is an internal helper for preparing product photos —
+see `docs/product-creation-sop.md`. It has **no authentication** and isn't meant to be public:
+anyone who found the URL could upload and process arbitrary images through it. Fine for local/dev
+use, but before this site is ever deployed live, either delete `src/app/tools/` and
+`src/app/api/feather-image/` entirely, or put real auth in front of them. Don't let this slip
+through unnoticed just because nothing about it looks broken.
+
 ## What's already unblocked, needing nothing from you
 
 The current codebase (Phase 0) required none of the above — it's designed to run and be tested

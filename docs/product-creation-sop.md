@@ -41,7 +41,14 @@ transparent via a radial mask, so it blends into each page's dark gradient backg
 sitting in a hard-edged rectangle. This is what makes `bee-s3-jar-single-professional-blended.png`
 look like it belongs on the dark background rather than pasted onto it.
 
-**Script:** `scripts/feather-product-image.mjs` (uses `sharp`, already a project dependency —
+**Easiest way — the web tool:** open `/tools/feather-image` (with the dev server running — ask me
+to start it) and use the page directly: drop a photo in, adjust the two "Fade starts"/"Fade ends"
+sliders if the default doesn't look right, click "Soften edges" to preview, then "Download". No
+terminal needed. This is the recommended path for anyone who isn't comfortable with a command
+line — the two options below do exactly the same thing, just for different situations.
+
+**Command-line script** (for batch-processing several photos at once, or if the dev server isn't
+running): `scripts/feather-product-image.mjs` (uses `sharp`, already a project dependency —
 verified working 2026-08-10, tested against the real Bee S3 photo and produces an equivalent
 result to the existing production image).
 
@@ -55,6 +62,16 @@ node scripts/feather-product-image.mjs <input> <output> [--start=0.6] [--end=1.0
   are transparent; lower it (e.g. `0.85`) for a tighter, more visible fade.
 - Output is always a PNG (needs the alpha channel — feathering a JPEG output would just show
   black/white where the transparency should be).
+
+**Or just ask me** — hand me the photo and I'll run either version and upload the result to
+Sanity for you.
+
+Both the web tool and the CLI script build the fade from raw pixel maths, not an SVG gradient —
+an SVG-based version was tried first and worked from the command line but failed inside the web
+tool with a cryptic "unsupported image format" error (the sharp/libvips binary available inside
+Next's server process didn't have SVG rasterisation support, even though the identical package
+works fine standalone). Worth knowing if either file is ever touched again — don't reintroduce an
+SVG-based mask into the web tool's code path.
 
 **Before running it:**
 - Start from a photo with a plain, uncluttered background (a studio render or a photo already on

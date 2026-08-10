@@ -65,27 +65,47 @@ licensing/attribution obligations aren't lost track of before launch.
 - **Source:** hand-authored for this project (plain hexagon geometry, not traced from or based
   on any third-party asset). No attribution required.
 
-## Shop category placeholder imagery (AI-generated, 2026-08-10)
+## Shop category placeholder imagery (AI-generated, 2026-08-10 — mostly superseded 2026-08-10)
 
-- **Files:** `public/images/shop-tiles/soap-ingredients.png`,
-  `lip-balm-ingredients.png`, `gift-hamper-materials.png` — used as the `/shop` tile image for
-  Soap, Lip Balm and Gift Hampers respectively (see `src/app/(site)/shop/page.tsx`'s
-  `PLACEHOLDER_IMAGE` map).
-- **Source:** generated via Higgsfield (`nano_banana_2`/Nano Banana Pro), at the user's request
-  ("fill the tiles of the shop with an image of what's behind it"), after confirming with the user
-  how to handle the fact that these three categories have no real product or photo yet.
+- **File still in active use:** `public/images/shop-tiles/gift-hamper-materials.png` — the
+  `/shop` tile image for Gift Hampers (see `src/app/(site)/shop/page.tsx`'s `PLACEHOLDER_IMAGE`
+  map). Gift Hampers has no real product or curated photo yet.
+- **Superseded, same day:** `soap-ingredients.png` and `lip-balm-ingredients.png` were the
+  original tile images for Soap and Lip Balm but are no longer referenced anywhere — the user
+  supplied real, purpose-made tile photography for both (see "Shop home-tile photography" below),
+  which now takes priority. Left on disk, unreferenced, rather than deleted, matching this
+  project's usual practice for superseded assets (see the "Brand assets" section below for other
+  examples of this pattern).
+- **Source (for the still-active Gift Hampers image):** generated via Higgsfield
+  (`nano_banana_2`/Nano Banana Pro), at the user's request ("fill the tiles of the shop with an
+  image of what's behind it"), after confirming with the user how to handle the fact that these
+  categories had no real product or photo at the time.
 - **This is the one deliberate exception to the site's "no AI-generated invented product imagery"
-  rule (see `docs/brand-alignment-board.md`) — and it's a narrow one.** Each image is an abstract
-  ingredient/material flat-lay (raw beeswax, dried botanicals, honey, kraft paper, raffia — see
-  the exact prompts in git history for `src/app/(site)/shop/page.tsx`), deliberately composed to
-  show **no finished product**: no soap bar, no lip balm tube, no wrapped hamper. The intent is
-  texture/mood, not a claim that "this is what our soap looks like." **Do not generate a literal
-  product shot for these categories** — that would cross into inventing a product that doesn't
-  exist. Replace each placeholder with a real product photo the moment a real Soap/Lip
-  Balm/Hamper product exists (the `/shop` tile code already prefers a real Sanity `heroImage` over
-  the placeholder automatically once one is set — see `realImageUrl` in `page.tsx`).
+  rule (see `docs/brand-alignment-board.md`) — and it's a narrow one.** The image is an abstract
+  ingredient/material flat-lay (kraft paper, raffia, dried wheat and eucalyptus — see the exact
+  prompt in git history for `src/app/(site)/shop/page.tsx`), deliberately composed to show **no
+  finished product**: no wrapped hamper. The intent is texture/mood, not a claim that "this is
+  what our hamper looks like." **Do not generate a literal product shot for this category** —
+  that would cross into inventing a product that doesn't exist. Replace with a real product photo
+  the moment a real Gift Hamper product exists.
 - **No attribution required** (Higgsfield-generated, not sourced from a third party), but this
   entry exists so the "AI-generated" fact itself isn't lost track of.
+
+## Shop home-tile photography (real, user-supplied, 2026-08-10)
+
+- **Files:** `public/images/shop-tiles/candles-home-tile.png`, `soap-home-tile.png`,
+  `lip-balm-home-tile.png` — the `/shop` tile image for Candles, Soap and Lip Balm respectively
+  (see `src/app/(site)/shop/page.tsx`'s `HOME_TILE_IMAGE` map, which takes priority over both a
+  real product's own hero photo and the Higgsfield placeholder above).
+- **Source:** supplied directly by the user from `Media/{Candles,Soap,Lip Balm}/` — purpose-made
+  tile photography, already feathered (soft transparent edges, same treatment as
+  `docs/product-creation-sop.md`'s image-prep step) by the time it was handed over. Not
+  third-party, not AI-generated.
+- **Why a separate image from the product's own listing photo:** these are composed specifically
+  for the shop-tile grid (see `src/app/(site)/shop/page.tsx`), which can differ from what looks
+  best as an individual product's own hero image on its `/shop/[slug]` page — Candles already has
+  a real Sanity `merchProduct` with its own `heroImage` used elsewhere, and this tile photo is
+  deliberately layered on top of that specifically for the `/shop` grid, not a replacement for it.
 
 ## Brand assets (logo, jar photography, label artwork, bee/location photography)
 

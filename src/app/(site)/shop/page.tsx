@@ -12,16 +12,23 @@ export const metadata: Metadata = {
 
 const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-balm']
 
-// Categories with no real product yet have no real photo either — rather
-// than invent a "finished product" shot, these are abstract ingredient/
-// material flat-lays (Higgsfield, 2026-08-10), deliberately showing no
-// soap bar, lip balm tube or wrapped hamper. Deliberately no entry for
-// candles — it already has a real product photo; if that ever changes, the
-// tile should show no image rather than a wrong placeholder.
+// Real, purpose-made tile photography supplied by the user (2026-08-10,
+// from Media/{Candles,Soap,Lip Balm}, already feathered) — takes priority
+// over a real product's own hero photo, since these are composed
+// specifically for the shop tile rather than being a single product's
+// listing image. See docs/brand-alignment-board.md.
+const HOME_TILE_IMAGE: Partial<Record<MerchCategory, string>> = {
+  candles: '/images/shop-tiles/candles-home-tile.png',
+  soap: '/images/shop-tiles/soap-home-tile.png',
+  'lip-balm': '/images/shop-tiles/lip-balm-home-tile.png',
+}
+
+// Gift Hampers has no real product or curated tile photo yet — rather than
+// invent a "finished product" shot, this is an abstract ingredient/material
+// flat-lay (Higgsfield, 2026-08-10), deliberately showing no wrapped
+// hamper. Replace with a real photo the moment one exists.
 const PLACEHOLDER_IMAGE: Partial<Record<MerchCategory, string>> = {
   hamper: '/images/shop-tiles/gift-hamper-materials.png',
-  soap: '/images/shop-tiles/soap-ingredients.png',
-  'lip-balm': '/images/shop-tiles/lip-balm-ingredients.png',
 }
 
 // One tile per category (honey included, not given special treatment) so
@@ -60,6 +67,8 @@ export default async function ShopPage() {
       const realImageUrl = single
         ? (urlForImage(single.heroImage ?? undefined)?.width(600).height(600).url() ?? null)
         : null
+      const homeTileUrl = HOME_TILE_IMAGE[category] ?? null
+      const isPhotographic = Boolean(homeTileUrl) || Boolean(realImageUrl)
       return {
         href: `/shop/${category}`,
         label,
@@ -68,8 +77,8 @@ export default async function ShopPage() {
           : products.length > 1
             ? `${products.length} available`
             : 'Coming soon',
-        imageUrl: realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
-        objectFit: realImageUrl ? ('contain' as const) : ('cover' as const),
+        imageUrl: homeTileUrl ?? realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
+        objectFit: isPhotographic ? ('contain' as const) : ('cover' as const),
       }
     }),
   ]

@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Gifts',
-  description: 'Give someone a proper taste of Bristol — Bee S3 makes a lovely gift on its own.',
+  description: 'Gift boxes and tasting sets from Gert Lush Honey — on the way.',
 }
 
 export default function GiftsPage() {
@@ -15,32 +14,11 @@ export default function GiftsPage() {
         Give someone something lush.
       </h1>
       <p className="text-porcelain/70 mt-4 max-w-xl text-base">
-        Gift boxes and tasting sets are on the way as more postcode honeys join Gert Lush. For now,
-        a jar of Bee S3 makes a genuinely good gift on its own — small-batch, traceable to a real
-        beekeeper, and unmistakably Bristol.
+        Gift boxes and tasting sets are on the way as more postcode honeys join Gert Lush —
+        nothing here is ready to sell as a gift yet, so we&apos;re not dressing up the regular
+        honey as one. The Bee Day Experience below is further along, and we&apos;re happy to talk
+        through corporate or event gifting today.
       </p>
-
-      <Link
-        href="/shop/bee-s3"
-        className="border-ink-line bg-honeycomb-surface focus-visible:outline-honey-amber group mt-10 grid max-w-md gap-0 overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-4"
-      >
-        <div className="from-ink-surface to-ink relative aspect-square bg-gradient-to-b">
-          <Image
-            src="/images/source/bee-s3-jar-single-professional-blended.png"
-            alt="A jar of Bee S3 honey"
-            fill
-            sizes="400px"
-            className="object-contain p-10 transition group-hover:scale-105"
-          />
-        </div>
-        <div className="p-6">
-          <p className="font-display text-comb-gold text-lg italic">Bee S3</p>
-          <p className="text-porcelain mt-1 text-sm font-semibold">
-            Pure honey from the Northern Slopes
-          </p>
-          <p className="text-porcelain/50 mt-1 text-sm">12oz / 280ml &middot; Bristol, UK</p>
-        </div>
-      </Link>
 
       <div className="border-ink-line bg-honeycomb-surface mt-12 grid max-w-3xl overflow-hidden rounded-2xl border sm:grid-cols-2">
         <div className="relative min-h-[220px]">

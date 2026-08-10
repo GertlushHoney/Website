@@ -32,25 +32,59 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">What this site actually collects</h2>
           <p className="mt-2">
-            As of now, nothing you do on this website is sent to us automatically. Every
-            &quot;order&quot;, &quot;subscribe&quot; or &quot;apply&quot; button on this site opens
-            an email in your own email app, addressed to us — the site itself doesn&apos;t capture
-            or store what you type. We only receive whatever you choose to send us by email.
+            Most &quot;order&quot;, &quot;subscribe&quot; or &quot;apply&quot; buttons on this site
+            still just open an email in your own email app, addressed to us — the site itself
+            doesn&apos;t capture or store what you type there. We only receive whatever you choose
+            to send us by email.
           </p>
           <p className="mt-2">
-            We use that information only to fulfil your order, respond to your enquiry, or arrange a
-            subscription — nothing else, and we don&apos;t sell or share it with third parties for
-            marketing.
+            The exception is the basket: adding a honey jar or other product to your basket and
+            checking out is handled directly by Shopify, our e-commerce provider — see &quot;Third
+            parties we use&quot; below for what that means in practice.
+          </p>
+          <p className="mt-2">
+            We use whatever information we do receive only to fulfil your order, respond to your
+            enquiry, or arrange a subscription — nothing else, and we don&apos;t sell or share it
+            with third parties for marketing.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Third parties we use</h2>
+          <p className="mt-2">
+            <strong className="text-porcelain">Shopify</strong> powers our basket and checkout. When
+            you add something to your basket, Shopify creates and stores a cart on its own servers —
+            your browser only holds a cookie referencing it (see &quot;Cookies and browser
+            storage&quot; below). If you check out, Shopify collects your delivery address and
+            payment details directly on its own hosted checkout page; we never see or store your
+            card details ourselves. Shopify acts as a data processor for this information — see{' '}
+            <a
+              href="https://www.shopify.com/legal/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              Shopify&apos;s own privacy policy
+            </a>{' '}
+            for how it handles data.
+          </p>
+          <p className="mt-2">
+            <strong className="text-porcelain">Sanity</strong> is the content management system we
+            use to publish and edit the honey, beekeeper and product information you see on this
+            site. It doesn&apos;t collect any personal data from you as a visitor — it only stores
+            the editorial content we&apos;ve written and published ourselves.
           </p>
         </section>
 
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Cookies and browser storage</h2>
           <p className="mt-2">
-            We don&apos;t currently use any analytics, advertising, or tracking cookies. The only
-            thing stored in your browser is a small flag that remembers you&apos;ve seen the intro
-            animation, for the length of your browsing session — it doesn&apos;t identify you or
-            track you anywhere. See our{' '}
+            We don&apos;t currently use any analytics or advertising cookies. Two things are stored
+            in your browser: a small flag that remembers you&apos;ve seen the intro animation, for
+            the length of your browsing session; and, if you&apos;ve added something to your basket,
+            a cookie holding a reference to your Shopify cart (kept for up to 30 days so your basket
+            persists between visits). Neither identifies you personally or tracks you elsewhere. See
+            our{' '}
             <a href="/legal/cookies" className="text-comb-gold underline underline-offset-2">
               Cookie Policy
             </a>{' '}
@@ -62,7 +96,8 @@ export default function PrivacyPage() {
           <h2 className="text-porcelain text-lg font-semibold">How long we keep it</h2>
           <p className="mt-2">
             Only as long as reasonably needed to deal with your order or enquiry, and to meet our
-            own legal and accounting obligations.
+            own legal and accounting obligations. Basket data held by Shopify follows Shopify&apos;s
+            own retention rules, not ours.
           </p>
         </section>
 

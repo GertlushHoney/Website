@@ -39,6 +39,12 @@ export default function CookiesPage() {
             automatically when you close the tab, isn&apos;t sent to us or anyone else, and
             doesn&apos;t identify you.
           </p>
+          <p className="mt-2">
+            If you add something to your basket, we also set a cookie (<code>gl_cart_id</code>)
+            holding a reference to your Shopify cart, kept for up to 30 days so your basket
+            persists between visits. It&apos;s strictly necessary for the basket to work, and
+            doesn&apos;t identify you or track you anywhere else.
+          </p>
         </section>
 
         <section>
@@ -53,9 +59,18 @@ export default function CookiesPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Third parties</h2>
           <p className="mt-2">
-            None currently load anything in your browser. When online checkout goes live, our
-            payment provider (Shopify) will set its own cookies during checkout — we&apos;ll update
-            this page properly when that happens.
+            Nothing on this site itself loads third-party cookies. If you go to checkout, you leave
+            this site for Shopify&apos;s own hosted checkout page, where Shopify sets its own
+            cookies to process your order — that&apos;s covered by{' '}
+            <a
+              href="https://www.shopify.com/legal/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              Shopify&apos;s own privacy policy
+            </a>
+            , not this one.
           </p>
         </section>
       </div>

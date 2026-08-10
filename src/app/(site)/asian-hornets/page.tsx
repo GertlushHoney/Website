@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 export const metadata: Metadata = {
   title: 'Asian Hornets',
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
 export default function AsianHornetsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
-      <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
+      <BackToCategoryLink href="/information" label="Information" />
+
+      <p className="text-honey-amber mt-6 text-sm font-semibold tracking-wide uppercase">
         Protecting British bees
       </p>
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">

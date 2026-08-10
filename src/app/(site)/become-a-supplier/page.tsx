@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 export const metadata: Metadata = {
   title: 'Become a Supplier',
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 export default function BecomeASupplierPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">
+      <BackToCategoryLink href="/information" label="Information" />
+
+      <p className="text-comb-gold mt-6 text-sm font-semibold tracking-wide uppercase">
         Become a supplier
       </p>
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">

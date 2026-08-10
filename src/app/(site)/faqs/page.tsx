@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 export const metadata: Metadata = {
   title: 'FAQs',
@@ -200,7 +201,9 @@ const sections: FaqSection[] = [
 export default function FaqsPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">FAQs</p>
+      <BackToCategoryLink href="/information" label="Information" />
+
+      <p className="text-honey-amber mt-6 text-sm font-semibold tracking-wide uppercase">FAQs</p>
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
         Questions, answered honestly.
       </h1>

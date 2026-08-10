@@ -5,6 +5,7 @@ import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { MerchProductPage } from '@/components/shop/merch-product-page'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
 import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
@@ -198,7 +199,9 @@ export default async function ShopProductPage({
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
-      <div className="grid gap-12 lg:grid-cols-2">
+      <BackToCategoryLink href="/shop/honey" label="Honey" />
+
+      <div className="mt-8 grid gap-12 lg:grid-cols-2">
         <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
           <div
             className="absolute inset-0 rounded-2xl"

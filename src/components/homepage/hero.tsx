@@ -25,7 +25,7 @@ export function Hero() {
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link
-            href="/shop"
+            href="/shop/honey"
             className="bg-honey-amber text-ink focus-visible:outline-porcelain rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
           >
             Shop the latest harvest

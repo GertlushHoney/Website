@@ -15,8 +15,8 @@ export const primaryNav = [
 // (Journal, Batch Passports, legal pages, delivery/returns policy).
 export const footerNav = {
   Shop: [
-    { label: 'Latest Harvest', href: '/shop' },
-    { label: 'All Honey', href: '/shop' },
+    { label: 'Latest Harvest', href: '/shop/honey' },
+    { label: 'All Honey', href: '/shop/honey' },
     { label: 'Gifts', href: '/gifts' },
     { label: 'Gift Cards', href: '/gifts' },
   ],

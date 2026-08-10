@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { PurchaseOptions } from '@/components/product/purchase-options'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
@@ -12,9 +13,13 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
   const shopifyProduct = await getProductByHandle(product.shopifyHandle)
   const imageUrl = urlForImage(product.heroImage ?? undefined)?.width(1000).height(1000).url()
 
+  const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
-      <div className="grid gap-12 lg:grid-cols-2">
+      <BackToCategoryLink href={`/shop/${product.category}`} label={categoryLabel} />
+
+      <div className="mt-8 grid gap-12 lg:grid-cols-2">
         <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
           {imageUrl && (
             <Image
@@ -30,7 +35,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
 
         <div className="flex flex-col justify-center">
           <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
-            Shop &middot; {MERCH_CATEGORY_LABELS[product.category]}
+            Shop &middot; {categoryLabel}
           </p>
           <p className="font-display text-comb-gold mt-2 text-3xl italic">{product.name}</p>
           <h1 className="text-porcelain mt-2 text-3xl font-bold tracking-tight text-balance">

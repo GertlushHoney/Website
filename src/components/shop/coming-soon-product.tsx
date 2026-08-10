@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 // Shared shell for shop categories that don't have real products yet — same
 // "honest, no invented pricing" pattern as /gifts and /stockists. Each
@@ -17,7 +18,11 @@ export function ComingSoonProduct({
 }) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
-      <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">{eyebrow}</p>
+      <BackToCategoryLink href="/shop" label="Shop" />
+
+      <p className="text-honey-amber mt-6 text-sm font-semibold tracking-wide uppercase">
+        {eyebrow}
+      </p>
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
         {title}
       </h1>

@@ -24,7 +24,11 @@ official brand asset, not a new invention.
 (`image_background_remover` model) to get a clean product cutout
 (`public/images/source/bee-s3-jar-cutout.png`), composited onto a dark radial-gradient backdrop
 in code. This is the real, unedited product — only the background changed, not the jar or
-label. No AI-generated (invented) product imagery has been used anywhere on the site.
+label. No AI-generated (invented) *product* imagery has been used anywhere on the site — the one
+exception (2026-08-10) is abstract ingredient/material flat-lays for the Soap/Lip Balm/Gift
+Hampers shop tiles, which don't exist as real products yet; see `docs/third-party-assets.md`'s
+"Shop category placeholder imagery" entry for why that's a narrow exception, not a reversal of
+this rule, and what has to happen to it once each category becomes real.
 
 ## What actually exists
 

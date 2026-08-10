@@ -65,6 +65,28 @@ licensing/attribution obligations aren't lost track of before launch.
 - **Source:** hand-authored for this project (plain hexagon geometry, not traced from or based
   on any third-party asset). No attribution required.
 
+## Shop category placeholder imagery (AI-generated, 2026-08-10)
+
+- **Files:** `public/images/shop-tiles/soap-ingredients.png`,
+  `lip-balm-ingredients.png`, `gift-hamper-materials.png` — used as the `/shop` tile image for
+  Soap, Lip Balm and Gift Hampers respectively (see `src/app/(site)/shop/page.tsx`'s
+  `PLACEHOLDER_IMAGE` map).
+- **Source:** generated via Higgsfield (`nano_banana_2`/Nano Banana Pro), at the user's request
+  ("fill the tiles of the shop with an image of what's behind it"), after confirming with the user
+  how to handle the fact that these three categories have no real product or photo yet.
+- **This is the one deliberate exception to the site's "no AI-generated invented product imagery"
+  rule (see `docs/brand-alignment-board.md`) — and it's a narrow one.** Each image is an abstract
+  ingredient/material flat-lay (raw beeswax, dried botanicals, honey, kraft paper, raffia — see
+  the exact prompts in git history for `src/app/(site)/shop/page.tsx`), deliberately composed to
+  show **no finished product**: no soap bar, no lip balm tube, no wrapped hamper. The intent is
+  texture/mood, not a claim that "this is what our soap looks like." **Do not generate a literal
+  product shot for these categories** — that would cross into inventing a product that doesn't
+  exist. Replace each placeholder with a real product photo the moment a real Soap/Lip
+  Balm/Hamper product exists (the `/shop` tile code already prefers a real Sanity `heroImage` over
+  the placeholder automatically once one is set — see `realImageUrl` in `page.tsx`).
+- **No attribution required** (Higgsfield-generated, not sourced from a third party), but this
+  entry exists so the "AI-generated" fact itself isn't lost track of.
+
 ## Brand assets (logo, jar photography, label artwork, bee/location photography)
 
 Not third-party — supplied directly by the user from `Z:\Business\Gert _Lush_Honey\Media\`,

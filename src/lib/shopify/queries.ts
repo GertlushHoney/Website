@@ -22,12 +22,109 @@ export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
   }
 `
 
+// Shared shape for every cart operation below, so the client always gets
+// back everything the basket UI needs (line items with product info, live
+// totals) in one round trip — never a bare id needing a follow-up fetch.
+const CART_FRAGMENT = /* GraphQL */ `
+  fragment CartFields on Cart {
+    id
+    checkoutUrl
+    totalQuantity
+    cost {
+      subtotalAmount {
+        amount
+        currencyCode
+      }
+    }
+    lines(first: 50) {
+      edges {
+        node {
+          id
+          quantity
+          merchandise {
+            ... on ProductVariant {
+              id
+              title
+              product {
+                title
+                handle
+              }
+              image {
+                url
+                altText
+              }
+              price {
+                amount
+                currencyCode
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
 export const CART_CREATE_MUTATION = /* GraphQL */ `
+  ${CART_FRAGMENT}
   mutation CartCreate($lines: [CartLineInput!]!) {
     cartCreate(input: { lines: $lines }) {
       cart {
-        id
-        checkoutUrl
+        ...CartFields
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+export const CART_QUERY = /* GraphQL */ `
+  ${CART_FRAGMENT}
+  query Cart($cartId: ID!) {
+    cart(id: $cartId) {
+      ...CartFields
+    }
+  }
+`
+
+export const CART_LINES_ADD_MUTATION = /* GraphQL */ `
+  ${CART_FRAGMENT}
+  mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+    cartLinesAdd(cartId: $cartId, lines: $lines) {
+      cart {
+        ...CartFields
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+export const CART_LINES_UPDATE_MUTATION = /* GraphQL */ `
+  ${CART_FRAGMENT}
+  mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+    cartLinesUpdate(cartId: $cartId, lines: $lines) {
+      cart {
+        ...CartFields
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+export const CART_LINES_REMOVE_MUTATION = /* GraphQL */ `
+  ${CART_FRAGMENT}
+  mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+    cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart {
+        ...CartFields
       }
       userErrors {
         field

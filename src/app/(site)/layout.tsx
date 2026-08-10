@@ -6,6 +6,9 @@ import { SkipLink } from '@/components/layout/skip-link'
 import { Splash } from '@/components/layout/splash'
 import { DisableContextMenu } from '@/components/layout/disable-context-menu'
 import { CookiePreferences } from '@/components/legal/cookie-preferences'
+import { CartProvider } from '@/components/cart/cart-context'
+import { BasketDrawer } from '@/components/cart/basket-drawer'
+import { getCart } from '@/lib/shopify/cart'
 import '../globals.css'
 
 const manrope = Manrope({
@@ -30,7 +33,9 @@ export const metadata: Metadata = {
     'Small-batch honey from Bristol hives. Every jar has a postcode, a season and a story.',
 }
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default async function RootLayout({ children }: LayoutProps<'/'>) {
+  const initialCart = await getCart()
+
   return (
     <html
       lang="en"
@@ -38,15 +43,18 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       className={`${manrope.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="bg-ink text-porcelain flex min-h-full flex-col font-sans">
-        <DisableContextMenu />
-        <Splash />
-        <SkipLink />
-        <SiteHeader />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
-        <CookiePreferences />
+        <CartProvider initialCart={initialCart}>
+          <DisableContextMenu />
+          <Splash />
+          <SkipLink />
+          <SiteHeader />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+          <CookiePreferences />
+          <BasketDrawer />
+        </CartProvider>
       </body>
     </html>
   )

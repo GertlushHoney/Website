@@ -15,10 +15,17 @@ export class ShopifyError extends Error {}
 export async function shopifyFetch<T>(params: {
   query: string
   variables?: Record<string, unknown>
+  // Cart reads/mutations must never be cached — this is per-session mutable
+  // state, not published catalog data. A stale cached cart after a mutation
+  // would show the user an out-of-date basket. Product lookups default to
+  // a short revalidate window instead, since price/stock can lag a little.
+  cache?: 'no-store' | 'revalidate'
 }): Promise<T> {
   if (!domain || !token) {
     throw new ShopifyError('Shopify Storefront API is not configured')
   }
+
+  const { cache = 'revalidate', ...body } = params
 
   const res = await fetch(`https://${domain}/api/${API_VERSION}/graphql.json`, {
     method: 'POST',
@@ -26,9 +33,8 @@ export async function shopifyFetch<T>(params: {
       'Content-Type': 'application/json',
       'X-Shopify-Storefront-Access-Token': token,
     },
-    body: JSON.stringify(params),
-    // Product data can change (price, stock) — don't cache indefinitely.
-    next: { revalidate: 60 },
+    body: JSON.stringify(body),
+    ...(cache === 'no-store' ? { cache: 'no-store' as const } : { next: { revalidate: 60 } }),
   })
 
   if (!res.ok) {

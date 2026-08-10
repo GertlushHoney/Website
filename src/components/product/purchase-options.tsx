@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { checkoutWithVariant } from '@/lib/shopify/actions'
+import { useState } from 'react'
+import { useCart } from '@/components/cart/cart-context'
 
 type PurchaseType = 'one-time' | 'subscription'
 
@@ -9,7 +9,7 @@ function formatGBP(amount: number) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount)
 }
 
-// One-time purchases check out for real via Shopify (see
+// One-time purchases add to a real Shopify basket (see
 // /docs/technical-architecture.md) once a variantId is supplied — otherwise
 // this falls back to an honest mailto rather than a fake "order placed"
 // confirmation. Subscriptions always use the mailto fallback: there's no
@@ -49,20 +49,11 @@ export function PurchaseOptions({
   const [quantity, setQuantity] = useState(1)
   const isSoldOut = stockCount !== null && stockCount !== undefined && stockCount <= 0
   const maxQuantity = Math.min(12, stockCount && stockCount > 0 ? stockCount : 12)
-  const [checkoutError, setCheckoutError] = useState<string | null>(null)
-  const [isCheckingOut, startCheckout] = useTransition()
+  const { addItem, isPending, error: cartError } = useCart()
 
-  function handleCheckout() {
+  function handleAddToBasket() {
     if (!variantId) return
-    setCheckoutError(null)
-    startCheckout(async () => {
-      try {
-        const { checkoutUrl } = await checkoutWithVariant(variantId, quantity)
-        window.location.href = checkoutUrl
-      } catch {
-        setCheckoutError("Couldn't start checkout — please email us instead.")
-      }
-    })
+    addItem(variantId, quantity)
   }
 
   const hasSubscription = subscriptionUnitPrice !== undefined
@@ -204,20 +195,20 @@ export function PurchaseOptions({
       ) : canCheckoutLive ? (
         <>
           <p className="text-porcelain/60 mt-3 text-sm">
-            Checkout is handled securely by Shopify — you&apos;ll be taken there to pay.
+            Checkout is handled securely by Shopify, once you&apos;re ready.
           </p>
-          {checkoutError && (
+          {cartError && (
             <p className="text-honey-amber mt-2 text-sm" role="alert">
-              {checkoutError}
+              {cartError}
             </p>
           )}
           <button
             type="button"
-            onClick={handleCheckout}
-            disabled={isCheckingOut}
+            onClick={handleAddToBasket}
+            disabled={isPending}
             className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4 disabled:opacity-60"
           >
-            {isCheckingOut ? 'Redirecting to checkout…' : 'Buy now'}
+            {isPending ? 'Adding…' : 'Add to basket'}
           </button>
         </>
       ) : (

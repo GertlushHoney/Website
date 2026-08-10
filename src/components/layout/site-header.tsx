@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { primaryNav } from '@/lib/navigation'
+import { BasketButton } from '@/components/cart/basket-button'
 
 export function SiteHeader() {
   return (
@@ -46,13 +47,7 @@ export function SiteHeader() {
           >
             Search
           </button>
-          <button
-            type="button"
-            aria-label="Basket, 0 items"
-            className="hover:text-porcelain focus-visible:outline-honey-amber rounded-full focus-visible:outline focus-visible:outline-offset-2"
-          >
-            Basket
-          </button>
+          <BasketButton />
         </div>
       </div>
     </header>

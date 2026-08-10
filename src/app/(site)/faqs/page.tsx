@@ -78,7 +78,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'How much is a jar, and can I subscribe?',
-        a: 'Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription with a 6-month minimum term — plus £4.99 delivery either way.',
+        a: 'Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription — plus £4.99 delivery either way. Subscriptions have no minimum term; cancel any time with at least 7 days\' notice before your next charge.',
       },
       {
         q: 'How is it delivered, and how much does delivery cost?',

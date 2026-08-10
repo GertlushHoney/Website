@@ -105,18 +105,66 @@ must be access-controlled separately.
 
 The user has asked for a monthly-subscription purchase option on product pages (2026-08-08) —
 this **supersedes** the Project Pack's "complex subscription management explicitly deferred from
-launch" guidance for the front-end presentation, though the *automated billing* side is still a
-Phase 3+ concern. `src/components/product/purchase-options.tsx` presents the real choice
-(one-time vs. monthly) today and routes both into an honest mailto, since:
+launch" guidance for the front-end presentation. `src/components/product/purchase-options.tsx`
+presents the real choice (one-time vs. monthly) today; one-time purchases go through the real
+Shopify basket (see "Basket / cart" above).
 
-- No Shopify store exists yet, so there's no cart/checkout to attach a subscription to.
-- Recurring billing requires **Shopify Selling Plans** (native) or a subscriptions app (e.g.
-  Recharge) — a deliberate integration decision for Phase 3, not something to wire up ad hoc.
+**No minimum term (decided 2026-08-10, dropped the original 6-month term):** cancel any time,
+with at least 7 days' notice before the next charge (the 1st of the month). This was a deliberate
+trade against building/paying for a subscriptions app with commitment-term enforcement — see
+below.
 
-Until that's built, subscriptions are fulfilled manually (the customer emails, Gert Lush arranges
-recurring dispatch by hand). When Shopify is connected, replace the mailto branch for
-subscriptions with a `sellingPlanId` passed to `cartLinesAdd`, keeping the one-time branch as a
-plain product variant add.
+**Selling Plan provider decision:** researched during the 2026-08-10 session, confirmed directly
+against Shopify's own docs (not assumed):
+
+- The free, native **Shopify Subscriptions** app only lets a merchant configure a title, an
+  optional discount, and a delivery/billing interval — there's no setting for a minimum number of
+  billing cycles or restricting cancellation. That's exactly why the 6-month minimum term was
+  dropped: enforcing it would have required a paid third-party app (Recharge, Skio, Bold — all
+  priced for far higher subscription volume than a two-product catalogue needs). Since the real
+  policy is now "cancel any time, 7 days' notice," **the free app is sufficient** and is the
+  chosen provider — no paid subscriptions app needed.
+
+**Code side is built (2026-08-10)** — this is the automated part, wired end to end, but it's
+inert until a real Selling Plan exists in Shopify (see "What's still needed" below):
+
+- `PRODUCT_BY_HANDLE_QUERY` (`src/lib/shopify/queries.ts`) now also fetches the product's
+  `sellingPlanGroups` → `sellingPlans`, so `getProductByHandle`
+  (`src/lib/shopify/product.ts`) returns a real `subscriptionSellingPlanId` (or `null` if no plan
+  exists for that product yet — never invented).
+- `addToCart` (`src/lib/shopify/cart.ts`) takes an optional `sellingPlanId` third argument,
+  passed straight into the `cartCreate`/`cartLinesAdd` line item alongside
+  `merchandiseId`/`quantity` — the Storefront API's real subscription mechanism (not the old
+  checkout mutation, which Shopify deprecated for subscriptions). `CartLine` now also carries
+  `sellingPlanName` (from `sellingPlanAllocation`) so the basket drawer can label a line
+  "monthly" instead of guessing from price.
+- `PurchaseOptions` takes a `subscriptionSellingPlanId` prop: when it's set, choosing "Subscribe
+  monthly" and adding to basket creates a **real** recurring cart line, going through the same
+  live Shopify checkout as one-time purchases. When it's `null` (no plan set up in Shopify yet),
+  the subscription option still shows (if `subscriptionUnitPrice` is set in Sanity) but falls back
+  to the same honest mailto used everywhere else — never a fake "subscribed" confirmation.
+- Requires the `unauthenticated_read_selling_plans` Storefront API scope on the Headless channel
+  — check this is enabled if the selling plan query ever comes back empty unexpectedly once a
+  plan has been created.
+
+**What's still needed (an admin task, not a code task — this assistant has no Shopify admin
+access, deliberately, per the "no Admin API credentials" rule above):**
+
+1. Install the free **Shopify Subscriptions** app (Shopify admin → Apps → Shopify App Store →
+   search "Shopify Subscriptions" → Add app).
+2. Create a selling plan (Shopify admin → the app's settings → add a plan): monthly delivery
+   interval, no discount required (the £7 vs £8 price difference is set on the Sanity side via
+   `subscriptionPrice`, not necessarily as a Shopify-side discount — decide which honestly reflects
+   the real price before publishing).
+3. Attach the plan to each honey product that should offer it (Bee S3, Bee S4, and any future
+   ones with a `subscriptionPrice` set in Sanity).
+4. Confirm the Headless channel's Storefront API has `unauthenticated_read_selling_plans` — it may
+   need adding explicitly under the channel's API scopes.
+
+Once that's done, no code changes are needed — `subscriptionSellingPlanId` will start coming back
+non-null from `getProductByHandle` automatically, and the subscribe flow goes live product by
+product, without needing a redeploy. Until then, subscriptions are fulfilled manually (the
+customer emails, Gert Lush arranges recurring dispatch and billing by hand).
 
 ## Form submission architecture
 

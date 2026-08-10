@@ -21,6 +21,10 @@ export type CartLine = {
   imageUrl: string | null
   price: number
   currencyCode: string
+  // Present only for a real Shopify subscription line (a sellingPlanId was
+  // attached when it was added) — used to label it "Monthly subscription"
+  // in the basket rather than guessing from price/quantity.
+  sellingPlanName: string | null
 }
 
 export type Cart = {
@@ -42,6 +46,7 @@ type RawCart = {
       node: {
         id: string
         quantity: number
+        sellingPlanAllocation: { sellingPlan: { id: string; name: string } } | null
         merchandise: {
           id: string
           title: string
@@ -70,6 +75,7 @@ function normalizeCart(raw: RawCart): Cart {
       imageUrl: node.merchandise.image?.url ?? null,
       price: Number(node.merchandise.price.amount),
       currencyCode: node.merchandise.price.currencyCode,
+      sellingPlanName: node.sellingPlanAllocation?.sellingPlan.name ?? null,
     })),
   }
 }
@@ -114,16 +120,29 @@ export async function getCart(): Promise<Cart | null> {
 // added this session. Shopify merges quantities automatically when the
 // same variant is added twice, so callers don't need to check "is this
 // already in the basket" themselves.
-export async function addToCart(variantId: string, quantity: number): Promise<Cart> {
+//
+// Pass sellingPlanId to add it as a real recurring subscription line
+// instead of a one-off — it must be a real Selling Plan id from Shopify
+// (see getProductByHandle's subscriptionSellingPlanId), never invented.
+export async function addToCart(
+  variantId: string,
+  quantity: number,
+  sellingPlanId?: string
+): Promise<Cart> {
   const safeQuantity = Math.min(12, Math.max(1, Math.floor(quantity)))
   const cartId = await getCartId()
+  const line = {
+    merchandiseId: variantId,
+    quantity: safeQuantity,
+    ...(sellingPlanId ? { sellingPlanId } : {}),
+  }
 
   if (!cartId) {
     const data = await shopifyFetch<{
       cartCreate: { cart: RawCart | null; userErrors: { message: string }[] }
     }>({
       query: CART_CREATE_MUTATION,
-      variables: { lines: [{ merchandiseId: variantId, quantity: safeQuantity }] },
+      variables: { lines: [line] },
       cache: 'no-store',
     })
     const { cart, userErrors } = data.cartCreate
@@ -138,7 +157,7 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
     cartLinesAdd: { cart: RawCart | null; userErrors: { message: string }[] }
   }>({
     query: CART_LINES_ADD_MUTATION,
-    variables: { cartId, lines: [{ merchandiseId: variantId, quantity: safeQuantity }] },
+    variables: { cartId, lines: [line] },
     cache: 'no-store',
   })
   const { cart, userErrors } = data.cartLinesAdd

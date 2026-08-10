@@ -15,7 +15,7 @@ type CartContextValue = {
   error: string | null
   open: () => void
   close: () => void
-  addItem: (variantId: string, quantity: number) => void
+  addItem: (variantId: string, quantity: number, sellingPlanId?: string) => void
   updateItem: (lineId: string, quantity: number) => void
   removeItem: (lineId: string) => void
 }
@@ -38,11 +38,11 @@ export function CartProvider({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function addItem(variantId: string, quantity: number) {
+  function addItem(variantId: string, quantity: number, sellingPlanId?: string) {
     setError(null)
     startTransition(async () => {
       try {
-        const updated = await addToCartAction(variantId, quantity)
+        const updated = await addToCartAction(variantId, quantity, sellingPlanId)
         setCart(updated)
         setIsOpen(true)
       } catch {

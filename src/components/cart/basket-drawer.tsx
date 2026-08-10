@@ -122,8 +122,16 @@ export function BasketDrawer() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-porcelain text-sm font-semibold">{line.productTitle}</p>
-                    <p className="text-porcelain/60 mt-0.5 text-sm">{formatGBP(line.price)}</p>
+                    <p className="text-porcelain text-sm font-semibold">
+                      {line.productTitle}
+                      {line.sellingPlanName && (
+                        <span className="text-comb-gold font-normal"> &middot; monthly</span>
+                      )}
+                    </p>
+                    <p className="text-porcelain/60 mt-0.5 text-sm">
+                      {formatGBP(line.price)}
+                      {line.sellingPlanName && '/month'}
+                    </p>
                     <div className="mt-2 flex items-center gap-3">
                       <div className="border-ink-line flex items-center rounded-full border">
                         <button

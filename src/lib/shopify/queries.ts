@@ -1,3 +1,10 @@
+// sellingPlanGroups surfaces any real Shopify Selling Plan attached to this
+// product (created via the Shopify Subscriptions app in the merchant's
+// admin) — we just take the first plan of the first group, since each
+// honey product only ever needs one "monthly" plan. Requires the
+// unauthenticated_read_selling_plans Storefront API scope on the Headless
+// channel. Absent/empty means "no real subscription set up for this
+// product yet", handled honestly by the caller, never assumed.
 export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
   query ProductByHandle($handle: String!) {
     product(handle: $handle) {
@@ -14,6 +21,19 @@ export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
             price {
               amount
               currencyCode
+            }
+          }
+        }
+      }
+      sellingPlanGroups(first: 1) {
+        edges {
+          node {
+            sellingPlans(first: 1) {
+              edges {
+                node {
+                  id
+                }
+              }
             }
           }
         }
@@ -41,6 +61,12 @@ const CART_FRAGMENT = /* GraphQL */ `
         node {
           id
           quantity
+          sellingPlanAllocation {
+            sellingPlan {
+              id
+              name
+            }
+          }
           merchandise {
             ... on ProductVariant {
               id

@@ -39,9 +39,11 @@ export default function TermsPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">How ordering works right now</h2>
           <p className="mt-2">
-            Online checkout isn&apos;t live yet. Choosing a purchase option on a product page opens
-            an email to us with your order details — an order isn&apos;t confirmed until we reply
-            confirming price, availability and delivery.
+            One-off jars go through a real basket and checkout, handled securely by Shopify — add
+            to basket, then pay by card on Shopify&apos;s own checkout page. We never see or store
+            your card details ourselves. Anything without a working online checkout yet (currently
+            just monthly subscriptions) opens an email to us instead with your order details — that
+            order isn&apos;t confirmed until we reply confirming price, availability and delivery.
           </p>
         </section>
 
@@ -61,9 +63,10 @@ export default function TermsPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Subscriptions</h2>
           <p className="mt-2">
-            Monthly subscriptions run for a minimum term of 6 months from your first jar, and are
-            arranged and invoiced by emailing us directly for now — there&apos;s no automated
-            billing yet. After the minimum term, you can cancel any time by telling us.
+            Monthly subscriptions have no minimum term — you can cancel any time, provided you tell
+            us at least 7 days before your next charge, which falls on the 1st of the month. For now
+            they&apos;re arranged and invoiced by emailing us directly, since there&apos;s no
+            automated billing yet.
           </p>
         </section>
 

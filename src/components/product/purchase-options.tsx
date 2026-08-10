@@ -12,19 +12,23 @@ function formatGBP(amount: number) {
 // One-time purchases add to a real Shopify basket (see
 // /docs/technical-architecture.md) once a variantId is supplied — otherwise
 // this falls back to an honest mailto rather than a fake "order placed"
-// confirmation. Subscriptions always use the mailto fallback: there's no
-// Shopify Selling Plan configured yet, so there's no real recurring cart to
-// create; moving to Selling Plans is the eventual automated version of the
-// same choice offered here. Delivery is a flat per-order fee (Royal Mail
-// Tracked 48), not per jar — charged once per order/shipment, same for
-// subscriptions since no free-delivery threshold or subscriber perk has
-// been decided.
-const SUBSCRIPTION_MINIMUM_MONTHS = 6
+// confirmation. Subscriptions do the same once a real Shopify Selling Plan
+// exists for the product (subscriptionSellingPlanId, created via the
+// Shopify Subscriptions app in the merchant's admin — never assumed or
+// invented here); otherwise they fall back to the same honest mailto.
+// Delivery is a flat per-order fee (Royal Mail Tracked 48), not per jar —
+// charged once per order/shipment, same for subscriptions since no
+// free-delivery threshold or subscriber perk has been decided.
+//
+// No minimum term (dropped 2026-08-10) — cancel any time, provided at
+// least 7 days' notice before the 1st of the month, the billing date.
+const CANCELLATION_NOTICE_DAYS = 7
 
 export function PurchaseOptions({
   productName,
   unitPrice,
   subscriptionUnitPrice,
+  subscriptionSellingPlanId,
   deliveryPrice,
   contactEmail = 'gertlushhoney@outlook.com',
   variantId,
@@ -35,11 +39,14 @@ export function PurchaseOptions({
   // Omit entirely to offer one-time purchase only — e.g. a product with no
   // Sanity-configured subscription price yet.
   subscriptionUnitPrice?: number
+  // The real Shopify Selling Plan id for this product, if one exists
+  // (see getProductByHandle). Without it, subscriptions still show as an
+  // option (if subscriptionUnitPrice is set) but fall back to the mailto
+  // flow rather than a real recurring cart.
+  subscriptionSellingPlanId?: string | null
   deliveryPrice: number
   contactEmail?: string
   // Real Shopify variant to check out with a live cart, when available.
-  // Subscriptions still use the mailto fallback below — there's no Shopify
-  // Selling Plan set up yet, so there's no real recurring cart to create.
   variantId?: string | null
   // Real Shopify inventory count. null/undefined means "unknown" (Shopify
   // not configured, product not found) — shown as nothing, never a guess.
@@ -51,24 +58,30 @@ export function PurchaseOptions({
   const maxQuantity = Math.min(12, stockCount && stockCount > 0 ? stockCount : 12)
   const { addItem, isPending, error: cartError } = useCart()
 
+  const hasSubscription = subscriptionUnitPrice !== undefined
+  const isSubscription = hasSubscription && type === 'subscription'
+
   function handleAddToBasket() {
     if (!variantId) return
+    if (isSubscription) {
+      if (!subscriptionSellingPlanId) return
+      addItem(variantId, 1, subscriptionSellingPlanId)
+      return
+    }
     addItem(variantId, quantity)
   }
 
-  const hasSubscription = subscriptionUnitPrice !== undefined
-  const isSubscription = hasSubscription && type === 'subscription'
-  const canCheckoutLive = Boolean(variantId) && !isSubscription
+  const canCheckoutLive =
+    Boolean(variantId) && (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
   const subtotal = unitPrice * quantity
   const total = subtotal + deliveryPrice
   const monthlyTotal = (subscriptionUnitPrice ?? 0) + deliveryPrice
-  const minimumTermTotal = monthlyTotal * SUBSCRIPTION_MINIMUM_MONTHS
 
   const subject = isSubscription
     ? `${productName} monthly subscription`
     : `${productName} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one jar of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/jar plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total), on the ${SUBSCRIPTION_MINIMUM_MONTHS}-month minimum term.`
+    ? `I'd like to subscribe to one jar of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/jar plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next charge on the 1st of the month.`
     : `I'd like to order ${quantity} jar${quantity > 1 ? 's' : ''} of ${productName} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
@@ -114,8 +127,7 @@ export function PurchaseOptions({
               />
               <span className="font-semibold">Subscribe monthly</span>
               <span className="block text-xs opacity-70">
-                {formatGBP(subscriptionUnitPrice)}/jar &middot; {SUBSCRIPTION_MINIMUM_MONTHS}-month
-                minimum
+                {formatGBP(subscriptionUnitPrice)}/jar &middot; cancel any time
               </span>
             </label>
           </div>
@@ -179,8 +191,8 @@ export function PurchaseOptions({
       </p>
       {isSubscription && (
         <p className="text-porcelain/50 mt-1 text-xs">
-          {SUBSCRIPTION_MINIMUM_MONTHS}-month minimum term &middot; {formatGBP(minimumTermTotal)}{' '}
-          over {SUBSCRIPTION_MINIMUM_MONTHS} months &middot; cancel any time after that
+          No minimum term &middot; cancel any time, with at least {CANCELLATION_NOTICE_DAYS} days&apos;
+          notice before your next charge on the 1st of the month
         </p>
       )}
 
@@ -216,7 +228,7 @@ export function PurchaseOptions({
           <p className="text-porcelain/60 mt-3 text-sm">
             Online ordering isn&apos;t live yet —{' '}
             {isSubscription
-              ? `monthly subscriptions are set up by hand for now, on a ${SUBSCRIPTION_MINIMUM_MONTHS}-month minimum term.`
+              ? `monthly subscriptions are set up by hand for now — cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before your next charge.`
               : "we're finishing the shop first."}{' '}
             Email us and we&apos;ll sort it directly.
           </p>

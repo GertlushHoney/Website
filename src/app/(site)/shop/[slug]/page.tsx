@@ -250,6 +250,7 @@ export default async function ShopProductPage({
               productName={product.name}
               unitPrice={shopifyProduct.price}
               subscriptionUnitPrice={product.subscriptionPrice ?? undefined}
+              subscriptionSellingPlanId={shopifyProduct.subscriptionSellingPlanId}
               deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}
               stockCount={shopifyProduct.quantityAvailable}

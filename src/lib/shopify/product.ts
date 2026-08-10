@@ -9,6 +9,11 @@ export type ShopifyProduct = {
   currencyCode: string
   availableForSale: boolean
   quantityAvailable: number
+  // The real Shopify Selling Plan id for this product, if a merchant has
+  // actually created one (via the Shopify Subscriptions app) — null means
+  // no subscription is set up in Shopify yet, regardless of whether Sanity
+  // has a subscriptionPrice configured for the front-end toggle.
+  subscriptionSellingPlanId: string | null
 }
 
 type ProductByHandleResponse = {
@@ -25,6 +30,9 @@ type ProductByHandleResponse = {
           price: { amount: string; currencyCode: string }
         }
       }[]
+    }
+    sellingPlanGroups: {
+      edges: { node: { sellingPlans: { edges: { node: { id: string } }[] } } }[]
     }
   } | null
 }
@@ -48,6 +56,9 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
     const variant = product?.variants.edges[0]?.node
     if (!product || !variant) return null
 
+    const sellingPlanId =
+      product.sellingPlanGroups.edges[0]?.node.sellingPlans.edges[0]?.node.id ?? null
+
     return {
       productId: product.id,
       variantId: variant.id,
@@ -56,6 +67,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       currencyCode: variant.price.currencyCode,
       availableForSale: product.availableForSale && variant.availableForSale,
       quantityAvailable: variant.quantityAvailable ?? 0,
+      subscriptionSellingPlanId: sellingPlanId,
     }
   } catch (error) {
     if (error instanceof ShopifyError) {

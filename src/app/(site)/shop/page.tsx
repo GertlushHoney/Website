@@ -97,10 +97,10 @@ export default async function ShopPage() {
               href={`/shop/${category}`}
               className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber rounded-xl border p-5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
             >
-              <span className="text-porcelain">{single ? single.name : label}</span>
+              <span className="text-porcelain">{label}</span>
               <span className="text-porcelain/50 mt-1 block text-xs font-normal">
                 {single
-                  ? single.tagline
+                  ? (single.tagline ?? single.name)
                   : categoryProducts.length > 1
                     ? `${categoryProducts.length} available`
                     : 'Coming soon'}

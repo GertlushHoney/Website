@@ -6,6 +6,7 @@ import { getMerchProductsByCategory, MERCH_CATEGORY_LABELS, type MerchCategory }
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
+import { SurpriseMeButton } from '@/components/shop/surprise-me-button'
 
 export const metadata: Metadata = {
   title: 'Shop',
@@ -40,6 +41,18 @@ export default async function ShopPage() {
           ? 'One postcode honey so far — more will join as new beekeepers come on board.'
           : 'Postcode honey, sourced from independent beekeepers across Britain.'}
       </p>
+
+      {cards.length > 0 && (
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link
+            href="/postcode-honey"
+            className="bg-honey-amber text-ink focus-visible:outline-porcelain rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+          >
+            Choose a honey by postcode
+          </Link>
+          <SurpriseMeButton slugs={cards.map(({ product }) => product.slug)} />
+        </div>
+      )}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
         {cards.map(({ product, shopifyProduct, imageUrl }) => (

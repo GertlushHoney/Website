@@ -66,10 +66,11 @@ export function Splash() {
         <style>{'#splash{display:none}'}</style>
       </noscript>
 
-      {/* Real honey-straining photo (2026-08-10), kept deliberately faint —
+      {/* Real honey-straining photo (2026-08-11 exposure edit — tamed
+          highlights, no blown-out rim glare), kept deliberately faint —
           texture and mood only, never competing with the logo. */}
       <Image
-        src="/images/source/honey-strain-dark.jpg"
+        src="/images/source/honey-strain-exposure.jpg"
         alt=""
         fill
         priority
@@ -81,13 +82,13 @@ export function Splash() {
       {/* wordmark-transparent.png, not emblem-gold-on-black.png — the latter
           has an opaque black backing that would show as a hard-edged box
           now that the backdrop isn't flat black. */}
-      <div className="relative h-44 w-72 sm:h-64 sm:w-[26rem]">
+      <div className="relative h-56 w-96 sm:h-80 sm:w-[34rem]">
         <Image
           src="/images/brand/wordmark-transparent.png"
           alt="Gert Lush Honey"
           fill
           priority
-          sizes="416px"
+          sizes="544px"
           className="object-contain"
         />
       </div>

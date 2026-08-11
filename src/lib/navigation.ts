@@ -25,6 +25,7 @@ export const footerNav = {
     { label: 'Our Story', href: '/our-story' },
     { label: 'Journal', href: '/journal' },
     { label: 'Stockists', href: '/stockists' },
+    { label: 'Becoming a Beekeeper', href: '/becoming-a-beekeeper' },
     { label: 'Asian Hornets', href: '/asian-hornets' },
   ],
   Help: [

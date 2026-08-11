@@ -17,6 +17,14 @@ export const metadata: Metadata = {
 // a top-nav item and a footer link).
 const CARDS = [
   {
+    href: '/becoming-a-beekeeper',
+    eyebrow: 'For aspiring beekeepers',
+    title: 'Thinking of becoming a beekeeper?',
+    description:
+      'A practical guide to getting started — local associations, courses, costs, equipment, and the route to Master Beekeeper.',
+    image: null,
+  },
+  {
     href: '/become-a-supplier',
     eyebrow: 'For beekeepers',
     title: 'Becoming a beekeeper supplier',

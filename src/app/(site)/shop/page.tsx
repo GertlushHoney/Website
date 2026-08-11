@@ -18,25 +18,22 @@ const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-bal
 // Real, purpose-made tile photography — takes priority over a real
 // product's own hero photo, since these are composed specifically for the
 // shop tile rather than being a single product's listing image. See
-// docs/brand-alignment-board.md. The Candles/Soap/Lip Balm images
-// (2026-08-10, from Media/{Candles,Soap,Lip Balm}, already feathered) are
-// isolated product-style cutouts, shown with padding like a jar photo;
-// Experiences uses the existing real Bramble Farm landscape photo (already
-// on the Experiences page itself), which needs a full-bleed crop instead —
-// hence the separate `fit` per entry rather than one blanket rule.
+// docs/brand-alignment-board.md. The Candles/Hamper/Soap/Lip Balm images
+// (2026-08-10/11, from Media/{Candles,Soap,Lip Balm}/gift-hamper-materials,
+// feathered via scripts/feather-product-image.mjs) are isolated
+// product-style cutouts, shown with padding like a jar photo; Experiences
+// uses the existing real Bramble Farm landscape photo (already on the
+// Experiences page itself), which needs a full-bleed crop instead — hence
+// the separate `fit` per entry rather than one blanket rule. Hamper has no
+// real product yet, so this is deliberately an abstract ingredient/material
+// flat-lay rather than a "finished product" shot — replace with a real
+// photo once one exists.
 const HOME_TILE_IMAGE: Partial<Record<MerchCategory, { src: string; fit: 'contain' | 'cover' }>> = {
   candles: { src: '/images/shop-tiles/candles-home-tile.png', fit: 'contain' },
+  hamper: { src: '/images/shop-tiles/hamper-home-tile.png', fit: 'contain' },
   soap: { src: '/images/shop-tiles/soap-home-tile.png', fit: 'contain' },
   'lip-balm': { src: '/images/shop-tiles/lip-balm-home-tile.png', fit: 'contain' },
   experiences: { src: '/images/source/bramble-farm-view.jpg', fit: 'cover' },
-}
-
-// Gift Hampers has no real product or curated tile photo yet — rather than
-// invent a "finished product" shot, this is an abstract ingredient/material
-// flat-lay (Higgsfield, 2026-08-10), deliberately showing no wrapped
-// hamper. Replace with a real photo the moment one exists.
-const PLACEHOLDER_IMAGE: Partial<Record<MerchCategory, string>> = {
-  hamper: '/images/shop-tiles/gift-hamper-materials.png',
 }
 
 // Every tile shows the same kind of subtitle — a plain count, never a
@@ -82,7 +79,7 @@ export default async function ShopPage() {
         href: `/shop/${category}`,
         label,
         subtitle: availabilitySubtitle(products.length),
-        imageUrl: homeTile?.src ?? realImageUrl ?? PLACEHOLDER_IMAGE[category] ?? null,
+        imageUrl: homeTile?.src ?? realImageUrl ?? null,
         objectFit: homeTile ? homeTile.fit : realImageUrl ? ('contain' as const) : ('cover' as const),
       }
     }),

@@ -65,13 +65,29 @@ export function Splash() {
       <noscript>
         <style>{'#splash{display:none}'}</style>
       </noscript>
-      <div className="relative h-40 w-64 sm:h-56 sm:w-96">
+
+      {/* Real honey-straining photo (2026-08-10), kept deliberately faint —
+          texture and mood only, never competing with the logo. */}
+      <Image
+        src="/images/source/honey-strain-dark.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover opacity-75"
+      />
+      <div className="absolute inset-0 bg-black/25" />
+
+      {/* wordmark-transparent.png, not emblem-gold-on-black.png — the latter
+          has an opaque black backing that would show as a hard-edged box
+          now that the backdrop isn't flat black. */}
+      <div className="relative h-44 w-72 sm:h-64 sm:w-[26rem]">
         <Image
-          src="/images/brand/emblem-gold-on-black.png"
+          src="/images/brand/wordmark-transparent.png"
           alt="Gert Lush Honey"
           fill
           priority
-          sizes="400px"
+          sizes="416px"
           className="object-contain"
         />
       </div>

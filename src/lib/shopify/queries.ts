@@ -149,6 +149,27 @@ export const CART_LINES_UPDATE_MUTATION = /* GraphQL */ `
   }
 `
 
+// Requires the unauthenticated_write_customers Storefront API scope on the
+// Headless channel — not ticked by the original setup (see
+// docs/launch-checklist.md point 3), since nothing used customer accounts
+// until this newsletter signup. subscribeToNewsletter() in
+// src/lib/shopify/customer.ts fails gracefully if it's missing, but the
+// signup won't actually work until that scope is added.
+export const CUSTOMER_CREATE_MUTATION = /* GraphQL */ `
+  mutation CustomerCreate($input: CustomerCreateInput!) {
+    customerCreate(input: $input) {
+      customer {
+        id
+      }
+      customerUserErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+`
+
 export const CART_LINES_REMOVE_MUTATION = /* GraphQL */ `
   ${CART_FRAGMENT}
   mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {

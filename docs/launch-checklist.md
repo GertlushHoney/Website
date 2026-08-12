@@ -86,6 +86,43 @@ use, but before this site is ever deployed live, either delete `src/app/tools/` 
 `src/app/api/feather-image/` entirely, or put real auth in front of them. Don't let this slip
 through unnoticed just because nothing about it looks broken.
 
+## 9. Newsletter signup after checkout (unblocks: emailing customers when new honey arrives)
+
+**Correction (2026-08-12):** the original version of this step recommended a redirect script
+pasted into Checkout → Additional scripts. That's now the wrong advice — Shopify is retiring
+Additional Scripts and checkout.liquid on the Thank You/Order Status page entirely (already gone
+for Plus stores since August 2025; non-Plus stores lose it 26 August 2026), and the replacement
+system (Checkout Extensibility) deliberately doesn't allow redirecting off Shopify's own checkout
+domain at all anymore — a trust/security change, not a gap. Below is the current, actually-
+supported approach instead. Three manual steps, all in your Shopify admin.
+
+1. **Add a Storefront API scope.** The Headless channel token was originally set up with only
+   the checkout/product scopes (see point 3) — customer scopes were deliberately left unticked
+   since nothing needed them at the time. Go to the Headless channel → your storefront → scopes,
+   and tick `unauthenticated_write_customers` (leave the rest as they are). Without this, the
+   signup form on `/thank-you` will fail with a permission error.
+2. **Turn on Shopify's native marketing checkbox.** Settings → Checkout → Marketing opt-in.
+   This is the simplest, zero-code way to capture "email me about new honey" consent — it shows a
+   checkbox right in checkout and subscribes people to the same Shopify Email list
+   `subscribeToNewsletter()` uses, with no redirect or extra page needed at all.
+3. **Link to the branded Thank You page from the order confirmation email.** Settings →
+   Notifications → Order confirmation → Edit code, then add this near the top of the Email body
+   (HTML) — it's just one link, safe to place wherever reads naturally in the existing template:
+
+   ```html
+   <p>
+     <a href="https://YOUR-DOMAIN/thank-you?order={{ name | url_encode }}&email={{ email | url_encode }}">
+       Want to know when new postcode honey arrives? Sign up here.
+     </a>
+   </p>
+   ```
+
+   Replace `YOUR-DOMAIN` with the real live domain once deployed (e.g. `gertlushhoney.com`).
+   Editing notification templates is unaffected by the Additional Scripts deprecation — this
+   remains fully supported. `/thank-you` still works as a standalone page and pre-fills the
+   signup form from the `email` param either way, so step 3 is optional polish on top of step 2,
+   not a replacement for it.
+
 ## What's already unblocked, needing nothing from you
 
 The current codebase (Phase 0) required none of the above — it's designed to run and be tested

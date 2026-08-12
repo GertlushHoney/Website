@@ -38,6 +38,7 @@ const routes = [
   '/shop/lip-balm',
   '/shop/soap',
   '/stockists',
+  '/thank-you',
   '/legal/accessibility',
   '/legal/cookies',
   '/legal/privacy',

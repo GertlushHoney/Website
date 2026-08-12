@@ -148,7 +148,7 @@ export default async function BeekeepersPage() {
         </p>
         <Link
           href="/asian-hornets"
-          className="border-porcelain/30 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-5 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+          className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-5 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           How to identify and report it
         </Link>

@@ -37,6 +37,7 @@ yarn-error.log*
 # test artefacts
 /playwright-report
 /test-results
+a11y-audit-report.json
 
 # vercel
 .vercel

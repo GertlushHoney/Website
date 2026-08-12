@@ -230,12 +230,12 @@ export function InteractiveUkMap({
           <button
             type="button"
             onClick={backToUk}
-            className="border-porcelain/30 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-4 inline-block rounded-full border px-5 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
+            className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-4 inline-block rounded-full border px-5 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
           >
             ← Back to UK map
           </button>
         )}
-        <p className="text-porcelain/35 mt-3 text-xs">
+        <p className="text-porcelain/50 mt-3 text-xs">
           Map: British postcode areas by Richardguk, CC BY-SA 3.0. Contains Ordnance Survey and
           Royal Mail data © Crown copyright and database right, and National Statistics data © Crown
           copyright and database right.
@@ -366,7 +366,7 @@ export function InteractiveUkMap({
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <a
                   href={`mailto:gertlushhoney@outlook.com?subject=Postcode%20honey%20interest%20-%20${selectedCode}&body=I'd like to hear about honey from ${encodeURIComponent(areaName ?? selectedCode)} (${selectedCode}) when it's available.`}
-                  className="border-porcelain/30 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+                  className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
                 >
                   Join the waiting list
                 </a>

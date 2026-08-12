@@ -35,7 +35,7 @@ export default function AsianHornetsPage() {
           className="object-cover"
         />
       </div>
-      <p className="text-porcelain/40 mt-2 text-xs">
+      <p className="text-porcelain/50 mt-2 text-xs">
         A male Asian hornet (Vespa velutina). Female workers or queens are more commonly seen than
         males. Photo: Gilles San Martin, via Flickr,{' '}
         <a
@@ -169,7 +169,7 @@ export default function AsianHornetsPage() {
           </p>
         </section>
 
-        <p className="text-porcelain/40 text-xs">
+        <p className="text-porcelain/50 text-xs">
           Sources: UK Centre for Ecology &amp; Hydrology (Asian Hornet Watch), GB Non-Native
           Species Secretariat, APHA National Bee Unit.
         </p>

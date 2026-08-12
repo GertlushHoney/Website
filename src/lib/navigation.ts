@@ -23,6 +23,7 @@ export const footerNav = {
     { label: 'Postcode Honey', href: '/postcode-honey' },
     { label: 'Batch Passports', href: '/batches' },
     { label: 'Our Story', href: '/our-story' },
+    { label: 'Sustainability', href: '/sustainability' },
     { label: 'Journal', href: '/journal' },
     { label: 'Stockists', href: '/stockists' },
     { label: 'Becoming a Beekeeper', href: '/becoming-a-beekeeper' },

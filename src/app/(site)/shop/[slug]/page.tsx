@@ -155,7 +155,7 @@ export default async function ShopProductPage({
                         className="object-cover"
                       />
                     ) : (
-                      <div className="text-porcelain/40 flex h-full items-center justify-center p-4 text-center text-xs">
+                      <div className="text-porcelain/50 flex h-full items-center justify-center p-4 text-center text-xs">
                         Photo coming soon
                       </div>
                     )}

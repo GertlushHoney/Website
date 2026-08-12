@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 // Persistent floating control, matching the ico.org.uk pattern (a small
@@ -11,10 +11,35 @@ import Link from 'next/link'
 // /legal/cookies.
 export function CookiePreferences() {
   const [open, setOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // Non-modal, so no focus trap or backdrop — but it's still marked
+  // role="dialog", and a dialog that never moves focus into itself or
+  // responds to Escape is invisible to screen-reader/keyboard users even
+  // though it's visually open. Same expectation the basket drawer already
+  // meets, just without the Tab-trap a modal needs.
+  useEffect(() => {
+    if (!open) return
+
+    const trigger = triggerRef.current
+    panelRef.current?.focus()
+
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('keydown', handleKeydown)
+    return () => {
+      document.removeEventListener('keydown', handleKeydown)
+      trigger?.focus()
+    }
+  }, [open])
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -37,9 +62,11 @@ export function CookiePreferences() {
 
       {open && (
         <div
+          ref={panelRef}
           role="dialog"
           aria-label="Cookie preferences"
-          className="border-ink-line bg-ink-surface text-porcelain fixed right-4 bottom-20 z-40 w-[calc(100vw-2rem)] max-w-sm rounded-xl border p-5 shadow-2xl"
+          tabIndex={-1}
+          className="border-ink-line bg-ink-surface text-porcelain focus:outline-honey-amber fixed right-4 bottom-20 z-40 w-[calc(100vw-2rem)] max-w-sm rounded-xl border p-5 shadow-2xl focus:outline focus:outline-offset-2"
         >
           <p className="font-semibold">Cookie options</p>
           <p className="text-porcelain/60 mt-1 text-sm">

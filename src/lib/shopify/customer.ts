@@ -10,9 +10,11 @@ export type NewsletterSignupResult = { ok: true } | { ok: false; error: string }
 // login-capable account — a real quirk of the API, not a design choice.
 // We generate a random one the customer never sees or needs; if they ever
 // land on a real Shopify "forgot password" flow it just resets to
-// something new, which is harmless.
+// something new, which is harmless. Shopify caps passwords at 40
+// characters, so a single UUID (36 chars) fits — two concatenated (72)
+// gets rejected with a TOO_LONG error, confirmed against the real store.
 function randomPassword(): string {
-  return crypto.randomUUID() + crypto.randomUUID()
+  return crypto.randomUUID()
 }
 
 // Subscribes an email to Shopify's own customer marketing list

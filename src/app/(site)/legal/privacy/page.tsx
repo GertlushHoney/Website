@@ -44,8 +44,31 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             We use whatever information we do receive only to fulfil your order, respond to your
-            enquiry, or arrange a subscription — nothing else, and we don&apos;t sell or share it
-            with third parties for marketing.
+            enquiry, or arrange a subscription — nothing else, and we don&apos;t sell your data or
+            share it with third parties for their own marketing.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Marketing emails</h2>
+          <p className="mt-2">
+            If you tick &quot;Email me with news and offers&quot; at checkout, or sign up on our
+            order confirmation page, we&apos;ll email you when a new postcode honey arrives — and
+            nothing else. We only ever add you if you actively opt in; nobody is signed up
+            automatically just for placing an order.
+          </p>
+          <p className="mt-2">
+            These emails are sent through Shopify Email, using the same Shopify account that
+            handles our basket and checkout (see &quot;Third parties we use&quot; below) — your
+            email address isn&apos;t passed to any separate marketing or advertising service.
+            Every marketing email includes an unsubscribe link, or you can email us at{' '}
+            <a
+              href="mailto:gertlushhoney@outlook.com"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              gertlushhoney@outlook.com
+            </a>{' '}
+            and we&apos;ll remove you.
           </p>
         </section>
 
@@ -67,6 +90,12 @@ export default function PrivacyPage() {
               Shopify&apos;s own privacy policy
             </a>{' '}
             for how it handles data.
+          </p>
+          <p className="mt-2">
+            If you opt in to marketing emails (see &quot;Marketing emails&quot; above), Shopify
+            also stores your email address as a subscriber and sends those emails on our behalf
+            through Shopify Email — this is separate from, and only happens in addition to, its
+            role in handling your basket and checkout.
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Sanity</strong> is the content management system we

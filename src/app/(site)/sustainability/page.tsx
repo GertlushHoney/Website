@@ -80,6 +80,37 @@ export default function SustainabilityPage() {
 
         <section>
           <h2 className="text-porcelain text-xl font-bold tracking-tight">
+            Our hives don&apos;t need to be perfect. They just need to be good homes.
+          </h2>
+          <p className="mt-3">
+            Even our beehives reflect the way we think about sustainability. Our hives are made
+            using <strong className="text-porcelain">Thorne &quot;seconds&quot; cedar
+            beehives</strong>, manufactured here in Britain at Thorne&apos;s factory in
+            Lincolnshire.
+          </p>
+          <p className="mt-3">
+            &quot;Seconds&quot; doesn&apos;t mean second-hand. It refers to perfectly usable cedar
+            that may have natural imperfections such as knots, small splits or plugged sections.
+            It might not look quite as cosmetically perfect as premium-grade timber, but to the
+            bees that really doesn&apos;t matter.
+          </p>
+          <p className="mt-3">
+            Thorne&apos;s seconds hives are made from home-grown Western Red Cedar sourced from
+            sustainable forests. Cedar is naturally durable and, thanks to the natural oils
+            within the timber, doesn&apos;t need the same painting or treatment that many other
+            timbers require.
+          </p>
+          <p className="mt-3">
+            For us, choosing seconds makes sense. We&apos;d rather use good, functional timber
+            with a bit of character than insist that every piece of wood has to look perfect.
+          </p>
+          <p className="text-porcelain mt-3 text-lg font-semibold text-balance">
+            After all, the bees aren&apos;t bothered by a knot in the wood — and neither are we.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-xl font-bold tracking-tight">
             Packaging with a purpose
           </h2>
           <p className="mt-3">

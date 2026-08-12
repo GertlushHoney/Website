@@ -51,6 +51,16 @@ export async function getMerchProductsByCategory(
   return result ?? []
 }
 
+// Every active merch product regardless of category — for the search
+// index (src/lib/search.ts), which needs the whole catalogue at once
+// rather than one category at a time.
+export async function getAllMerchProducts(): Promise<MerchProductSummary[]> {
+  const result = await sanityFetch<MerchProductSummary[]>(
+    groq`*[_type == "merchProduct" && active == true] | order(name asc) { ${summaryFields} }`
+  )
+  return result ?? []
+}
+
 // For an individual product's own page (/shop/[slug]) — tried after
 // honeyProduct comes back empty for that slug.
 export async function getMerchProductBySlug(slug: string): Promise<MerchProduct | null> {

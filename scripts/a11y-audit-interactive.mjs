@@ -1,5 +1,6 @@
-// Checks the two overlays a static crawl can't reach: the cookie
-// preferences popover and the basket drawer, both opened via real clicks.
+// Checks overlays a static crawl can't reach: the cookie preferences
+// popover, the basket drawer, and the search overlay — all opened via
+// real clicks.
 import { chromium } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -47,5 +48,18 @@ if (await addButton.count()) {
 } else {
   console.log('No "Add to basket" button found on /shop/bee-s3 — check the real button text')
 }
+
+// Search overlay
+await page.goto(base + '/', { waitUntil: 'networkidle' })
+await page.waitForTimeout(2500)
+await page.getByRole('button', { name: 'Search' }).click()
+await page.waitForTimeout(300)
+const focusedSearch = await page.evaluate(() => document.activeElement?.tagName)
+console.log('focused element after opening search:', focusedSearch)
+await report('search overlay (open)')
+await page.keyboard.press('Escape')
+await page.waitForTimeout(300)
+const searchStillOpen = await page.locator('div[role="dialog"][aria-label="Search"]').count()
+console.log('search overlay still in DOM after Escape:', searchStillOpen > 0)
 
 await browser.close()

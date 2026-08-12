@@ -2,8 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { primaryNav } from '@/lib/navigation'
 import { BasketButton } from '@/components/cart/basket-button'
+import { SearchOverlay } from '@/components/layout/search-overlay'
+import { getSearchIndex } from '@/lib/search'
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const searchIndex = await getSearchIndex()
+
   return (
     <header className="border-ink-line bg-ink/85 sticky top-0 z-40 border-b backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3">
@@ -40,6 +44,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="text-porcelain/70 flex items-center gap-4 text-[13px] font-medium">
+          <SearchOverlay items={searchIndex} />
           <BasketButton />
         </div>
       </div>

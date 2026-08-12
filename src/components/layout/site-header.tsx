@@ -40,13 +40,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="text-porcelain/70 flex items-center gap-4 text-[13px] font-medium">
-          <button
-            type="button"
-            aria-label="Search"
-            className="hover:text-porcelain focus-visible:outline-honey-amber rounded-full focus-visible:outline focus-visible:outline-offset-2"
-          >
-            Search
-          </button>
           <BasketButton />
         </div>
       </div>

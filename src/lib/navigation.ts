@@ -11,8 +11,10 @@ export const primaryNav = [
 
 // Some footer links intentionally point at the same page as a related item
 // (e.g. Wholesale -> /stockists) rather than a separate near-duplicate stub —
-// see docs/requirements-matrix.md for what's genuinely still missing
-// (Journal, Batch Passports, legal pages, delivery/returns policy).
+// see docs/requirements-matrix.md for what's genuinely still missing.
+// Journal and Batch Passports were removed here (2026-08-12, journey audit)
+// after a link crawl found both 404ing — neither page exists yet and
+// neither is on the near-term roadmap. Re-add once they're real.
 export const footerNav = {
   Shop: [
     { label: 'Latest Harvest', href: '/shop/honey' },
@@ -21,10 +23,8 @@ export const footerNav = {
   ],
   Discover: [
     { label: 'Postcode Honey', href: '/postcode-honey' },
-    { label: 'Batch Passports', href: '/batches' },
     { label: 'Our Story', href: '/our-story' },
     { label: 'Sustainability', href: '/sustainability' },
-    { label: 'Journal', href: '/journal' },
     { label: 'Stockists', href: '/stockists' },
     { label: 'Becoming a Beekeeper', href: '/becoming-a-beekeeper' },
     { label: 'Asian Hornets', href: '/asian-hornets' },

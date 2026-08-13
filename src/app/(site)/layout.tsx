@@ -8,7 +8,9 @@ import { DisableContextMenu } from '@/components/layout/disable-context-menu'
 import { CookiePreferences } from '@/components/legal/cookie-preferences'
 import { CartProvider } from '@/components/cart/cart-context'
 import { BasketDrawer } from '@/components/cart/basket-drawer'
+import { NewsletterPopup } from '@/components/marketing/newsletter-popup'
 import { getCart } from '@/lib/shopify/cart'
+import { getNewsletterPopup } from '@/lib/sanity/newsletter-popup'
 import '../globals.css'
 
 const manrope = Manrope({
@@ -35,6 +37,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const initialCart = await getCart()
+  const newsletterPopup = await getNewsletterPopup()
 
   return (
     <html
@@ -54,6 +57,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           <SiteFooter />
           <CookiePreferences />
           <BasketDrawer />
+          <NewsletterPopup content={newsletterPopup} />
         </CartProvider>
       </body>
     </html>

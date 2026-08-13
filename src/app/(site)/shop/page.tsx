@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { getMerchProductsByCategory, MERCH_CATEGORY_LABELS, type MerchCategory } from '@/lib/sanity/merch'
+import { getShopTiles } from '@/lib/sanity/shop-tiles'
 import { urlForImage } from '@/lib/sanity/image'
 
 export const metadata: Metadata = {
@@ -15,17 +16,16 @@ export const metadata: Metadata = {
 // five before Experiences existed, which left an unbalanced last row).
 const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-balm', 'experiences']
 
-// Real, purpose-made tile photography — takes priority over a real
-// product's own hero photo, since these are composed specifically for the
-// shop tile rather than being a single product's listing image. See
-// docs/brand-alignment-board.md. All five (2026-08-10/11, from
-// Media/{Candles,Soap,Lip Balm,Experiences}/gift-hamper-materials,
-// feathered via scripts/feather-product-image.mjs) are isolated
-// product-style cutouts, shown with padding rather than a full-bleed crop.
-// Hamper has no real product yet, so it's deliberately an abstract
-// ingredient/material flat-lay rather than a "finished product" shot —
-// replace with a real photo once one exists.
-const HOME_TILE_IMAGE: Partial<Record<MerchCategory, { src: string; fit: 'contain' | 'cover' }>> = {
+// Fallback tile photography, used until an editor creates a matching
+// Sanity "Shop Tile" document (getShopTiles(), which always wins when
+// present) — so the grid never goes blank while nobody's set one up yet.
+// All five (2026-08-10/11, from Media/{Candles,Soap,Lip Balm,Experiences}/
+// gift-hamper-materials, feathered via scripts/feather-product-image.mjs)
+// are isolated product-style cutouts, shown with padding rather than a
+// full-bleed crop. Hamper has no real product yet, so it's deliberately
+// an abstract ingredient/material flat-lay rather than a "finished
+// product" shot.
+const DEFAULT_TILE_IMAGE: Partial<Record<MerchCategory, { src: string; fit: 'contain' | 'cover' }>> = {
   candles: { src: '/images/shop-tiles/candles-home-tile.png', fit: 'contain' },
   hamper: { src: '/images/shop-tiles/hamper-home-tile.png', fit: 'contain' },
   soap: { src: '/images/shop-tiles/soap-home-tile.png', fit: 'contain' },
@@ -45,39 +45,53 @@ function availabilitySubtitle(count: number) {
 // however many real products exist, then each product's own page. Product
 // pages link back to their category listing — see BackToCategoryLink.
 export default async function ShopPage() {
-  const honeyProducts = await getHoneyProducts()
-  const merchTiles = await Promise.all(
-    MERCH_CATEGORIES.map(async (category) => ({
-      category,
-      label: MERCH_CATEGORY_LABELS[category],
-      products: await getMerchProductsByCategory(category),
-    }))
-  )
+  const [honeyProducts, shopTiles, merchTiles] = await Promise.all([
+    getHoneyProducts(),
+    getShopTiles(),
+    Promise.all(
+      MERCH_CATEGORIES.map(async (category) => ({
+        category,
+        label: MERCH_CATEGORY_LABELS[category],
+        products: await getMerchProductsByCategory(category),
+      }))
+    ),
+  ])
 
-  const honeyImageUrl = honeyProducts[0]
-    ? (urlForImage(honeyProducts[0].heroImage ?? undefined)?.width(600).height(600).url() ?? null)
-    : null
+  const honeyOverride = shopTiles.honey ?? null
+  const honeyImageUrl =
+    honeyOverride?.imageUrl ??
+    (honeyProducts[0]
+      ? (urlForImage(honeyProducts[0].heroImage ?? undefined)?.width(600).height(600).url() ?? null)
+      : null)
 
   const tiles = [
     {
       href: '/shop/honey',
-      label: 'Honey',
+      label: honeyOverride?.label ?? 'Honey',
       subtitle: availabilitySubtitle(honeyProducts.length),
       imageUrl: honeyImageUrl,
-      objectFit: 'contain' as const,
+      objectFit: honeyOverride?.fit ?? 'contain',
     },
     ...merchTiles.map(({ category, label, products }) => {
+      const override = shopTiles[category] ?? null
       const single = products.length === 1 ? products[0] : null
       const realImageUrl = single
         ? (urlForImage(single.heroImage ?? undefined)?.width(600).height(600).url() ?? null)
         : null
-      const homeTile = HOME_TILE_IMAGE[category] ?? null
+      const defaultTile = DEFAULT_TILE_IMAGE[category] ?? null
       return {
         href: `/shop/${category}`,
-        label,
+        label: override?.label ?? label,
         subtitle: availabilitySubtitle(products.length),
-        imageUrl: homeTile?.src ?? realImageUrl ?? null,
-        objectFit: homeTile ? homeTile.fit : realImageUrl ? ('contain' as const) : ('cover' as const),
+        imageUrl: override?.imageUrl ?? defaultTile?.src ?? realImageUrl ?? null,
+        objectFit:
+          override?.imageUrl != null
+            ? override.fit
+            : defaultTile
+              ? defaultTile.fit
+              : realImageUrl
+                ? ('contain' as const)
+                : ('cover' as const),
       }
     }),
   ]

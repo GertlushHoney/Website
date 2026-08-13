@@ -219,8 +219,10 @@ analytics or advertising script loads before a consent-management platform is wi
 - The Storefront API token is scoped to storefront read/cart-write only. The Shopify Admin API
   is now used for exactly one thing (2026-08-12): tagging a customer with which sold-out product
   they want a restock alert for (`src/lib/shopify/admin-client.ts`,
-  `src/lib/shopify/restock.ts`), scoped to `read_customers`/`write_customers` only — a separate
-  credential (`SHOPIFY_ADMIN_API_TOKEN`), server-only, never referenced from any client-reachable
-  code path. Nothing else in this codebase touches the Admin API.
+  `src/lib/shopify/restock.ts`), scoped to `read_customers`/`write_customers` only — separate
+  credentials (`SHOPIFY_ADMIN_CLIENT_ID`/`SHOPIFY_ADMIN_CLIENT_SECRET`, exchanged server-side for
+  a short-lived token via OAuth client_credentials, never a long-lived static token), server-only,
+  never referenced from any client-reachable code path. Nothing else in this codebase touches the
+  Admin API.
 - All external input (forms) validated server-side with Zod regardless of client-side
   validation.

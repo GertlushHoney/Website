@@ -132,14 +132,21 @@ just the people who asked about that specific product — not everyone.
 
 This uses the Shopify **Admin** API, not the Storefront API everything else in this build uses
 (see `docs/technical-architecture.md`, "Security boundaries" — a deliberate, narrow, server-only
-exception, never reachable from the browser). Two steps, both in your Shopify admin:
+exception, never reachable from the browser). Two steps.
 
-1. **Create a scoped Admin API token.** Settings → Apps and sales channels → Develop apps →
-   Create an app → Configure Admin API scopes. Tick **only** `read_customers` and
-   `write_customers` — nothing else. Install the app, then reveal and copy the Admin API access
-   token (starts `shpat_...`, unlike the Storefront token). Add it to `.env.local` as
-   `SHOPIFY_ADMIN_API_TOKEN` (see `.env.example` for the exact name). Keep this token private —
-   unlike the Storefront token, it grants real write access to customer records.
+1. **Create a scoped custom app via the Dev Dashboard** (`dev.shopify.com/dashboard` — Settings →
+   Apps and sales channels → Develop apps now hands off here; Shopify retired the old direct
+   in-admin custom-app flow on 2026-01-01). Create an app, scope its Admin API access to
+   **only** `read_customers` and `write_customers`, release it, then install it on this store
+   from your regular Shopify admin.
+
+   Dev Dashboard apps don't hand you a static copyable token — go to the app's **Settings** tab
+   in the Dev Dashboard and copy its **Client ID** and **Client secret** instead. Add both to
+   `.env.local` as `SHOPIFY_ADMIN_CLIENT_ID` and `SHOPIFY_ADMIN_CLIENT_SECRET` (see
+   `.env.example`). This codebase exchanges them for a short-lived access token itself
+   (`src/lib/shopify/admin-client.ts`, the OAuth client_credentials grant) — there's no token to
+   paste in directly. Keep the Client secret private, same as any password: it grants real write
+   access to customer records.
 2. **When a product comes back in stock**, go to Shopify Email → create a campaign → target a
    segment filtered by customer tag `restock:<the product's handle>` (e.g.
    `restock:beewax-candle-skep-and-bees`) → write and send. This send is manual, on your side —

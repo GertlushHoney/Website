@@ -49,6 +49,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
           {shopifyProduct ? (
             <PurchaseOptions
               productName={product.name}
+              productHandle={product.shopifyHandle}
               unitPrice={shopifyProduct.price}
               deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}

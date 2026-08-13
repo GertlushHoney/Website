@@ -70,6 +70,13 @@ export default function PrivacyPage() {
             </a>{' '}
             and we&apos;ll remove you.
           </p>
+          <p className="mt-2">
+            If you ask to be notified when a sold-out product is back in stock, that&apos;s
+            handled separately: we tag your email against that specific product only, so we can
+            email people about that product coming back without emailing everyone on the general
+            list. It&apos;s still stored in Shopify, and the same unsubscribe/removal options
+            apply.
+          </p>
         </section>
 
         <section>

@@ -251,6 +251,7 @@ export default async function ShopProductPage({
           {shopifyProduct ? (
             <PurchaseOptions
               productName={product.name}
+              productHandle={product.shopifyHandle}
               unitPrice={shopifyProduct.price}
               subscriptionUnitPrice={product.subscriptionPrice ?? undefined}
               subscriptionSellingPlanId={shopifyProduct.subscriptionSellingPlanId}

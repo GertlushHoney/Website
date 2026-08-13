@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useCart } from '@/components/cart/cart-context'
+import { RestockAlertForm } from '@/components/product/restock-alert-form'
 
 type PurchaseType = 'one-time' | 'subscription'
 
@@ -26,6 +27,7 @@ const CANCELLATION_NOTICE_DAYS = 7
 
 export function PurchaseOptions({
   productName,
+  productHandle,
   unitPrice,
   subscriptionUnitPrice,
   subscriptionSellingPlanId,
@@ -35,6 +37,10 @@ export function PurchaseOptions({
   stockCount,
 }: {
   productName: string
+  // The real Shopify product handle — tags the restock-alert signup with
+  // restock:<handle> (see RestockAlertForm) so it's specific to this
+  // product, not a generic "email me" list.
+  productHandle: string
   unitPrice: number
   // Omit entirely to offer one-time purchase only — e.g. a product with no
   // Sanity-configured subscription price yet.
@@ -197,13 +203,16 @@ export function PurchaseOptions({
       )}
 
       {isSoldOut && !isSubscription ? (
-        <button
-          type="button"
-          disabled
-          className="bg-ink-line text-porcelain/50 mt-4 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
-        >
-          Sold out
-        </button>
+        <>
+          <button
+            type="button"
+            disabled
+            className="bg-ink-line text-porcelain/50 mt-4 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
+          >
+            Sold out
+          </button>
+          <RestockAlertForm productName={productName} productHandle={productHandle} />
+        </>
       ) : canCheckoutLive ? (
         <>
           <p className="text-porcelain/60 mt-3 text-sm">

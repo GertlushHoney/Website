@@ -123,6 +123,33 @@ supported approach instead. Three manual steps, all in your Shopify admin.
    signup form from the `email` param either way, so step 3 is optional polish on top of step 2,
    not a replacement for it.
 
+## 10. Restock alerts on sold-out products (unblocks: "notify me when back in stock")
+
+A sold-out product now shows a "Notify me when it's back" form instead of just a disabled
+button. It tags the customer in Shopify (`restock:<product-handle>`, e.g.
+`restock:bees3-honey`) rather than adding them to the general newsletter list, so you can email
+just the people who asked about that specific product — not everyone.
+
+This uses the Shopify **Admin** API, not the Storefront API everything else in this build uses
+(see `docs/technical-architecture.md`, "Security boundaries" — a deliberate, narrow, server-only
+exception, never reachable from the browser). Two steps, both in your Shopify admin:
+
+1. **Create a scoped Admin API token.** Settings → Apps and sales channels → Develop apps →
+   Create an app → Configure Admin API scopes. Tick **only** `read_customers` and
+   `write_customers` — nothing else. Install the app, then reveal and copy the Admin API access
+   token (starts `shpat_...`, unlike the Storefront token). Add it to `.env.local` as
+   `SHOPIFY_ADMIN_API_TOKEN` (see `.env.example` for the exact name). Keep this token private —
+   unlike the Storefront token, it grants real write access to customer records.
+2. **When a product comes back in stock**, go to Shopify Email → create a campaign → target a
+   segment filtered by customer tag `restock:<the product's handle>` (e.g.
+   `restock:beewax-candle-skep-and-bees`) → write and send. This send is manual, on your side —
+   the code only handles collecting and tagging the signups, not automatically detecting a
+   restock and firing an email.
+
+Until step 1 is done, the "Notify me" form fails gracefully with a plain "not available right
+now" message rather than breaking the page — confirmed by testing it live before that token
+existed.
+
 ## What's already unblocked, needing nothing from you
 
 The current codebase (Phase 0) required none of the above — it's designed to run and be tested

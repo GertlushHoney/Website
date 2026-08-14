@@ -3,7 +3,7 @@
 // catch dead ends in navigation without clicking through by hand.
 import { chromium } from '@playwright/test'
 
-const base = 'http://localhost:3000'
+const base = (process.argv.find((a) => a.startsWith('--base=')) ?? '--base=http://localhost:3000').split('=')[1]
 const seen = new Set()
 const queue = ['/']
 const broken = []

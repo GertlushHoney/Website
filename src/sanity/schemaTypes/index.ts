@@ -3,8 +3,9 @@ import { beekeeper } from './beekeeper'
 import { honeyProduct } from './honeyProduct'
 import { merchProduct } from './merchProduct'
 import { newsletterPopup } from './newsletterPopup'
+import { productReview } from './productReview'
 import { shopTile } from './shopTile'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [beekeeper, honeyProduct, merchProduct, newsletterPopup, shopTile],
+  types: [beekeeper, honeyProduct, merchProduct, newsletterPopup, productReview, shopTile],
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
 import { PurchaseOptions } from '@/components/product/purchase-options'
+import { ReviewsSection } from '@/components/product/reviews-section'
 import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
@@ -277,6 +278,8 @@ export default async function ShopProductPage({
       <div className="mt-16">
         <ProductTabs tabs={tabs} />
       </div>
+
+      <ReviewsSection productSlug={product.slug} productName={product.name} />
     </div>
   )
 }

@@ -157,6 +157,28 @@ Until step 1 is done, the "Notify me" form fails gracefully with a plain "not av
 now" message rather than breaking the page — confirmed by testing it live before that token
 existed.
 
+## 11. Product reviews (unblocks: reviews actually saving when submitted)
+
+Every product page (honey and merch) now has a "Reviews" section with a real submission form —
+star rating, name, review text. Nothing submitted through it appears on the site until you
+approve it: it's saved to Sanity as a draft (`approved: false`), and only shows up once you
+flip that to true in Studio (Product Review → find it → tick Approved). No fake/seeded reviews
+anywhere — it'll show "No reviews yet" honestly until real ones exist.
+
+This needs its own Sanity API token — separate from the read-only one everything else uses, for
+the same reason the Shopify Admin token is kept separate from the Storefront one (narrow,
+purpose-specific credentials).
+
+1. Go to **manage.sanity.io** → your project → **API** → **Tokens** → **Add API token**.
+2. Name it something like "Review submissions", set permission to **Editor** (needs create
+   access, not just read).
+3. Copy the token and add it to `.env.local` (and, once deployed, Vercel's environment
+   variables) as `SANITY_API_WRITE_TOKEN` — see `.env.example`.
+
+Until this is set, the review form fails gracefully with "not available right now" rather than
+breaking the page — confirmed by testing it before the token existed, same as the restock alert
+form above.
+
 ## What's already unblocked, needing nothing from you
 
 The current codebase (Phase 0) required none of the above — it's designed to run and be tested

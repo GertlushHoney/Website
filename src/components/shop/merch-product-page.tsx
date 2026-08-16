@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { PortableText } from 'next-sanity'
 import { PurchaseOptions } from '@/components/product/purchase-options'
+import { ReviewsSection } from '@/components/product/reviews-section'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
@@ -69,6 +70,8 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
           )}
         </div>
       </div>
+
+      <ReviewsSection productSlug={product.slug} productName={product.name} />
     </div>
   )
 }

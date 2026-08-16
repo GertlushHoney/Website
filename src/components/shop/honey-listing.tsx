@@ -1,23 +1,33 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
-import { getAreaNameForCode } from '@/lib/postcode-areas'
+import { getRegionForCode } from '@/lib/uk-regions'
 import { SurpriseMeButton } from '@/components/shop/surprise-me-button'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { HoneyRegionFilter, type HoneyCard } from '@/components/shop/honey-region-filter'
 
 // The Honey category page (/shop/honey) — same card-grid pattern as
-// MerchCategoryListing, plus the postcode-map and surprise-me shortcuts
-// that only make sense for a multi-product, location-tied category.
+// MerchCategoryListing, plus the postcode-map, region filter and
+// surprise-me shortcuts that only make sense for a multi-product,
+// location-tied category.
 export async function HoneyListing() {
   const products = await getHoneyProducts()
-  const cards = await Promise.all(
-    products.map(async (product) => ({
-      product,
-      shopifyProduct: await getProductByHandle(product.shopifyHandle),
-      imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
-    }))
+  const cards: HoneyCard[] = await Promise.all(
+    products.map(async (product) => {
+      const shopifyProduct = await getProductByHandle(product.shopifyHandle)
+      return {
+        id: product._id,
+        slug: product.slug,
+        name: product.name,
+        tagline: product.tagline,
+        weight: product.weight,
+        postcodeCode: product.postcodeCode,
+        region: getRegionForCode(product.postcodeCode),
+        imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
+        price: shopifyProduct?.price ?? null,
+      }
+    })
   )
 
   return (
@@ -42,45 +52,11 @@ export async function HoneyListing() {
           >
             Choose a honey by postcode
           </Link>
-          <SurpriseMeButton slugs={cards.map(({ product }) => product.slug)} />
+          <SurpriseMeButton slugs={cards.map((card) => card.slug)} />
         </div>
       )}
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        {cards.map(({ product, shopifyProduct, imageUrl }) => (
-          <Link
-            key={product._id}
-            href={`/shop/${product.slug}`}
-            className="border-ink-line bg-honeycomb-surface focus-visible:outline-honey-amber group grid gap-0 overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-4"
-          >
-            <div className="from-ink-surface to-ink relative aspect-square bg-gradient-to-b">
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt={`A jar of ${product.name} honey`}
-                  fill
-                  sizes="400px"
-                  className="object-contain p-10 transition group-hover:scale-105"
-                />
-              )}
-            </div>
-            <div className="p-6">
-              <p className="font-display text-comb-gold text-lg italic">{product.name}</p>
-              <p className="text-porcelain mt-1 text-sm font-semibold">{product.tagline}</p>
-              <p className="text-porcelain/50 mt-1 text-sm">
-                {product.weight} &middot; {getAreaNameForCode(product.postcodeCode) ?? product.postcodeCode}, UK
-              </p>
-              {shopifyProduct && (
-                <p className="text-porcelain mt-3 text-base font-semibold">
-                  {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(
-                    shopifyProduct.price
-                  )}
-                </p>
-              )}
-            </div>
-          </Link>
-        ))}
-      </div>
+      <HoneyRegionFilter cards={cards} />
     </div>
   )
 }

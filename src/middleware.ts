@@ -27,5 +27,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // /images is excluded too — next/image fetches local files from this path
+  // internally (not through /_next/image) to optimize them, uncredentialed;
+  // without this exclusion every local <Image> 401s and "isn't a valid
+  // image". Leaving raw photos ungated is harmless — they carry no page
+  // content on their own.
+  matcher: ['/((?!_next/static|_next/image|images/|favicon.ico).*)'],
 }

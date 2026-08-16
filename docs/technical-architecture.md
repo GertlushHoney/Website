@@ -12,23 +12,31 @@
 
 ## Route structure (App Router)
 
-```
-src/app/
-  layout.tsx                 global shell: header, footer, skip link, fonts, metadata
-  page.tsx                   homepage
-  shop/                      collection + product pages (Phase 5)
-  postcode-honey/            postcode hub + [postcode] pages (Phase 6)
-  beekeepers/                directory + [beekeeper] profile (Phase 6)
-  gifts/                     gifts hub, corporate, weddings (Phase 8)
-  our-story/                 brand story, journal, recipes, FAQs (Phase 8)
-  stockists/                 locator, become-a-stockist (Phase 8)
-  batches/[batch]/           Batch Passport (Phase 7)
-  legal/                     privacy, cookies, terms, accessibility (Phase 9)
-```
+The original Phase-numbered plan below never fully matched what got built — here's the real
+tree under `src/app/(site)/`, all of it real content (no `ComingSoon` stubs remain):
 
-Every route above `page.tsx` currently renders a shared `ComingSoon` stub
-(`src/components/ui/coming-soon.tsx`) rather than a 404, so the information architecture is
-navigable and testable before content exists.
+```
+src/app/(site)/
+  layout.tsx                 global shell: header, footer, splash, cookie prefs, cart, popup
+  page.tsx                   homepage
+  shop/                      /shop hub, /shop/[slug] (honey + merch), and per-category pages
+                              (honey, candles, hamper, soap, lip-balm, experiences)
+  postcode-honey/            postcode/region hub with the interactive UK map
+  beekeepers/                directory + /beekeepers/[slug] profile
+  our-story/                 brand story
+  stockists/                 locator, become-a-stockist
+  becoming-a-beekeeper/      supplier-facing beekeeper recruitment page
+  become-a-supplier/         bulk-honey supplier enquiry page
+  asian-hornets/             yellow-legged hornet awareness page
+  sustainability/            hive-sourcing/equipment page
+  delivery/, faqs/, information/
+  contact/                   real contact form (src/components/contact/contact-form.tsx)
+  thank-you/                 post-checkout newsletter signup, pre-filled from order confirmation
+  legal/                     privacy, cookies, terms, accessibility
+  studio/[[...tool]]/        embedded Sanity Studio (behind its own permanent password gate —
+                              see "Pre-launch and permanent access control" below)
+  tools/feather-image/       internal photo-prep helper — see launch-checklist.md point 8
+```
 
 ## Content ownership: Sanity vs Shopify
 
@@ -52,28 +60,45 @@ data split:
 `handle`. Neither system is the single source of truth for the other's data — Shopify never
 stores beekeeper bios; Sanity never stores stock counts.
 
-## Sanity content model (Phase 2)
+## Sanity content model
 
-Entities, matching Project Pack section 11:
+The real schema in `src/sanity/schemaTypes/` (superseding the original Project Pack entity list,
+which was never fully built out — this is what actually exists):
 
 - `beekeeper` — name, slug, portrait, bio, quote, general area, active status.
-- `apiary` — internal code, general area/postcode, forage notes, map precision, belongs to a
-  beekeeper.
-- `supplierIntake` — supplier ref, apiary ref, harvest/extraction/received dates, weight,
-  containers, checks, accept/quarantine/reject status. Internal-only, never queried
-  client-side.
-- `honeyBatch` — GL batch reference, source intake ref(s), packing date, jar size/count, status,
-  tasting notes, colour, texture, likely forage, images. This is what the public Batch Passport
-  renders.
-- `postcodeArea` — name, slug, map polygon/coordinates, intro copy, waiting-list status
-  (available / coming-soon).
-- `stockist` — name, address, coordinates, active status.
-- `journalArticle`, `recipe`, `faq`, `corporateGiftingPage`, `wholesalePage`,
-  `promotionalAnnouncement`, `siteSettings`, `navigation`, `homepage`.
+- `honeyProduct` — name, slug, tagline, Shopify handle, postcode code (area or Bristol/Bath
+  district), beekeeper reference, hero image, weight, origin story, optional subscription price,
+  delivery price, optional season-by-season photos, active flag. Drives `/shop/[slug]` and the
+  postcode map.
+- `merchProduct` — name, slug, category (candles/hamper/soap/lip-balm/experiences), tagline,
+  Shopify handle, hero image, description, delivery price, active flag. Shares the `/shop/[slug]`
+  URL space with `honeyProduct`.
+- `shopTile` — optional per-category image/label/fit override for the `/shop` home page tiles;
+  falls back to a code-level default image when no document exists for a category (see
+  `src/lib/sanity/shop-tiles.ts`).
+- `newsletterPopup` — heading, body, discount code/label, button label, delay, enabled flag for
+  the once-per-session popup.
+- `productReview` — productSlug, reviewerName, rating (1-5), body, submittedAt, approved
+  (default `false`). Public submission via `src/lib/sanity/submit-review.ts`; only
+  `approved == true` reviews are ever queried for display (`src/lib/sanity/reviews.ts`) — see
+  "Product reviews" below.
 
 Exact hive coordinates are never stored in a field exposed to the public GROQ queries — only
-`apiary.generalArea`/`postcodeArea` are public; any precise coordinate field (if ever added)
-must be access-controlled separately.
+`honeyProduct.postcodeCode`/`beekeeper` general area are public; any precise coordinate field (if
+ever added) must be access-controlled separately.
+
+## Product reviews
+
+Every product page (`/shop/[slug]`, both `honeyProduct` and `merchProduct`) shows a
+`ReviewsSection` (`src/components/product/reviews-section.tsx`): an average-rating summary, the
+list of approved reviews, and a submission form (`review-form.tsx`). Submissions never appear
+publicly on their own — every new `productReview` document is created with `approved: false`
+(`src/lib/sanity/submit-review.ts`) and only shows once someone flips that to `true` in Studio.
+No seeded/fake reviews; a product with none shows an honest "No reviews yet" state.
+
+Writing a review requires create access to Sanity, which the read-only
+`SANITY_API_READ_TOKEN` everything else uses doesn't have — see "Security boundaries" below for
+`SANITY_API_WRITE_TOKEN`.
 
 ## Data-fetching pattern
 
@@ -164,39 +189,82 @@ show at all).
 
 ## Form submission architecture
 
-Harvest-list, postcode-waitlist, wholesale, corporate-gifting and beekeeper-application forms
-all follow the same shape:
+The real forms — newsletter signup (`subscribeToNewsletter`), restock alerts
+(`src/lib/shopify/restock.ts`), product reviews (`src/lib/sanity/submit-review.ts`), and the
+contact form (client-side only, see below) — follow the same shape (this replaces an earlier,
+never-actually-built plan that assumed Zod and a CRM provider):
 
-1. Client component with accessible validation (native HTML validation + ARIA error text).
-2. Server Action validates with a Zod schema mirroring the client schema (never trust the
-   client).
-3. Server Action writes to the email/CRM provider (provider not yet chosen — candidates:
-   Klaviyo, since it integrates natively with Shopify) and records consent (checkbox state,
-   timestamp, IP-free — no unnecessary PII).
-4. Spam protection via a honeypot field + rate limiting at the Server Action; a visible CAPTCHA
-   is deliberately avoided unless abuse is observed (accessibility cost).
+1. Client component (`'use client'`) with native HTML validation (`required`, `type="email"`,
+   `minLength`/`maxLength`) plus ARIA error text (`role="alert"`) for anything the server
+   rejects.
+2. A plain async Server Action re-validates manually (e.g. `!email.includes('@')`,
+   `body.length < 10`) — no Zod dependency; the project never actually adopted it despite an
+   earlier plan to.
+3. Spam protection via a honeypot field (a visually hidden input real visitors never fill in;
+   a filled one reports success without writing anything, so a bot doesn't learn it was
+   rejected) — used on the restock, review, and contact forms. No visible CAPTCHA, deliberately
+   avoided for the accessibility cost; the contact form additionally has a simple arithmetic
+   "what's X + Y?" human check, since it has no server round-trip to rate-limit.
+4. Where there's somewhere real to write to (Shopify customer tags, a Sanity document), the
+   action writes there. The **contact form** is the exception: it has no backend at all — it
+   assembles a `mailto:` link entirely in the browser at submit time and hands off to the
+   visitor's own mail client, specifically so the address never appears as literal text in this
+   page's server-rendered HTML (a bot scraping the page source has nothing to harvest).
+
+No CRM/email-marketing provider has been added — Shopify Email (via the Shopify account already
+in use) is what actually sends the newsletter and marketing emails; no separate service like
+Klaviyo was ever needed or added.
 
 ## Image management
 
-- Product/lifestyle photography does not exist yet. `next/image` with `remotePatterns`
-  configured for the eventual Sanity CDN (`cdn.sanity.io`) and Shopify CDN
-  (`cdn.shopify.com`) once those hosts are known.
-- No stock photography as final content, per brand instructions — placeholders must be
-  visually inert (flat colour, not a fake "product" image) until real photography lands.
+- Real product/lifestyle photography now exists (`public/images/source/`,
+  `public/images/shop-tiles/`, plus Sanity-hosted images for editorial content) — the "no
+  photography yet" placeholder era is over. `next.config.ts` `remotePatterns` covers
+  `cdn.sanity.io` and `cdn.shopify.com`.
+- No stock photography as final content, per brand instructions — placeholders (where content
+  genuinely doesn't exist yet, e.g. an unphotographed product) stay visually inert rather than a
+  fake "product" image.
+- One AI-generated graphic exists on the homepage (the Postcode Honey section's hexagon-cluster
+  illustration, `public/images/source/postcode-hexagon-cluster.png`) — an original brand-coloured
+  illustration, not photography and not traced from any third-party map data (an earlier
+  generation attempt accidentally drew a real country's outline; regenerated with that explicitly
+  ruled out before use).
+- `/images/*` is deliberately excluded from the pre-launch password-gate middleware (see
+  "Pre-launch and permanent access control" below) — `next/image`'s local image optimizer fetches
+  files from this path directly and uncredentialed, so gating it breaks every local `<Image>`
+  with a confusing "isn't a valid image" error.
 
 ## Search
 
-Not yet implemented. Candidate: Shopify's predictive search (`predictiveSearch` Storefront API
-query) for product search, since it requires no extra service. Content search (journal,
-beekeepers) would need a separate index (e.g. Algolia or a simple client-side Fuse.js index)
-only if the content volume justifies it — deferred until Phase 5.
+Real, built (`src/lib/search.ts`, `src/components/layout/search-overlay.tsx`) — not the
+originally-planned Shopify predictive search or Algolia. The whole product catalogue (honey +
+merch, from Sanity) is fetched once server-side and flattened into a simple list, then filtered
+client-side as the visitor types in the header's search overlay. No separate search index/API —
+deliberately trivial at this catalogue size; revisit only once the catalogue is large enough
+that fetch-and-filter stops being cheap.
 
-## Analytics event model
+## Analytics
 
-Full taxonomy specified in Project Pack section 15 (`view_product`, `add_to_cart`,
-`begin_checkout`, `purchase`, `harvest_signup`, `batch_passport_view`, `reorder_click`,
-`trade_submit`, `gifting_submit`, `beekeeper_apply`). Implementation deferred to Phase 9 — no
-analytics or advertising script loads before a consent-management platform is wired in.
+**Vercel Web Analytics is live** (`@vercel/analytics`, `<Analytics />` in
+`src/app/(site)/layout.tsx`, added 2026-08-16) — chosen over Google Analytics specifically
+because it collects no cookies and nothing that identifies a visitor: sessions are hashed from
+the incoming request and discarded after 24 hours, with only anonymous/aggregate data recorded
+(page URL, referrer, rough geolocation, device type). Confirmed against Vercel's own privacy
+documentation before shipping, not assumed. Because it sets no cookies, UK PECR's
+cookie-consent requirement doesn't apply to it, so it loads unconditionally rather than behind
+the cookie-preferences toggle (`src/components/legal/cookie-preferences.tsx`) — see
+`/legal/cookies` and `/legal/privacy` for the visitor-facing explanation, which must stay in
+sync with whatever analytics does or doesn't run.
+
+Shopify's own dashboard (Admin → Analytics) separately tracks every sale/conversion at checkout
+already, with zero extra setup, since checkout happens on Shopify's own domain regardless of
+this headless frontend.
+
+The original Project Pack section 15 event taxonomy (`view_product`, `add_to_cart`,
+`begin_checkout`, `purchase`, etc.) was never implemented — Vercel Web Analytics only tracks
+page views, not custom commerce events. Revisit if funnel-level detail is ever needed; would
+require either Vercel's custom-events API or a different tool, and — unlike page-view analytics
+— would very likely need consent-gating depending on what it captures.
 
 ## Error handling
 
@@ -214,15 +282,38 @@ analytics or advertising script loads before a consent-management platform is wi
 
 ## Security boundaries
 
-- `SHOPIFY_STOREFRONT_ACCESS_TOKEN` and `SANITY_API_READ_TOKEN` are server-only env vars (no
-  `NEXT_PUBLIC_` prefix) — never sent to the client.
+- `SHOPIFY_STOREFRONT_ACCESS_TOKEN`, `SANITY_API_READ_TOKEN`, `SANITY_API_WRITE_TOKEN`,
+  `SITE_PASSWORD`/`SITE_PASSWORD_USER`, and `STUDIO_PASSWORD`/`STUDIO_PASSWORD_USER` are all
+  server-only env vars (no `NEXT_PUBLIC_` prefix) — never sent to the client.
 - The Storefront API token is scoped to storefront read/cart-write only. The Shopify Admin API
-  is now used for exactly one thing (2026-08-12): tagging a customer with which sold-out product
+  is used for exactly one thing (2026-08-12): tagging a customer with which sold-out product
   they want a restock alert for (`src/lib/shopify/admin-client.ts`,
   `src/lib/shopify/restock.ts`), scoped to `read_customers`/`write_customers` only — separate
   credentials (`SHOPIFY_ADMIN_CLIENT_ID`/`SHOPIFY_ADMIN_CLIENT_SECRET`, exchanged server-side for
   a short-lived token via OAuth client_credentials, never a long-lived static token), server-only,
   never referenced from any client-reachable code path. Nothing else in this codebase touches the
   Admin API.
-- All external input (forms) validated server-side with Zod regardless of client-side
-  validation.
+- `SANITY_API_WRITE_TOKEN` (2026-08-16) is kept separate from the read-only `SANITY_API_READ_TOKEN`
+  for the same reason — narrow, purpose-specific credentials rather than one token doing
+  everything. It has Editor (create) permission and is used only by
+  `src/lib/sanity/submit-review.ts` to create unapproved `productReview` drafts.
+- All external input (forms) validated server-side manually (see "Form submission architecture"
+  — no Zod, despite an earlier plan to use it) regardless of client-side validation.
+
+## Pre-launch and permanent access control
+
+Two independent HTTP Basic Auth gates in `src/middleware.ts`, checked by request path:
+
+- **Site-wide gate** (`SITE_PASSWORD_USER`/`SITE_PASSWORD`, added 2026-08-14) — every route
+  except `/studio` and the exclusions below. Temporary: meant to be removed (unset both env
+  vars) once the site is ready for real visitors. Exists because the site went live on Vercel
+  with a real Shopify checkout and real Sanity content before it was ready to be found.
+- **`/studio` gate** (`STUDIO_PASSWORD_USER`/`STUDIO_PASSWORD`, added 2026-08-16) — independent
+  of the gate above, and stays in place even after that one's removed at public launch. Sanity
+  Studio already has its own real login (a genuine Sanity account must be a project member to
+  do anything there), so this is a second, permanent layer in front of the `/studio` URL itself,
+  not a replacement for Sanity's own auth.
+- `/_next/static`, `/_next/image`, `/images/*`, and `/favicon.ico` are excluded from both gates
+  — see "Image management" above for why `/images` specifically has to be.
+- Either gate no-ops (lets every request through) if its own env vars aren't set, so removing a
+  gate is just deleting its two env vars, not editing code.

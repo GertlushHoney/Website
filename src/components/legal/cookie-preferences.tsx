@@ -5,10 +5,11 @@ import Link from 'next/link'
 
 // Persistent floating control, matching the ico.org.uk pattern (a small
 // always-available "Cookie options" button, not a one-time dismiss banner).
-// No blocking consent banner on load — the site currently sets no
-// non-essential cookies at all, so there's nothing that legally requires
-// prior consent. The analytics toggle is a stub for when that changes; see
-// /legal/cookies.
+// No blocking consent banner on load — Vercel Web Analytics (added
+// 2026-08-16) doesn't set cookies or collect personal data (hashed,
+// anonymous, no persistent identifier — see /legal/cookies), so PECR's
+// "prior consent for cookies" requirement doesn't apply to it, and there's
+// still no cookie-based tracking on the site that would.
 export function CookiePreferences() {
   const [open, setOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -70,8 +71,8 @@ export function CookiePreferences() {
         >
           <p className="font-semibold">Cookie options</p>
           <p className="text-porcelain/60 mt-1 text-sm">
-            We don&apos;t currently use tracking or analytics cookies — there&apos;s nothing to opt
-            in to yet.
+            This site doesn&apos;t set any tracking or advertising cookies — there&apos;s nothing to
+            opt in or out of.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -85,9 +86,12 @@ export function CookiePreferences() {
             <label className="flex items-start justify-between gap-3 text-sm">
               <span>
                 <span className="block font-medium">Analytics</span>
-                <span className="text-porcelain/50">Not currently used.</span>
+                <span className="text-porcelain/50">
+                  Vercel Web Analytics — anonymous visit counts, no cookies, nothing that
+                  identifies you.
+                </span>
               </span>
-              <input type="checkbox" disabled className="accent-honey-amber mt-1" />
+              <input type="checkbox" checked disabled className="accent-honey-amber mt-1" />
             </label>
           </div>
 

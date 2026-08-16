@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 import { Manrope, Fraunces } from 'next/font/google'
 import { SiteHeader } from '@/components/layout/site-header'
 import { SiteFooter } from '@/components/layout/site-footer'
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           <BasketDrawer />
           <NewsletterPopup content={newsletterPopup} />
         </CartProvider>
+        <Analytics />
       </body>
     </html>
   )

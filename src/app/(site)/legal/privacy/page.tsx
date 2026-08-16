@@ -110,21 +110,32 @@ export default function PrivacyPage() {
             site. It doesn&apos;t collect any personal data from you as a visitor — it only stores
             the editorial content we&apos;ve written and published ourselves.
           </p>
+          <p className="mt-2">
+            <strong className="text-porcelain">Vercel</strong> hosts this website and provides
+            Vercel Web Analytics, our visit-counting tool (see &quot;Cookies and browser
+            storage&quot; below) — it doesn&apos;t collect anything that identifies you
+            personally.
+          </p>
         </section>
 
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Cookies and browser storage</h2>
           <p className="mt-2">
-            We don&apos;t currently use any analytics or advertising cookies. Two things are stored
-            in your browser: a small flag that remembers you&apos;ve seen the intro animation, for
-            the length of your browsing session; and, if you&apos;ve added something to your basket,
-            a cookie holding a reference to your Shopify cart (kept for up to 30 days so your basket
-            persists between visits). Neither identifies you personally or tracks you elsewhere. See
-            our{' '}
+            We don&apos;t use any advertising or tracking cookies. Two things are stored in your
+            browser: a small flag that remembers you&apos;ve seen the intro animation, for the
+            length of your browsing session; and, if you&apos;ve added something to your basket, a
+            cookie holding a reference to your Shopify cart (kept for up to 30 days so your basket
+            persists between visits). Neither identifies you personally or tracks you elsewhere.
+          </p>
+          <p className="mt-2">
+            We do use <strong className="text-porcelain">Vercel Web Analytics</strong> to see
+            roughly how many people visit and which pages are popular — but it doesn&apos;t use
+            cookies or store anything that identifies you; visitors are only ever counted
+            anonymously, via a hash that&apos;s discarded after 24 hours. See our{' '}
             <a href="/legal/cookies" className="text-comb-gold underline underline-offset-2">
               Cookie Policy
             </a>{' '}
-            for detail.
+            for the full detail on both.
           </p>
         </section>
 

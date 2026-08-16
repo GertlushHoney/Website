@@ -24,8 +24,10 @@ export default function CookiesPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">The short version</h2>
           <p className="mt-2">
-            This site doesn&apos;t currently use any analytics, advertising or tracking cookies — so
-            there&apos;s genuinely nothing to opt in or out of yet. You can still open{' '}
+            This site doesn&apos;t set any advertising or tracking cookies. We do use an analytics
+            service (Vercel Web Analytics, see below) to see roughly how many people visit and
+            which pages they land on — but it doesn&apos;t use cookies either, so there&apos;s
+            genuinely nothing to opt in or out of. You can still open{' '}
             <span className="text-porcelain font-medium">Cookie options</span> (bottom-right of any
             page) to see exactly what&apos;s stored.
           </p>
@@ -48,11 +50,30 @@ export default function CookiesPage() {
         </section>
 
         <section>
-          <h2 className="text-porcelain text-lg font-semibold">Analytics (not currently used)</h2>
+          <h2 className="text-porcelain text-lg font-semibold">Analytics</h2>
           <p className="mt-2">
-            We don&apos;t run any analytics on this site yet. If that changes, we&apos;ll ask for
-            your consent properly at the time — through the same Cookie options control — rather
-            than switching anything on quietly.
+            We use <strong className="text-porcelain">Vercel Web Analytics</strong>, run by Vercel
+            (who also host this site), to see roughly how many people visit and which pages are
+            popular. It works without cookies: visitors are identified only by a hash generated
+            from that individual request, which isn&apos;t stored permanently and is automatically
+            discarded after 24 hours — there&apos;s no persistent identifier that could recognise
+            you on a return visit or be linked back to you personally. What it records per page
+            view is anonymous and aggregate only: the page URL, referring site, approximate
+            location (country/region, not your IP address), and device/browser type.
+          </p>
+          <p className="mt-2">
+            Because it doesn&apos;t use cookies or collect anything that identifies you, UK
+            PECR&apos;s cookie-consent rules don&apos;t apply to it, which is why it&apos;s on by
+            default rather than behind a toggle above. See{' '}
+            <a
+              href="https://vercel.com/docs/analytics/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              Vercel&apos;s Web Analytics privacy documentation
+            </a>{' '}
+            for the full technical detail.
           </p>
         </section>
 

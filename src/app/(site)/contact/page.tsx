@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ContactForm } from '@/components/contact/contact-form'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -13,18 +14,15 @@ export default function ContactPage() {
         Get in touch.
       </h1>
       <p className="text-porcelain/70 mt-4 text-base">
-        Orders, subscriptions, wholesale, supplier enquiries, or just a question about the honey —
-        email is the quickest way to reach us right now.
+        Orders, subscriptions, wholesale and supplier enquiries — but also anything else: spotted
+        something on the website that could be better, want to suggest a postcode or area we
+        should try to source honey from next, or just have a question. Fill in the form below and
+        it&apos;ll open in your own email app, addressed to us and ready to send.
       </p>
 
-      <a
-        href="mailto:gertlushhoney@outlook.com"
-        className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-8 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-      >
-        gertlushhoney@outlook.com
-      </a>
+      <ContactForm />
 
-      <p className="text-porcelain/50 mt-10 text-sm">
+      <p className="text-porcelain/50 mt-6 text-sm">
         We&apos;re a small, independent operation, so replies are by a real person rather than an
         automated system — please bear with us if it takes a day or two.
       </p>

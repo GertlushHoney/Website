@@ -179,6 +179,29 @@ Until this is set, the review form fails gracefully with "not available right no
 breaking the page — confirmed by testing it before the token existed, same as the restock alert
 form above.
 
+## 12. Password gates (site-wide + Studio)
+
+Two separate HTTP Basic Auth gates live in `src/middleware.ts` — a browser login prompt, no
+Shopify/Sanity account involved. Both need their env vars added in **two** places to actually
+work: `.env.local` for your own machine, and Vercel's Environment Variables for the live site
+(Settings → Environment Variables → apply to Production and Preview) — each redeploy only picks
+up whatever's set in Vercel at build time.
+
+1. **Site-wide gate** (`SITE_PASSWORD_USER` / `SITE_PASSWORD`) — currently protects the entire
+   site while it's live but not ready for real visitors. **Remove both env vars (from Vercel,
+   then redeploy) when ready to launch publicly** — that's the actual "go live" switch, not a
+   code change.
+2. **Studio gate** (`STUDIO_PASSWORD_USER` / `STUDIO_PASSWORD`) — protects only `/studio`,
+   independent of the gate above, and is meant to **stay in place permanently**, even after the
+   site-wide gate is removed. This is on top of Sanity Studio's own real login (a genuine Sanity
+   account has to be a project member to do anything there) — it just stops the `/studio` URL
+   itself from being openly reachable.
+
+To change either password: update the value in both `.env.local` and Vercel, then redeploy. When
+redeploying in Vercel, double-check you're redeploying the **latest** build and not an older row
+further down the Deployments list — clicking "Redeploy" on the wrong one silently re-publishes
+old code instead of picking up the change.
+
 ## What's already unblocked, needing nothing from you
 
 The current codebase (Phase 0) required none of the above — it's designed to run and be tested

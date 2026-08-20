@@ -55,6 +55,14 @@ export const shopTile = defineType({
       },
       initialValue: 'contain',
     }),
+    defineField({
+      name: 'active',
+      title: 'Active',
+      description:
+        'Turn off to hide this category tile from the /shop grid entirely. The other five stay unaffected — each tile is controlled independently.',
+      type: 'boolean',
+      initialValue: true,
+    }),
   ],
   preview: {
     select: { title: 'category', subtitle: 'label', media: 'image' },

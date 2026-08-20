@@ -65,15 +65,18 @@ export default async function ShopPage() {
       : null)
 
   const tiles = [
-    {
-      href: '/shop/honey',
-      label: honeyOverride?.label ?? 'Honey',
-      subtitle: availabilitySubtitle(honeyProducts.length),
-      imageUrl: honeyImageUrl,
-      objectFit: honeyOverride?.fit ?? 'contain',
-    },
+    honeyOverride?.active === false
+      ? null
+      : {
+          href: '/shop/honey',
+          label: honeyOverride?.label ?? 'Honey',
+          subtitle: availabilitySubtitle(honeyProducts.length),
+          imageUrl: honeyImageUrl,
+          objectFit: honeyOverride?.fit ?? 'contain',
+        },
     ...merchTiles.map(({ category, label, products }) => {
       const override = shopTiles[category] ?? null
+      if (override?.active === false) return null
       const single = products.length === 1 ? products[0] : null
       const realImageUrl = single
         ? (urlForImage(single.heroImage ?? undefined)?.width(600).height(600).url() ?? null)
@@ -94,7 +97,7 @@ export default async function ShopPage() {
                 : ('cover' as const),
       }
     }),
-  ]
+  ].filter((tile) => tile !== null)
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">

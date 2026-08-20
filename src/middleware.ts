@@ -14,8 +14,15 @@ const PASSWORD = process.env.SITE_PASSWORD
 // edit content without a genuine Sanity account added to the project — but
 // this adds a second layer in front of the /studio URL itself, and keeps
 // working even after SITE_PASSWORD is removed at public launch.
+//
+// /tools/feather-image and its /api/feather-image backend (added 2026-08-19)
+// share this same gate rather than getting their own — that internal photo
+// helper has no auth of its own (see docs/launch-checklist.md point 8), so
+// it needs to stay behind something permanent too, not just the temporary
+// site-wide gate.
 const STUDIO_USERNAME = process.env.STUDIO_PASSWORD_USER
 const STUDIO_PASSWORD = process.env.STUDIO_PASSWORD
+const STUDIO_GATED_PREFIXES = ['/studio', '/tools', '/api/feather-image']
 
 function isAuthorized(request: NextRequest, username: string, password: string): boolean {
   const auth = request.headers.get('authorization')
@@ -32,7 +39,7 @@ function authRequired(realm: string) {
 }
 
 export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/studio')) {
+  if (STUDIO_GATED_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
     if (!STUDIO_USERNAME || !STUDIO_PASSWORD) return NextResponse.next()
     if (isAuthorized(request, STUDIO_USERNAME, STUDIO_PASSWORD)) return NextResponse.next()
     return authRequired('Gert Lush Honey - studio')

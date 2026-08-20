@@ -77,14 +77,14 @@ qualified to confirm they meet UK requirements (Honey (England) Regulations 2015
 etc.). I can draft first passes once real business details exist, but cannot substitute for
 that review.
 
-## 8. Before going live: remove or protect `/tools`
+## 8. `/tools` protection — DONE 2026-08-19
 
 `/tools/feather-image` (added 2026-08-10) is an internal helper for preparing product photos —
-see `docs/product-creation-sop.md`. It has **no authentication** and isn't meant to be public:
-anyone who found the URL could upload and process arbitrary images through it. Fine for local/dev
-use, but before this site is ever deployed live, either delete `src/app/tools/` and
-`src/app/api/feather-image/` entirely, or put real auth in front of them. Don't let this slip
-through unnoticed just because nothing about it looks broken.
+see `docs/product-creation-sop.md`. It has no authentication of its own, so it now shares the
+permanent Studio password gate (`src/middleware.ts` — both the page and its
+`/api/feather-image` backend), rather than relying only on the temporary site-wide gate. Stays
+protected even after `SITE_PASSWORD` is removed at public launch — verified both the page and
+the API route 401 without the Studio credentials and 200 with them.
 
 ## 9. Newsletter signup after checkout (unblocks: emailing customers when new honey arrives)
 
@@ -179,7 +179,7 @@ Until this is set, the review form fails gracefully with "not available right no
 breaking the page — confirmed by testing it before the token existed, same as the restock alert
 form above.
 
-## 12. Password gates (site-wide + Studio)
+## 12. Password gates (site-wide + Studio) — DONE 2026-08-19
 
 Two separate HTTP Basic Auth gates live in `src/middleware.ts` — a browser login prompt, no
 Shopify/Sanity account involved. Both need their env vars added in **two** places to actually
@@ -191,11 +191,12 @@ up whatever's set in Vercel at build time.
    site while it's live but not ready for real visitors. **Remove both env vars (from Vercel,
    then redeploy) when ready to launch publicly** — that's the actual "go live" switch, not a
    code change.
-2. **Studio gate** (`STUDIO_PASSWORD_USER` / `STUDIO_PASSWORD`) — protects only `/studio`,
-   independent of the gate above, and is meant to **stay in place permanently**, even after the
-   site-wide gate is removed. This is on top of Sanity Studio's own real login (a genuine Sanity
-   account has to be a project member to do anything there) — it just stops the `/studio` URL
-   itself from being openly reachable.
+2. **Studio gate** (`STUDIO_PASSWORD_USER` / `STUDIO_PASSWORD`) — protects `/studio` and
+   `/tools/feather-image` (plus its `/api/feather-image` backend), independent of the gate
+   above, and is meant to **stay in place permanently**, even after the site-wide gate is
+   removed. This is on top of Sanity Studio's own real login (a genuine Sanity account has to be
+   a project member to do anything there) — it just stops those URLs from being openly
+   reachable.
 
 To change either password: update the value in both `.env.local` and Vercel, then redeploy. When
 redeploying in Vercel, double-check you're redeploying the **latest** build and not an older row

@@ -305,14 +305,17 @@ require either Vercel's custom-events API or a different tool, and — unlike pa
 Two independent HTTP Basic Auth gates in `src/middleware.ts`, checked by request path:
 
 - **Site-wide gate** (`SITE_PASSWORD_USER`/`SITE_PASSWORD`, added 2026-08-14) — every route
-  except `/studio` and the exclusions below. Temporary: meant to be removed (unset both env
-  vars) once the site is ready for real visitors. Exists because the site went live on Vercel
-  with a real Shopify checkout and real Sanity content before it was ready to be found.
-- **`/studio` gate** (`STUDIO_PASSWORD_USER`/`STUDIO_PASSWORD`, added 2026-08-16) — independent
-  of the gate above, and stays in place even after that one's removed at public launch. Sanity
-  Studio already has its own real login (a genuine Sanity account must be a project member to
-  do anything there), so this is a second, permanent layer in front of the `/studio` URL itself,
-  not a replacement for Sanity's own auth.
+  except the Studio-gated paths below and the exclusions further down. Temporary: meant to be
+  removed (unset both env vars) once the site is ready for real visitors. Exists because the
+  site went live on Vercel with a real Shopify checkout and real Sanity content before it was
+  ready to be found.
+- **Studio gate** (`STUDIO_PASSWORD_USER`/`STUDIO_PASSWORD`, added 2026-08-16) — independent of
+  the gate above, and stays in place even after that one's removed at public launch. Covers
+  `/studio` (Sanity Studio already has its own real login too — a genuine Sanity account must be
+  a project member to do anything there, so this is a second, permanent layer, not a replacement
+  for Sanity's own auth) **and** `/tools/feather-image` plus its `/api/feather-image` backend
+  (added 2026-08-19 — that internal photo helper has no auth of its own, so it needed to sit
+  behind something that outlives the temporary site-wide gate).
 - `/_next/static`, `/_next/image`, `/images/*`, and `/favicon.ico` are excluded from both gates
   — see "Image management" above for why `/images` specifically has to be.
 - Either gate no-ops (lets every request through) if its own env vars aren't set, so removing a

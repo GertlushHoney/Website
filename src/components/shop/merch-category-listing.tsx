@@ -52,6 +52,7 @@ export async function MerchCategoryListing({
             <div className="p-6">
               <p className="font-display text-comb-gold text-lg italic">{product.name}</p>
               <p className="text-porcelain mt-1 text-sm font-semibold">{product.tagline}</p>
+              {product.weight && <p className="text-porcelain/50 mt-1 text-sm">{product.weight}</p>}
               {shopifyProduct && (
                 <p className="text-porcelain mt-3 text-base font-semibold">
                   {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(

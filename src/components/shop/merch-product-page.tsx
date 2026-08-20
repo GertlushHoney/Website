@@ -47,6 +47,15 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
             <PortableText value={product.description} />
           </div>
 
+          {product.weight && (
+            <dl className="mt-6 space-y-3">
+              <div className="border-ink-line flex gap-4 border-t pt-3">
+                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Size / weight</dt>
+                <dd className="text-porcelain/90 text-sm">{product.weight}</dd>
+              </div>
+            </dl>
+          )}
+
           {shopifyProduct ? (
             <PurchaseOptions
               productName={product.name}

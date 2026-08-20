@@ -22,6 +22,9 @@ export type MerchProductSummary = {
   shopifyHandle: string
   heroImage: SanityImageSource | null
   deliveryPrice: number
+  // Optional, unlike honeyProduct's weight — not every category (e.g.
+  // Experiences) has a natural size/weight to show.
+  weight: string | null
 }
 
 export type MerchProduct = MerchProductSummary & {
@@ -36,7 +39,8 @@ const summaryFields = groq`
   tagline,
   shopifyHandle,
   heroImage,
-  deliveryPrice
+  deliveryPrice,
+  weight
 `
 
 // For a category listing page (/shop/candles etc.) — every active product

@@ -71,6 +71,13 @@ export const merchProduct = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'weight',
+      title: 'Size / weight',
+      description:
+        'e.g. "50g", "8cm x 5cm", or "Approx. 200g". Optional — leave blank for products (like Experiences) where it doesn\'t apply.',
+      type: 'string',
+    }),
+    defineField({
       name: 'deliveryPrice',
       title: 'Delivery price (£)',
       type: 'number',

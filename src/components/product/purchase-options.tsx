@@ -22,7 +22,11 @@ function formatGBP(amount: number) {
 // free-delivery threshold or subscriber perk has been decided.
 //
 // No minimum term (dropped 2026-08-10) — cancel any time, provided at
-// least 7 days' notice before the 1st of the month, the billing date.
+// least 7 days' notice before the next monthly charge. Billed on the
+// same date each month as the subscriber signed up (not a shared fixed
+// date), so a mid-month signup isn't hit with a second charge days
+// later, and manual invoicing spreads across the month rather than
+// piling up on one day.
 const CANCELLATION_NOTICE_DAYS = 7
 
 export function PurchaseOptions({
@@ -87,7 +91,7 @@ export function PurchaseOptions({
     ? `${productName} monthly subscription`
     : `${productName} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one jar of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/jar plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next charge on the 1st of the month.`
+    ? `I'd like to subscribe to one jar of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/jar plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
     : `I'd like to order ${quantity} jar${quantity > 1 ? 's' : ''} of ${productName} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
@@ -198,7 +202,7 @@ export function PurchaseOptions({
       {isSubscription && (
         <p className="text-porcelain/50 mt-1 text-xs">
           No minimum term &middot; cancel any time, with at least {CANCELLATION_NOTICE_DAYS} days&apos;
-          notice before your next charge on the 1st of the month
+          notice before your next monthly charge
         </p>
       )}
 

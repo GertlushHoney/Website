@@ -71,7 +71,8 @@ export default function RefundPolicyPage() {
           <h2 className="text-porcelain text-lg font-semibold">Subscriptions</h2>
           <p className="mt-2">
             Monthly honey subscriptions have no minimum term — cancel any time, provided you give us
-            at least 7 days&apos; notice before your next charge on the 1st of the month. See our{' '}
+            at least 7 days&apos; notice before your next monthly charge (billed on the same date
+            each month as you signed up). See our{' '}
             <Link href="/legal/terms" className="text-comb-gold underline underline-offset-2">
               Terms and Conditions
             </Link>{' '}

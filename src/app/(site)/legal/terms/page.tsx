@@ -64,9 +64,10 @@ export default function TermsPage() {
           <h2 className="text-porcelain text-lg font-semibold">Subscriptions</h2>
           <p className="mt-2">
             Monthly subscriptions have no minimum term — you can cancel any time, provided you tell
-            us at least 7 days before your next charge, which falls on the 1st of the month. For now
-            they&apos;re arranged and invoiced by emailing us directly, since there&apos;s no
-            automated billing yet.
+            us at least 7 days before your next charge. Each subscription bills on the same date
+            each month as you signed up, not a shared fixed date, so joining partway through a month
+            doesn&apos;t mean an almost-immediate second charge. For now they&apos;re arranged and
+            invoiced by emailing us directly, since there&apos;s no automated billing yet.
           </p>
         </section>
 

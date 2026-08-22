@@ -72,7 +72,9 @@ export default function RefundPolicyPage() {
           <p className="mt-2">
             Monthly honey subscriptions have no minimum term — cancel any time, provided you give us
             at least 7 days&apos; notice before your next monthly charge (billed on the same date
-            each month as you signed up). See our{' '}
+            each month as you signed up). Manage or cancel your subscription yourself using the
+            account link in your order confirmation email, or email us and we&apos;ll sort it. See
+            our{' '}
             <Link href="/legal/terms" className="text-comb-gold underline underline-offset-2">
               Terms and Conditions
             </Link>{' '}

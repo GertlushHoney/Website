@@ -41,9 +41,11 @@ export default function TermsPage() {
           <p className="mt-2">
             One-off jars go through a real basket and checkout, handled securely by Shopify — add
             to basket, then pay by card on Shopify&apos;s own checkout page. We never see or store
-            your card details ourselves. Anything without a working online checkout yet (currently
-            just monthly subscriptions) opens an email to us instead with your order details — that
-            order isn&apos;t confirmed until we reply confirming price, availability and delivery.
+            your card details ourselves. The same applies to monthly subscriptions where a live
+            subscription plan exists for that product. If a product&apos;s basket or subscription
+            isn&apos;t set up yet, ordering it instead opens an email to us with your order details —
+            that order isn&apos;t confirmed until we reply confirming price, availability and
+            delivery.
           </p>
         </section>
 
@@ -66,8 +68,9 @@ export default function TermsPage() {
             Monthly subscriptions have no minimum term — you can cancel any time, provided you tell
             us at least 7 days before your next charge. Each subscription bills on the same date
             each month as you signed up, not a shared fixed date, so joining partway through a month
-            doesn&apos;t mean an almost-immediate second charge. For now they&apos;re arranged and
-            invoiced by emailing us directly, since there&apos;s no automated billing yet.
+            doesn&apos;t mean an almost-immediate second charge. Subscriptions are billed
+            automatically by Shopify, and you can manage or cancel yours yourself from the account
+            link in your order confirmation email, or by emailing us.
           </p>
         </section>
 

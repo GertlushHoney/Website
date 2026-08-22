@@ -135,9 +135,15 @@ presents the real choice (one-time vs. monthly) today; one-time purchases go thr
 Shopify basket (see "Basket / cart" above).
 
 **No minimum term (decided 2026-08-10, dropped the original 6-month term):** cancel any time,
-with at least 7 days' notice before the next charge (the 1st of the month). This was a deliberate
-trade against building/paying for a subscriptions app with commitment-term enforcement — see
-below.
+with at least 7 days' notice before the next charge. This was a deliberate trade against
+building/paying for a subscriptions app with commitment-term enforcement — see below.
+
+**Billing date is per-subscriber, not a shared fixed date (changed 2026-08-22):** the original
+copy described everyone billing on "the 1st of the month," which meant a customer subscribing
+late in the month could be charged again just days later. Billing now anniversaries off each
+subscriber's own signup date instead — this is Shopify Subscriptions' own default behaviour, so
+no extra configuration was needed, just correcting the site copy (Terms, Refund Policy, Purchase
+Options) to describe it accurately.
 
 **Selling Plan provider decision:** researched during the 2026-08-10 session, confirmed directly
 against Shopify's own docs (not assumed):
@@ -187,6 +193,11 @@ subscription option goes live — until then it correctly falls back to the mail
 Bee S4 does today (no `subscriptionPrice` set in Sanity yet, so its subscription option doesn't
 show at all).
 
+**Re-verified live end-to-end (2026-08-22)**, after the billing-date copy changes above:
+subscribing to Bee S3 still adds a real `£7.00/month` recurring line to the Shopify basket,
+distinct from a one-time line, ready for genuine checkout — confirms the Selling Plan detection
+and cart wiring weren't affected by the copy-only changes.
+
 ## Form submission architecture
 
 The real forms — newsletter signup (`subscribeToNewsletter`), restock alerts
@@ -214,6 +225,41 @@ never-actually-built plan that assumed Zod and a CRM provider):
 No CRM/email-marketing provider has been added — Shopify Email (via the Shopify account already
 in use) is what actually sends the newsletter and marketing emails; no separate service like
 Klaviyo was ever needed or added.
+
+**Email routing (changed 2026-08-22):** every mailto address across the site moved from a single
+personal Outlook address to role-based addresses on the real `gertlushhoney.co.uk` domain, split
+by what the enquiry is about rather than one shared inbox:
+
+- `gdpr@` — Privacy Notice (data rights, marketing opt-out)
+- `complaints@` — Delivery page, Accessibility Statement, Refund Policy (order problems, damaged/
+  missing parcels, refund/cancellation requests)
+- `sales@` — Become a Supplier, Stockists, product waitlists, "email to order/subscribe"
+  fallbacks, subscription management
+- `hello@` — the Contact form and Terms page's general legal contact line
+
+All four currently land in one shared inbox via Microsoft 365 aliases (not separate mailboxes) —
+the "To" address is what lets a human triage by eye.
+
+## Legal pages
+
+- **Refund Policy** (`/legal/refund-policy`, added 2026-08-22) — previously just a vague,
+  unconfirmed cancellation-rights mention on the Terms page. Covers the 14-day UK distance-selling
+  cancellation right (and its unresolved food-product caveat), damaged/faulty item handling, and
+  subscription cancellation — routed to `complaints@`. Linked from the footer's Legal section and
+  the "Returns" link (previously pointed at Delivery).
+- **Privacy Notice discloses Shopify Network Intelligence** (added 2026-08-22) — this Shopify
+  platform feature (Settings → Customer privacy) uses aggregated merchant-network data for fraud
+  protection and its own product features, described by Shopify as improving "ad targeting."
+  Disabling it was considered and rejected: the confirmation dialog revealed it's bundled with
+  abandoned-checkout emails, Shopify Email campaigns, and Shop app functionality, all of which
+  would stop. Kept enabled; the Privacy Notice was updated instead to honestly disclose it and
+  clarify no Facebook/Google/TikTok ad integrations are connected, so it doesn't result in
+  cross-site ad retargeting.
+- Shopify's own Settings → Policies fields (Privacy policy, Terms of service, Shipping policy,
+  Refund policy) are kept as condensed copies of the equivalent real page, with a link back to the
+  full version — not Shopify's auto-generated templates, which describe capabilities (targeted
+  advertising, pre-orders, try-before-you-buy, self-service subscription management before it was
+  real) this store doesn't have.
 
 ## Image management
 

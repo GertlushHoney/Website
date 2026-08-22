@@ -72,10 +72,14 @@ blocker per the project pack (source S11) — flagging it now so it isn't discov
 
 ## 7. Legal content review
 
-Privacy notice, cookie policy, terms, and food-information wording all need review by someone
-qualified to confirm they meet UK requirements (Honey (England) Regulations 2015, UK GDPR,
-etc.). I can draft first passes once real business details exist, but cannot substitute for
-that review.
+Privacy notice, cookie policy, terms, refund policy, and food-information wording all need review
+by someone qualified to confirm they meet UK requirements (Honey (England) Regulations 2015, UK
+GDPR, Consumer Contracts Regulations 2013, etc.). I can draft first passes once real business
+details exist, but cannot substitute for that review. The Refund Policy (`/legal/refund-policy`,
+added 2026-08-22) explicitly flags one open legal question itself: whether honey qualifies for any
+of the Consumer Contracts Regulations' exemptions to the 14-day cancellation right — needs a
+definite answer from whoever does this review, not just the current honest "hasn't been confirmed"
+hedge.
 
 ## 8. `/tools` protection — DONE 2026-08-19
 
@@ -202,6 +206,47 @@ To change either password: update the value in both `.env.local` and Vercel, the
 redeploying in Vercel, double-check you're redeploying the **latest** build and not an older row
 further down the Deployments list — clicking "Redeploy" on the wrong one silently re-publishes
 old code instead of picking up the change.
+
+## 13. Professional email domain (Microsoft 365) — in progress 2026-08-22
+
+Moved every contact address on the site from a personal Outlook address to role-based addresses
+on `gertlushhoney.co.uk` (`gdpr@`, `complaints@`, `sales@`, `hello@` — see
+`docs/technical-architecture.md`, "Form submission architecture" for which page uses which). The
+domain itself shows Healthy in Microsoft 365 admin, but adding the first alias failed with "not an
+accepted domain for your organization" — likely just Exchange Online's Accepted Domains list
+lagging behind the domain's own verification. **Needs confirming:** check
+admin.exchange.microsoft.com → Mail flow → Accepted domains lists `gertlushhoney.co.uk`, then
+retry adding all four aliases to the working mailbox.
+
+## 14. Company registration and VAT — not yet done
+
+Gert Lush Honey intends to incorporate as a limited company but hasn't yet (confirmed
+2026-08-22) — currently trades as a sole trader regardless of that intention. Not VAT registered,
+and turnover should be checked against the current threshold before assuming either way. This
+blocks writing a real Legal Notice / Impressum page (Shopify has a field for this) — a placeholder
+or invented company number must never be used. Register at gov.uk/set-up-a-limited-company (£50,
+usually approved within 24 hours) when ready, then come back with the real company number (and
+VAT number if applicable) to get the Legal Notice drafted.
+
+## 15. Shopify subscriptions — DONE 2026-08-22
+
+Real, live, verified end-to-end — see `docs/technical-architecture.md`, "Subscriptions". Shopify's
+free native Subscriptions app is installed with a real Selling Plan attached to Bee S3; the
+codebase's existing `subscriptionSellingPlanId` detection picked it up with zero code changes.
+Remaining setup-guide steps in the Shopify Subscriptions app itself (allow customers to manage
+subscriptions, allow account access post-purchase, customize notifications) should be finished so
+the self-service "manage/cancel from your order confirmation email" link actually works.
+
+## 16. Shopify's own Settings → Policies pages — needs confirming pasted
+
+Shopify auto-suggests generic templates for Privacy policy, Terms of service, Shipping policy and
+Refund policy that describe capabilities this store doesn't have (targeted advertising,
+pre-orders, try-before-you-buy, manual subscription invoicing). Condensed, accurate replacement
+text for all four was drafted in conversation, each linking back to the equivalent real page —
+needs confirming it was actually pasted into Shopify (not verifiable from this codebase). Also
+confirm **Shopify Network Intelligence** (Settings → Customer privacy) was left enabled, not
+disabled — disabling it also stops abandoned-checkout emails and Shop app campaigns; the Privacy
+Notice was updated to disclose it honestly instead.
 
 ## What's already unblocked, needing nothing from you
 

@@ -237,16 +237,16 @@ Remaining setup-guide steps in the Shopify Subscriptions app itself (allow custo
 subscriptions, allow account access post-purchase, customize notifications) should be finished so
 the self-service "manage/cancel from your order confirmation email" link actually works.
 
-## 16. Shopify's own Settings → Policies pages — needs confirming pasted
+## 16. Shopify's own Settings → Policies pages — DONE 2026-08-22
 
 Shopify auto-suggests generic templates for Privacy policy, Terms of service, Shipping policy and
 Refund policy that describe capabilities this store doesn't have (targeted advertising,
 pre-orders, try-before-you-buy, manual subscription invoicing). Condensed, accurate replacement
 text for all four was drafted in conversation, each linking back to the equivalent real page —
-needs confirming it was actually pasted into Shopify (not verifiable from this codebase). Also
-confirm **Shopify Network Intelligence** (Settings → Customer privacy) was left enabled, not
-disabled — disabling it also stops abandoned-checkout emails and Shop app campaigns; the Privacy
-Notice was updated to disclose it honestly instead.
+confirmed pasted into Shopify. **Shopify Network Intelligence** (Settings → Customer privacy) was
+kept enabled rather than disabled, since disabling it also stops abandoned-checkout emails and
+Shop app campaigns — the Privacy Notice was updated to disclose it honestly instead of turning it
+off.
 
 ## What's already unblocked, needing nothing from you
 

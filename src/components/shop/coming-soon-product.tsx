@@ -38,7 +38,7 @@ export function ComingSoonProduct({
           launches.
         </p>
         <a
-          href={`mailto:gertlushhoney@outlook.com?subject=${encodeURIComponent(waitlistSubject)}`}
+          href={`mailto:sales@gertlushhoney.co.uk?subject=${encodeURIComponent(waitlistSubject)}`}
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Let me know when it&apos;s ready

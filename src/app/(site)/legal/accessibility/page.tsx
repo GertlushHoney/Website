@@ -93,10 +93,10 @@ export default function AccessibilityPage() {
           <p className="mt-2">
             If something on this site is difficult to use, email{' '}
             <a
-              href="mailto:gertlushhoney@outlook.com"
+              href="mailto:complaints@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
             >
-              gertlushhoney@outlook.com
+              complaints@gertlushhoney.co.uk
             </a>{' '}
             and we&apos;ll do our best to fix it.
           </p>

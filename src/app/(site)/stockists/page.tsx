@@ -30,7 +30,7 @@ export default function StockistsPage() {
           about your business and we&apos;ll get in touch when it&apos;s possible.
         </p>
         <a
-          href="mailto:gertlushhoney@outlook.com?subject=Become%20a%20stockist&body=Business%20name%3A%0ALocation%3A%0ABusiness%20type%3A%0AExpected%20quantities%3A"
+          href="mailto:sales@gertlushhoney.co.uk?subject=Become%20a%20stockist&body=Business%20name%3A%0ALocation%3A%0ABusiness%20type%3A%0AExpected%20quantities%3A"
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Apply to become a stockist
@@ -49,7 +49,7 @@ export default function StockistsPage() {
           but get in touch and we&apos;ll work out what&apos;s possible.
         </p>
         <a
-          href="mailto:gertlushhoney@outlook.com?subject=Corporate%20or%20event%20gifting%20enquiry"
+          href="mailto:sales@gertlushhoney.co.uk?subject=Corporate%20or%20event%20gifting%20enquiry"
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Request a gifting proposal

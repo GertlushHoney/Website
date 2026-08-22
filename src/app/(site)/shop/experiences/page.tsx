@@ -57,7 +57,7 @@ export default async function ExperiencesPage() {
             until it is.
           </p>
           <a
-            href="mailto:gertlushhoney@outlook.com?subject=Bee%20Day%20Experience%20-%20register%20interest&body=I'd like to hear when the Bee Day Experience at Bramble Farm is available."
+            href="mailto:sales@gertlushhoney.co.uk?subject=Bee%20Day%20Experience%20-%20register%20interest&body=I'd like to hear when the Bee Day Experience at Bramble Farm is available."
             className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-6 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
           >
             Register your interest

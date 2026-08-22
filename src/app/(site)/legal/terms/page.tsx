@@ -27,10 +27,10 @@ export default function TermsPage() {
             Gert Lush Honey, 14 Beckington Road, Bristol, BS3 5EB (&quot;we&quot;, &quot;us&quot;).
             Contact:{' '}
             <a
-              href="mailto:gertlushhoney@outlook.com"
+              href="mailto:hello@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
             >
-              gertlushhoney@outlook.com
+              hello@gertlushhoney.co.uk
             </a>
             .
           </p>

@@ -16,7 +16,7 @@ const TOPICS = [
 // harvest. It does still exist inside the downloaded JS bundle (any client
 // component's code ships to the browser), so this raises the bar against
 // simple scrapers rather than making harvesting impossible outright.
-const CONTACT_EMAIL = ['gertlushhoney', 'outlook.com'].join('@')
+const CONTACT_EMAIL = ['hello', 'gertlushhoney.co.uk'].join('@')
 
 export function ContactForm() {
   const [name, setName] = useState('')

@@ -365,7 +365,7 @@ export function InteractiveUkMap({
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <a
-                  href={`mailto:gertlushhoney@outlook.com?subject=Postcode%20honey%20interest%20-%20${selectedCode}&body=I'd like to hear about honey from ${encodeURIComponent(areaName ?? selectedCode)} (${selectedCode}) when it's available.`}
+                  href={`mailto:sales@gertlushhoney.co.uk?subject=Postcode%20honey%20interest%20-%20${selectedCode}&body=I'd like to hear about honey from ${encodeURIComponent(areaName ?? selectedCode)} (${selectedCode}) when it's available.`}
                   className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
                 >
                   Join the waiting list

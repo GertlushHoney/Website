@@ -63,10 +63,10 @@ export default function PrivacyPage() {
             email address isn&apos;t passed to any separate marketing or advertising service.
             Every marketing email includes an unsubscribe link, or you can email us at{' '}
             <a
-              href="mailto:gertlushhoney@outlook.com"
+              href="mailto:gdpr@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
             >
-              gertlushhoney@outlook.com
+              gdpr@gertlushhoney.co.uk
             </a>{' '}
             and we&apos;ll remove you.
           </p>
@@ -154,10 +154,10 @@ export default function PrivacyPage() {
             Under UK GDPR you can ask us what personal data we hold about you, ask us to correct or
             delete it, or object to how we use it. Email{' '}
             <a
-              href="mailto:gertlushhoney@outlook.com"
+              href="mailto:gdpr@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
             >
-              gertlushhoney@outlook.com
+              gdpr@gertlushhoney.co.uk
             </a>{' '}
             and we&apos;ll deal with it directly. You can also complain to the{' '}
             <a

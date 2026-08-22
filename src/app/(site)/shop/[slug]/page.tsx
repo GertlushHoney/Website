@@ -264,7 +264,7 @@ export default async function ShopProductPage({
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">
               Pricing is temporarily unavailable — please{' '}
               <a
-                href="mailto:gertlushhoney@outlook.com"
+                href="mailto:sales@gertlushhoney.co.uk"
                 className="text-comb-gold underline underline-offset-2"
               >
                 email us

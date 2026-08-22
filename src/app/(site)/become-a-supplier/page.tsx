@@ -44,7 +44,7 @@ export default function BecomeASupplierPage() {
           <li>When you&apos;d expect to have honey ready to supply</li>
         </ul>
         <a
-          href="mailto:gertlushhoney@outlook.com?subject=Become%20a%20supplier&body=Apiary%20area%3A%0AApproximate%20colonies%3A%0ATypical%20seasonal%20surplus%3A%0AExtraction%2Fstorage%20arrangement%3A%0ARegistration%2Finsurance%3A%0ALikely%20supply%20timing%3A"
+          href="mailto:sales@gertlushhoney.co.uk?subject=Become%20a%20supplier&body=Apiary%20area%3A%0AApproximate%20colonies%3A%0ATypical%20seasonal%20surplus%3A%0AExtraction%2Fstorage%20arrangement%3A%0ARegistration%2Finsurance%3A%0ALikely%20supply%20timing%3A"
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Apply to become a supplier

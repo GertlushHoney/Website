@@ -32,7 +32,7 @@ export function PurchaseOptions({
   subscriptionUnitPrice,
   subscriptionSellingPlanId,
   deliveryPrice,
-  contactEmail = 'gertlushhoney@outlook.com',
+  contactEmail = 'sales@gertlushhoney.co.uk',
   variantId,
   stockCount,
 }: {

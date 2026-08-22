@@ -143,10 +143,10 @@ export default function DeliveryPage() {
             </Link>{' '}
             and we&apos;ll be happy to help. Email:{' '}
             <a
-              href="mailto:gertlushhoney@outlook.com"
+              href="mailto:complaints@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
             >
-              gertlushhoney@outlook.com
+              complaints@gertlushhoney.co.uk
             </a>
             . Please include your order number when contacting us about an existing order.
           </p>

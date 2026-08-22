@@ -169,7 +169,23 @@ export default function PrivacyPage() {
             >
               gdpr@gertlushhoney.co.uk
             </a>{' '}
-            and we&apos;ll deal with it directly. You can also complain to the{' '}
+            — we&apos;ll respond within one month.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Data protection complaints</h2>
+          <p className="mt-2">
+            If you&apos;re unhappy with how we&apos;ve handled your personal data — including how
+            we&apos;ve dealt with a rights request above — that&apos;s a data protection complaint,
+            whether or not you call it that or use the email address above. We&apos;ll acknowledge
+            it within 30 days, investigate properly, keep you updated, and tell you the outcome
+            without unnecessary delay. If your message also raises something unrelated (like an
+            order issue), we&apos;ll still progress the data protection part on its own timescale
+            rather than waiting for everything else to be resolved.
+          </p>
+          <p className="mt-2">
+            You can complain to the{' '}
             <a
               href="https://ico.org.uk"
               target="_blank"
@@ -178,7 +194,8 @@ export default function PrivacyPage() {
             >
               Information Commissioner&apos;s Office
             </a>{' '}
-            if you&apos;re unhappy with how we&apos;ve handled your data.
+            at any time, including if you&apos;re unhappy with how we&apos;ve handled your
+            complaint.
           </p>
         </section>
 

@@ -74,9 +74,11 @@ export default function TermsPage() {
           <h2 className="text-porcelain text-lg font-semibold">Your right to cancel</h2>
           <p className="mt-2">
             As a consumer buying at a distance, you generally have rights to cancel and return an
-            order under the Consumer Contracts Regulations. Exactly how this applies to a perishable
-            food product like honey needs confirming properly — get in touch if you&apos;re unhappy
-            with an order and we&apos;ll sort it fairly in the meantime.
+            order under the Consumer Contracts Regulations — see our{' '}
+            <a href="/legal/refund-policy" className="text-comb-gold underline underline-offset-2">
+              Refund Policy
+            </a>{' '}
+            for the detail, including how this applies to a food product like honey.
           </p>
         </section>
 

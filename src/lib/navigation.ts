@@ -33,7 +33,7 @@ export const footerNav = {
     { label: 'Contact', href: '/contact' },
     { label: 'FAQs', href: '/faqs' },
     { label: 'Delivery and Collection', href: '/delivery' },
-    { label: 'Returns', href: '/delivery' },
+    { label: 'Returns', href: '/legal/refund-policy' },
   ],
   Trade: [
     { label: 'Wholesale', href: '/stockists' },
@@ -46,6 +46,7 @@ export const footerNav = {
     { label: 'Privacy Notice', href: '/legal/privacy' },
     { label: 'Cookie Settings', href: '/legal/cookies' },
     { label: 'Terms and Conditions', href: '/legal/terms' },
+    { label: 'Refund Policy', href: '/legal/refund-policy' },
     { label: 'Accessibility', href: '/legal/accessibility' },
   ],
 } as const

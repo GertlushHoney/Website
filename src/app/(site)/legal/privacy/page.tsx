@@ -44,8 +44,10 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             We use whatever information we do receive only to fulfil your order, respond to your
-            enquiry, or arrange a subscription — nothing else, and we don&apos;t sell your data or
-            share it with third parties for their own marketing.
+            enquiry, or arrange a subscription. We don&apos;t sell your data, and we don&apos;t
+            share it with third parties for their own separate marketing — the one exception,
+            Shopify&apos;s own platform-wide data use, is explained under &quot;Third parties we
+            use&quot; below.
           </p>
         </section>
 
@@ -103,6 +105,14 @@ export default function PrivacyPage() {
             also stores your email address as a subscriber and sends those emails on our behalf
             through Shopify Email — this is separate from, and only happens in addition to, its
             role in handling your basket and checkout.
+          </p>
+          <p className="mt-2">
+            Shopify also uses aggregated data from across its whole merchant network — including
+            some of ours — to improve fraud protection, checkout, and its own product features, as
+            part of its platform-wide service (a feature Shopify calls &quot;Network
+            Intelligence&quot;). This isn&apos;t the same as us running targeted adverts about you
+            elsewhere: we don&apos;t use Facebook, Google or TikTok advertising integrations on this
+            store, so this doesn&apos;t result in you being followed around with ads from us.
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Sanity</strong> is the content management system we

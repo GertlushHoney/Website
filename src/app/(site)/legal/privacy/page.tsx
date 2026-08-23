@@ -4,6 +4,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Privacy Notice',
   description: 'How Gert Lush Honey handles your personal data.',
+  alternates: { canonical: '/legal/privacy' },
 }
 
 export default function PrivacyPage() {

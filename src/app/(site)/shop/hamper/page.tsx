@@ -6,6 +6,7 @@ import { getMerchProductsByCategory } from '@/lib/sanity/merch'
 export const metadata: Metadata = {
   title: 'Gift Hampers',
   description: 'Gert Lush Honey gift hampers.',
+  alternates: { canonical: '/shop/hamper' },
 }
 
 export default async function HamperPage() {

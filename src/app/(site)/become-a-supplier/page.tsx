@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Become a Supplier',
   description:
     'Keep bees and have surplus honey? Gert Lush Honey buys bulk honey from independent beekeepers across Britain.',
+  alternates: { canonical: '/become-a-supplier' },
 }
 
 export default function BecomeASupplierPage() {

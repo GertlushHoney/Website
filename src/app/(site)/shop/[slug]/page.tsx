@@ -12,6 +12,8 @@ import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
+import { JsonLd } from '@/components/seo/json-ld'
+import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
 // Tries a honeyProduct first (postcode honey, the common case), then a
 // merchProduct (candles/soap/etc, each with its own real slug rather than a
@@ -24,10 +26,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
+  const canonical = { alternates: { canonical: `/shop/${slug}` } }
   const honeyProduct = await getHoneyProductBySlug(slug)
-  if (honeyProduct) return { title: honeyProduct.name, description: honeyProduct.tagline }
+  if (honeyProduct) {
+    return { title: honeyProduct.name, description: honeyProduct.tagline, ...canonical }
+  }
   const merchProduct = await getMerchProductBySlug(slug)
-  if (merchProduct) return { title: merchProduct.name, description: merchProduct.tagline }
+  if (merchProduct) {
+    return { title: merchProduct.name, description: merchProduct.tagline, ...canonical }
+  }
   return { title: 'Shop' }
 }
 
@@ -198,8 +205,31 @@ export default async function ShopProductPage({
     },
   ].filter(Boolean) as { id: string; label: string; content: React.ReactNode }[]
 
+  const isSoldOut =
+    shopifyProduct?.quantityAvailable !== null &&
+    shopifyProduct?.quantityAvailable !== undefined &&
+    shopifyProduct.quantityAvailable <= 0
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
+      <JsonLd
+        data={productJsonLd({
+          name: product.name,
+          description: product.tagline,
+          imageUrl: heroImageUrl ?? null,
+          slug: product.slug,
+          price: shopifyProduct?.price ?? null,
+          availability: isSoldOut ? 'OutOfStock' : 'InStock',
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Shop', path: '/shop' },
+          { name: 'Honey', path: '/shop/honey' },
+          { name: product.name, path: `/shop/${product.slug}` },
+        ])}
+      />
       <BackToCategoryLink href="/shop/honey" label="Honey" />
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">

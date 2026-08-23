@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Sustainability',
   description:
     'Good for bees. Better for the planet — how Gert Lush Honey approaches beekeeping, packaging and supporting British beekeepers.',
+  alternates: { canonical: '/sustainability' },
 }
 
 const COMMITMENTS = [

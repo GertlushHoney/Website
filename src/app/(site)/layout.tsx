@@ -12,6 +12,7 @@ import { BasketDrawer } from '@/components/cart/basket-drawer'
 import { NewsletterPopup } from '@/components/marketing/newsletter-popup'
 import { getCart } from '@/lib/shopify/cart'
 import { getNewsletterPopup } from '@/lib/sanity/newsletter-popup'
+import { SITE_URL, SITE_NAME } from '@/lib/site-config'
 import '../globals.css'
 
 const manrope = Manrope({
@@ -27,13 +28,50 @@ const fraunces = Fraunces({
   subsets: ['latin'],
 })
 
+const description =
+  'Small-batch honey from Bristol hives. Every jar has a postcode, a season and a story.'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Gert Lush Honey — Bristol honey. Proper lush.',
     template: '%s — Gert Lush Honey',
   },
-  description:
-    'Small-batch honey from Bristol hives. Every jar has a postcode, a season and a story.',
+  description,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: 'Gert Lush Honey — Bristol honey. Proper lush.',
+    description,
+    url: '/',
+    images: [{ url: '/images/brand/primary-logo.png', width: 1448, height: 1086 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gert Lush Honey — Bristol honey. Proper lush.',
+    description,
+    images: ['/images/brand/primary-logo.png'],
+  },
+}
+
+// Same address already published in plain text on the Terms and Privacy
+// pages — this just makes it machine-readable for search engines, not a new
+// disclosure. No `sameAs` social profiles: none exist yet (see
+// docs/technical-architecture.md, "Email routing" — no Facebook/Instagram
+// integration is connected), so none are invented here.
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: `${SITE_URL}/images/brand/primary-logo.png`,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '14 Beckington Road',
+    addressLocality: 'Bristol',
+    postalCode: 'BS3 5EB',
+    addressCountry: 'GB',
+  },
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
@@ -47,6 +85,10 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       className={`${manrope.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="bg-ink text-porcelain flex min-h-full flex-col font-sans">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <CartProvider initialCart={initialCart}>
           <DisableContextMenu />
           <Splash />

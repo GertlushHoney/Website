@@ -5,6 +5,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Shipping and Delivery Policy',
   description: 'Shipping and delivery policy for Gert Lush Honey orders — UK delivery, tracking, damaged or missing parcels, and delivery charges.',
+  alternates: { canonical: '/delivery' },
 }
 
 export default function DeliveryPage() {

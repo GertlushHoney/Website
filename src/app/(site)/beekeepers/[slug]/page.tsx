@@ -17,6 +17,7 @@ export async function generateMetadata({
   return {
     title: beekeeper.name,
     description: beekeeper.teaser,
+    alternates: { canonical: `/beekeepers/${slug}` },
   }
 }
 

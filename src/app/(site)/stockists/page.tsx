@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Stockists',
   description: 'Find Gert Lush Honey in shops, or apply to become a stockist.',
+  alternates: { canonical: '/stockists' },
 }
 
 export default function StockistsPage() {

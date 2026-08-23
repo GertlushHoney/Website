@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Information',
   description:
     'Beekeeping and bee-health information from Gert Lush Honey — becoming a supplier, Asian hornets, and frequently asked questions.',
+  alternates: { canonical: '/information' },
 }
 
 // A hub for the site's educational/awareness content, as distinct from

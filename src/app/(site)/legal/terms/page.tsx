@@ -4,6 +4,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Terms and Conditions',
   description: 'Terms and conditions for buying from Gert Lush Honey.',
+  alternates: { canonical: '/legal/terms' },
 }
 
 export default function TermsPage() {

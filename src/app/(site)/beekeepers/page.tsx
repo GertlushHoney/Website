@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Our Beekeepers',
   description:
     'Meet the independent partner beekeepers behind Gert Lush Honey, starting with Adam and Bee S3.',
+  alternates: { canonical: '/beekeepers' },
 }
 
 export default async function BeekeepersPage() {

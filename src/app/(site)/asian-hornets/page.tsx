@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Asian Hornets',
   description:
     'What the yellow-legged (Asian) hornet is, why it threatens British honeybees, and how to report a sighting.',
+  alternates: { canonical: '/asian-hornets' },
 }
 
 export default function AsianHornetsPage() {

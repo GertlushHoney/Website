@@ -6,6 +6,7 @@ import { getMerchProductsByCategory } from '@/lib/sanity/merch'
 export const metadata: Metadata = {
   title: 'Soap',
   description: 'Honey and beeswax soap from Gert Lush Honey.',
+  alternates: { canonical: '/shop/soap' },
 }
 
 export default async function SoapPage() {

@@ -5,6 +5,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Refund Policy',
   description: 'Refund and cancellation policy for Gert Lush Honey orders.',
+  alternates: { canonical: '/legal/refund-policy' },
 }
 
 export default function RefundPolicyPage() {

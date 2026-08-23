@@ -4,6 +4,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Cookie Policy',
   description: 'How Gert Lush Honey uses cookies and browser storage.',
+  alternates: { canonical: '/legal/cookies' },
 }
 
 export default function CookiesPage() {

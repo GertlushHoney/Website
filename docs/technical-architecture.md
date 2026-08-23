@@ -263,6 +263,40 @@ the "To" address is what lets a human triage by eye.
   advertising, pre-orders, try-before-you-buy, self-service subscription management before it was
   real) this store doesn't have.
 
+## SEO foundations (added 2026-08-23)
+
+Flagged by an independent reviewer as missing entirely before the site-wide password gate comes
+off — now built:
+
+- **`src/lib/site-config.ts`** — single `SITE_URL`/`SITE_NAME` source, falls back to the real
+  production domain rather than a placeholder (only relevant when `NEXT_PUBLIC_SITE_URL` is unset,
+  i.e. local/mocked-data dev).
+- **`src/app/robots.ts`** and **`src/app/sitemap.ts`** — real Next.js convention files, not static
+  text files. The sitemap fetches real honey products, merch products and beekeepers from Sanity
+  (`getHoneyProducts`, `getAllMerchProducts`, `getBeekeepers`) rather than hardcoding a route list
+  — every dynamic `/shop/[slug]` and `/beekeepers/[slug]` page that actually exists is included.
+  `/thank-you` is deliberately excluded (a post-purchase page, not a search landing page).
+  `/studio`, `/tools` and `/api` are disallowed in robots.txt (on top of already being behind the
+  Studio password gate — defence in depth, not a replacement for it).
+- **`metadataBase` + default Open Graph/Twitter card** on the root layout
+  (`src/app/(site)/layout.tsx`), using the existing brand logo (`primary-logo.png`) as the fallback
+  share image — no dedicated 1200×630 OG banner exists yet, worth creating one later rather than
+  reusing the logo indefinitely.
+- **`alternates.canonical`** added to every page's own metadata export (all static pages plus both
+  dynamic routes) — deliberately *not* set at the root layout level, since Next.js metadata
+  inheritance would otherwise leak the layout's canonical onto every page that doesn't override it.
+  A page with no canonical is a safer failure mode than a page with a wrong one.
+- **JSON-LD structured data** (`src/lib/seo/json-ld.ts`, rendered via `src/components/seo/json-ld.tsx`):
+  - `Organization` — sitewide, in the root layout. No `sameAs` social links: none exist (see
+    "Email routing" above — no Facebook/Instagram integration), so none are invented.
+  - `Product` + `BreadcrumbList` — on every product page (`shop/[slug]/page.tsx` for honey,
+    `merch-product-page.tsx` for merch). `offers` is omitted entirely when there's no real Shopify
+    product behind the page yet, rather than inventing a price — matches this project's "no
+    invented content" rule.
+  - `FAQPage` — on `/faqs`. Schema.org requires plain text, but the page's real answers are JSX
+    (they contain in-page links), so each FAQ item now carries a `plainAnswer: string` field kept
+    in sync by hand alongside the JSX `a` field, rather than trying to strip JSX at runtime.
+
 ## Image management
 
 - Real product/lifestyle photography now exists (`public/images/source/`,

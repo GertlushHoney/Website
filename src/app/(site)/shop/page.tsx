@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Shop',
   description:
     'Gert Lush Honey — postcode honey, candles, soap, lip balm, gift hampers and experiences.',
+  alternates: { canonical: '/shop' },
 }
 
 // Six categories, six tiles — a deliberate even number for the grid (was

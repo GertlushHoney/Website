@@ -2,14 +2,20 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { JsonLd } from '@/components/seo/json-ld'
 
 export const metadata: Metadata = {
   title: 'FAQs',
   description:
     'Answers to common questions about Gert Lush Honey — sourcing, ordering, delivery, storage and more.',
+  alternates: { canonical: '/faqs' },
 }
 
-type Faq = { q: string; a: ReactNode }
+// `plainAnswer` is a plain-text copy of `a`, kept in sync by hand — schema.org
+// FAQPage JSON-LD requires plain text, and `a` is JSX (it carries real
+// in-page links). Content, not just phrasing, must match: this is what
+// search engines index as this page's actual answer.
+type Faq = { q: string; a: ReactNode; plainAnswer: string }
 type FaqSection = { title: string; items: Faq[] }
 
 const sections: FaqSection[] = [
@@ -29,6 +35,8 @@ const sections: FaqSection[] = [
             for full details.
           </>
         ),
+        plainAnswer:
+          "Bee S3 is Gert Lush Honey's first postcode honey — pure honey from hives on Bristol's Northern Slopes, in the BS3 postcode. It comes in a 12oz / 280ml jar.",
       },
       {
         q: 'Is Gert Lush Honey a beekeeper, or do you buy the honey in?',
@@ -44,6 +52,8 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          "Both, in a sense. We don't keep hives ourselves for every jar — we buy suitable bulk honey from independent beekeepers we trust, check and quality-control it, then jar, label and sell it under one Gert Lush standard. The beekeeper behind each batch stays visibly credited on the jar; nothing is sold anonymously.",
       },
       {
         q: 'Who is the beekeeper behind Bee S3?',
@@ -57,6 +67,8 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          "Adam, who's kept bees since 2015 and has been based at Bramble Farm on the Northern Slopes since 2019.",
       },
       {
         q: 'Will there be more postcode honeys?',
@@ -71,6 +83,8 @@ const sections: FaqSection[] = [
             waiting-list option.
           </>
         ),
+        plainAnswer:
+          "That's the plan — Bee S3 is the first, not the last. As more independent beekeepers join, their postcodes will appear on the postcode map. Only Bristol (BS3) has real stock right now; every other postcode shows an honest waiting-list option.",
       },
     ],
   },
@@ -80,6 +94,8 @@ const sections: FaqSection[] = [
       {
         q: 'How much is a jar, and can I subscribe?',
         a: 'Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription — plus £4.99 delivery either way. Subscriptions have no minimum term; cancel any time with at least 7 days\' notice before your next charge.',
+        plainAnswer:
+          "Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription — plus £4.99 delivery either way. Subscriptions have no minimum term; cancel any time with at least 7 days' notice before your next charge.",
       },
       {
         q: 'How is it delivered, and how much does delivery cost?',
@@ -93,6 +109,8 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          'Royal Mail Tracked 48 — tracked, typically 2–3 working days — at a flat £4.99 per order, however many jars you buy. UK delivery only, for now.',
       },
       {
         q: 'How do I actually place an order right now?',
@@ -108,6 +126,8 @@ const sections: FaqSection[] = [
             charged.
           </>
         ),
+        plainAnswer:
+          'One-off Bee S3 orders go through a real, secure Shopify checkout — hit "Buy now" on the product page. Subscriptions are still set up by hand for now: choose "Subscribe monthly" and it\'ll open an email to us to confirm the details before anything\'s charged.',
       },
       {
         q: 'Can I buy Gert Lush Honey in a shop, or as a business?',
@@ -122,6 +142,8 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          "Not yet — we're direct-to-customer only for now. If you run a shop, deli or café and would like to stock it once trade accounts open, or want to place a corporate/gift order, see Stockists.",
       },
     ],
   },
@@ -131,18 +153,24 @@ const sections: FaqSection[] = [
       {
         q: 'Why has my honey gone solid or cloudy?',
         a: 'Honey crystallises naturally over time — it depends on the honey and how it\'s stored, and it\'s not a fault or a sign anything\'s wrong.',
+        plainAnswer:
+          "Honey crystallises naturally over time — it depends on the honey and how it's stored, and it's not a fault or a sign anything's wrong.",
       },
       {
         q: 'How do I turn it back to liquid?',
         a: 'Stand the jar (lid on) in a bowl of warm water for a few minutes and it\'ll return to liquid.',
+        plainAnswer:
+          "Stand the jar (lid on) in a bowl of warm water for a few minutes and it'll return to liquid.",
       },
       {
         q: 'How should I store my jar?',
         a: 'Somewhere cool and dry, away from direct sunlight.',
+        plainAnswer: 'Somewhere cool and dry, away from direct sunlight.',
       },
       {
         q: 'Is honey safe for babies and young children?',
         a: 'No — like all honey, Bee S3 isn\'t suitable for children under 12 months old.',
+        plainAnswer: "No — like all honey, Bee S3 isn't suitable for children under 12 months old.",
       },
     ],
   },
@@ -166,6 +194,8 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          "We'd like to hear from you, wherever you're based in Britain. You keep managing your bees and harvesting; we handle intake, quality checks, jarring, branding and sale, and you stay credited as the beekeeper behind the batch. Details and how to apply are on Become a Supplier.",
       },
       {
         q: 'Do you sell candles, soap or other beeswax products?',
@@ -179,6 +209,8 @@ const sections: FaqSection[] = [
             , and register your interest if you&apos;d like to know when they launch.
           </>
         ),
+        plainAnswer:
+          "They're on the list, but not real products yet — we'd rather say that honestly than list something before it exists. See what's coming soon, and register your interest if you'd like to know when they launch.",
       },
       {
         q: "What's the Asian hornet page about?",
@@ -193,14 +225,29 @@ const sections: FaqSection[] = [
             .
           </>
         ),
+        plainAnswer:
+          'The yellow-legged (Asian) hornet is the biggest current threat to honeybee colonies in Britain, so we built a page on how to identify one and report a sighting — it matters to every beekeeper, not just ours.',
       },
     ],
   },
 ]
 
+const faqPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: sections.flatMap((section) =>
+    section.items.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.plainAnswer },
+    }))
+  ),
+}
+
 export default function FaqsPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
+      <JsonLd data={faqPageJsonLd} />
       <BackToCategoryLink href="/information" label="Information" />
 
       <p className="text-honey-amber mt-6 text-sm font-semibold tracking-wide uppercase">FAQs</p>

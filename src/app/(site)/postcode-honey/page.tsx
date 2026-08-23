@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Postcode Honey',
   description:
     'Honey with a postcode, sourced from independent beekeepers across Britain. Select your postcode area to see what honey is available.',
+  alternates: { canonical: '/postcode-honey' },
 }
 
 export default async function PostcodeHoneyPage() {

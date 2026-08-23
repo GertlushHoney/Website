@@ -4,6 +4,7 @@ import { DraftNotice } from '@/components/legal/draft-notice'
 export const metadata: Metadata = {
   title: 'Accessibility Statement',
   description: 'Accessibility statement for the Gert Lush Honey website.',
+  alternates: { canonical: '/legal/accessibility' },
 }
 
 export default function AccessibilityPage() {

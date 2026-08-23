@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Becoming a Beekeeper',
   description:
     'Thinking of keeping bees? A practical guide to getting started — local associations, courses, costs, equipment, and the route to Master Beekeeper.',
+  alternates: { canonical: '/becoming-a-beekeeper' },
 }
 
 const ASSOCIATIONS = [

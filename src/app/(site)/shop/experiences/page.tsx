@@ -7,6 +7,7 @@ import { getMerchProductsByCategory } from '@/lib/sanity/merch'
 export const metadata: Metadata = {
   title: 'Experiences',
   description: 'Bee Day Experience at Bramble Farm, and other hands-on experiences from Gert Lush Honey.',
+  alternates: { canonical: '/shop/experiences' },
 }
 
 // Same pattern as candles/soap/hamper/lip-balm: a real merchProduct with

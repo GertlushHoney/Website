@@ -6,6 +6,8 @@ import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
+import { JsonLd } from '@/components/seo/json-ld'
+import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
 // Shared real-product layout for candles/soap/hamper/lip-balm once each
 // actually has a matching, active Sanity document — see each category's
@@ -15,9 +17,31 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
   const imageUrl = urlForImage(product.heroImage ?? undefined)?.width(1000).height(1000).url()
 
   const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
+  const isSoldOut =
+    shopifyProduct?.quantityAvailable !== null &&
+    shopifyProduct?.quantityAvailable !== undefined &&
+    shopifyProduct.quantityAvailable <= 0
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
+      <JsonLd
+        data={productJsonLd({
+          name: product.name,
+          description: product.tagline,
+          imageUrl: imageUrl ?? null,
+          slug: product.slug,
+          price: shopifyProduct?.price ?? null,
+          availability: isSoldOut ? 'OutOfStock' : 'InStock',
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Shop', path: '/shop' },
+          { name: categoryLabel, path: `/shop/${product.category}` },
+          { name: product.name, path: `/shop/${product.slug}` },
+        ])}
+      />
       <BackToCategoryLink href={`/shop/${product.category}`} label={categoryLabel} />
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">

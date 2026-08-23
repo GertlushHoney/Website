@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Our Story',
   description:
     'Bristol honey. Proper lush. The story behind Gert Lush Honey and its postcode honey model.',
+  alternates: { canonical: '/our-story' },
 }
 
 export default function OurStoryPage() {

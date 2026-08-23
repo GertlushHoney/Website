@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Hero } from '@/components/homepage/hero'
 import { FeaturedProduct, type FeaturedProductData } from '@/components/homepage/featured-product'
 import { PostcodeHoney } from '@/components/homepage/postcode-honey'
@@ -5,6 +6,10 @@ import { getHoneyProducts } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 // Dark/moody theme, brand-generic narrative (2026-08-07 direction change) —
 // not the full 12-section homepage in Development Plan Phase 4 yet.

@@ -20,8 +20,8 @@ export function Hero() {
           Honey with a postcode.
         </h1>
         <p className="text-porcelain/70 mt-6 max-w-md text-lg">
-          Small-batch honey selected from independent beekeepers across Britain. Based in Bristol.
-          Sourced by postcode.
+          British honey from independent beekeepers. Every jar traced back to a postcode, a season
+          and the beekeeper behind it.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link

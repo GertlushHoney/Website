@@ -13,7 +13,12 @@ const envSchema = z.object({
   NEXT_PUBLIC_SANITY_PROJECT_ID: z.string().min(1).optional(),
   NEXT_PUBLIC_SANITY_DATASET: z.string().min(1).default('production'),
   SANITY_API_READ_TOKEN: z.string().min(1).optional(),
-  NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
+  // Deliberately not z.string().url() — a malformed value here (e.g. missing
+  // the https:// scheme, a typo made directly in Vercel's env var settings)
+  // must not throw at module load and take down every page on the site over
+  // what's only ever used for canonical URLs/sitemap/JSON-LD. site-config.ts
+  // validates and falls back safely instead.
+  NEXT_PUBLIC_SITE_URL: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.safeParse({

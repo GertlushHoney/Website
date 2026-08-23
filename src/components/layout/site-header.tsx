@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { primaryNav } from '@/lib/navigation'
 import { BasketButton } from '@/components/cart/basket-button'
 import { SearchOverlay } from '@/components/layout/search-overlay'
+import { MobileNav } from '@/components/layout/mobile-nav'
 import { getSearchIndex } from '@/lib/search'
 
 export async function SiteHeader() {
@@ -46,6 +47,7 @@ export async function SiteHeader() {
         <div className="text-porcelain/70 flex items-center gap-4 text-[13px] font-medium">
           <SearchOverlay items={searchIndex} />
           <BasketButton />
+          <MobileNav />
         </div>
       </div>
     </header>

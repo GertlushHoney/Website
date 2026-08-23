@@ -5,10 +5,17 @@ import { shopifyAdminFetch, isShopifyAdminConfigured, ShopifyAdminError } from '
 export type RestockAlertResult = { ok: true } | { ok: false; error: string }
 
 // Tags the Shopify customer with restock:<product-handle> so a store owner
-// can build a Shopify Email segment filtered to that tag and send a single
-// email when the product comes back — the actual "notify them" step is a
-// manual send in Shopify Email, not automated by this code. See
-// docs/launch-checklist.md point 10 for the one-off setup.
+// can find everyone waiting for a specific product when it comes back — the
+// actual "notify them" step is a manual email the store owner sends, not
+// automated by this code. See docs/launch-checklist.md point 10.
+//
+// emailMarketingConsent is deliberately NOT_SUBSCRIBED (changed 2026-08-23,
+// independent review): a customer here only asked to be told about one
+// specific product's restock, not to join general marketing — recording
+// SUBSCRIBED would misrepresent that consent. The consequence is Shopify
+// Email's own marketing-campaign tool won't deliver to these contacts (it
+// requires marketing consent); see the launch checklist for the manual
+// alternative that doesn't need it.
 function restockTag(productHandle: string): string {
   return `restock:${productHandle}`
 }
@@ -98,7 +105,7 @@ export async function subscribeToRestockAlert(
           email: trimmed,
           tags: [tag],
           emailMarketingConsent: {
-            marketingState: 'SUBSCRIBED',
+            marketingState: 'NOT_SUBSCRIBED',
             marketingOptInLevel: 'SINGLE_OPT_IN',
           },
         },

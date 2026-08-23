@@ -75,10 +75,11 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             If you ask to be notified when a sold-out product is back in stock, that&apos;s
-            handled separately: we tag your email against that specific product only, so we can
-            email people about that product coming back without emailing everyone on the general
-            list. It&apos;s still stored in Shopify, and the same unsubscribe/removal options
-            apply.
+            handled entirely separately from marketing emails: we tag your email against that
+            specific product only, and you&apos;re not recorded as a marketing subscriber for
+            asking. We&apos;ll email you directly and individually when that product is back — not
+            through a general marketing send — and you can ask us to remove you at any time by
+            emailing us.
           </p>
         </section>
 
@@ -118,8 +119,10 @@ export default function PrivacyPage() {
           <p className="mt-2">
             <strong className="text-porcelain">Sanity</strong> is the content management system we
             use to publish and edit the honey, beekeeper and product information you see on this
-            site. It doesn&apos;t collect any personal data from you as a visitor — it only stores
-            the editorial content we&apos;ve written and published ourselves.
+            site. It also stores product reviews: if you submit one, your name, star rating,
+            review text and submission date are stored there. Reviews aren&apos;t shown until we
+            approve them — once approved, your name and review text are displayed publicly on that
+            product&apos;s page.
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Vercel</strong> hosts this website and provides

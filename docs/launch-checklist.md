@@ -151,11 +151,18 @@ exception, never reachable from the browser). Two steps.
    (`src/lib/shopify/admin-client.ts`, the OAuth client_credentials grant) — there's no token to
    paste in directly. Keep the Client secret private, same as any password: it grants real write
    access to customer records.
-2. **When a product comes back in stock**, go to Shopify Email → create a campaign → target a
-   segment filtered by customer tag `restock:<the product's handle>` (e.g.
-   `restock:beewax-candle-skep-and-bees`) → write and send. This send is manual, on your side —
-   the code only handles collecting and tagging the signups, not automatically detecting a
-   restock and firing an email.
+2. **When a product comes back in stock**, go to Shopify Admin → **Customers**, search
+   `tag:restock:<the product's handle>` (e.g. `tag:restock:beewax-candle-skep-and-bees`) to find
+   everyone waiting, then email them yourself directly (e.g. BCC from your own mail client) rather
+   than through Shopify Email's campaign tool.
+
+   **Not Shopify Email** (changed 2026-08-23, independent review) — these customers are created
+   with `emailMarketingConsent: NOT_SUBSCRIBED` on purpose: signing up for one product's restock
+   alert isn't the same as consenting to general marketing, and recording it as `SUBSCRIBED` would
+   misrepresent that. Shopify Email's own campaign tool refuses to send to non-subscribed
+   contacts, which is exactly why a direct email is the right approach here, not a workaround to
+   route around. This send is manual either way — the code only handles collecting and tagging
+   signups, not automatically detecting a restock and firing an email.
 
 Until step 1 is done, the "Notify me" form fails gracefully with a plain "not available right
 now" message rather than breaking the page — confirmed by testing it live before that token

@@ -230,14 +230,16 @@ Klaviyo was ever needed or added.
 personal Outlook address to role-based addresses on the real `gertlushhoney.co.uk` domain, split
 by what the enquiry is about rather than one shared inbox:
 
-- `gdpr@` — Privacy Notice (data rights, marketing opt-out)
+- `gdpr@` — Privacy Notice (data rights, data protection complaints)
 - `complaints@` — Delivery page, Accessibility Statement, Refund Policy (order problems, damaged/
   missing parcels, refund/cancellation requests)
-- `sales@` — Become a Supplier, Stockists, product waitlists, "email to order/subscribe"
-  fallbacks, subscription management
+- `sales@` — Stockists, product waitlists, "email to order/subscribe" fallbacks, subscription
+  management
+- `suppliers@` — Become a Supplier (split out 2026-08-22, previously shared `sales@`: a beekeeper
+  offering to supply honey is a different kind of contact from someone wanting to buy something)
 - `hello@` — the Contact form and Terms page's general legal contact line
 
-All four currently land in one shared inbox via Microsoft 365 aliases (not separate mailboxes) —
+All five currently land in one shared inbox via Microsoft 365 aliases (not separate mailboxes) —
 the "To" address is what lets a human triage by eye.
 
 ## Legal pages

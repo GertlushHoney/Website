@@ -207,16 +207,14 @@ redeploying in Vercel, double-check you're redeploying the **latest** build and 
 further down the Deployments list — clicking "Redeploy" on the wrong one silently re-publishes
 old code instead of picking up the change.
 
-## 13. Professional email domain (Microsoft 365) — in progress 2026-08-22
+## 13. Professional email domain (Microsoft 365) — DONE 2026-08-22
 
 Moved every contact address on the site from a personal Outlook address to role-based addresses
 on `gertlushhoney.co.uk` (`gdpr@`, `complaints@`, `sales@`, `suppliers@`, `hello@` — see
-`docs/technical-architecture.md`, "Form submission architecture" for which page uses which). The
-domain itself shows Healthy in Microsoft 365 admin, but adding the first alias failed with "not an
-accepted domain for your organization" — likely just Exchange Online's Accepted Domains list
-lagging behind the domain's own verification. **Needs confirming:** check
-admin.exchange.microsoft.com → Mail flow → Accepted domains lists `gertlushhoney.co.uk`, then
-retry adding all five aliases to the working mailbox.
+`docs/technical-architecture.md`, "Form submission architecture" for which page uses which). Hit
+"not an accepted domain for your organization" on the first alias attempt — resolved itself once
+Exchange Online's Accepted Domains list caught up with the domain's own verification. All five
+aliases confirmed created on the working mailbox.
 
 ## 14. Company registration and VAT — not yet done
 

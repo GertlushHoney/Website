@@ -164,9 +164,16 @@ export const honeyProduct = defineType({
     }),
     defineField({
       name: 'batchCode',
-      title: 'Batch code (optional)',
+      title: 'Shared batch code (optional — NOT for per-jar numbers)',
       description:
-        'Your own internal traceability code for this specific batch, e.g. "GL-BS3-26-001" — only set this if you actually maintain batch codes and this is the real one currently in stock.',
+        'Only for a single code shared by a whole run, e.g. "GL-BS3-26" with no jar number. Confirmed 2026-08-27: real jars are numbered individually (001, 002, 003…), so a specific code like "GL-BS3-26-001" would only be true of jar #1 — never put a per-jar number here, since this field shows the same text to every visitor regardless of which physical jar they get. The traceabilityFormat field below explains the per-jar scheme instead.',
+      type: 'string',
+    }),
+    defineField({
+      name: 'traceabilityFormat',
+      title: 'Per-jar traceability code format (optional)',
+      description:
+        'Describes the numbering scheme without claiming one specific jar\'s number, e.g. "GL-BS3-26-XXX" — each jar\'s own code is printed on its label, not shown on the website.',
       type: 'string',
     }),
     defineField({

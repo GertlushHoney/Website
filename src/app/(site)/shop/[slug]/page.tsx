@@ -333,6 +333,15 @@ export default async function ShopProductPage({
                 <dd className="text-porcelain/90 text-sm">{product.batchCode}</dd>
               </div>
             )}
+            {product.traceabilityFormat && (
+              <div className="border-ink-line flex gap-4 border-t pt-3">
+                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Traceability</dt>
+                <dd className="text-porcelain/90 text-sm">
+                  Every jar carries its own individual code ({product.traceabilityFormat}),
+                  printed on the label.
+                </dd>
+              </div>
+            )}
           </dl>
 
           {product.meetsGertLushStandard && <GertLushStandardBadge />}

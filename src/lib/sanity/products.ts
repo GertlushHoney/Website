@@ -41,6 +41,7 @@ export type HoneyProductFull = HoneyProductSummary & {
   tastingProfile: TastingProfile
   meetsGertLushStandard: boolean
   batchCode: string | null
+  traceabilityFormat: string | null
   beekeeper: {
     _id: string
     name: string
@@ -120,6 +121,7 @@ export async function getHoneyProductBySlug(slug: string): Promise<HoneyProductF
       tastingProfile,
       "meetsGertLushStandard": meetsGertLushStandard == true,
       batchCode,
+      traceabilityFormat,
       beekeeper -> {
         _id,
         name,

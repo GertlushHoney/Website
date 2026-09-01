@@ -42,6 +42,13 @@ export const beekeeper = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'hiveScale',
+      title: 'Scale of hives (optional)',
+      description:
+        'Roughly how many hives/colonies they keep, e.g. "Around 12 hives" — only include this if the beekeeper is happy for it to be public. Leave blank otherwise.',
+      type: 'string',
+    }),
+    defineField({
       name: 'teaser',
       title: 'One-line teaser',
       description: 'Shown on the beekeeper directory card.',

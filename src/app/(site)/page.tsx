@@ -41,6 +41,7 @@ export default async function Home() {
         price: shopifyProduct?.price ?? null,
         beekeeper: product.beekeeper,
         latestSeasonYear: product.latestSeasonYear,
+        flavour: product.flavour,
       }
     })
   )

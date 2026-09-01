@@ -7,6 +7,7 @@ import { PurchaseOptions } from '@/components/product/purchase-options'
 import { ReviewsSection } from '@/components/product/reviews-section'
 import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import Link from 'next/link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
 import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
@@ -75,6 +76,41 @@ export default async function ShopProductPage({
         </div>
       ),
     },
+    product.tastingProfile &&
+      Object.values(product.tastingProfile).some(Boolean) && {
+        id: 'tasting-profile',
+        label: 'Tasting profile',
+        content: (
+          <div className="max-w-2xl">
+            <h2 className="text-porcelain text-2xl font-bold tracking-tight">
+              What {product.name} actually tastes like
+            </h2>
+            <p className="text-porcelain/60 mt-2 text-sm">
+              Based on this specific batch — honey varies year to year, so this is {product.name},
+              not honey in general.
+            </p>
+            <dl className="mt-6 space-y-3">
+              {(
+                [
+                  ['Flavour', product.tastingProfile?.flavour],
+                  ['Colour', product.tastingProfile?.colour],
+                  ['Texture', product.tastingProfile?.texture],
+                  ['Harvest', product.tastingProfile?.harvestSeason],
+                  ['Landscape', product.tastingProfile?.landscape],
+                  ['Great with', product.tastingProfile?.greatWith],
+                ] as [string, string | null | undefined][]
+              )
+                .filter(([, value]) => Boolean(value))
+                .map(([label, value]) => (
+                  <div key={label} className="border-ink-line flex gap-4 border-t pt-3">
+                    <dt className="text-porcelain/50 w-28 shrink-0 text-sm">{label}</dt>
+                    <dd className="text-porcelain/90 text-sm">{value}</dd>
+                  </div>
+                ))}
+            </dl>
+          </div>
+        ),
+      },
     product.beekeeper && {
       id: 'beekeeper',
       label: 'The beekeeper',
@@ -278,6 +314,24 @@ export default async function ShopProductPage({
               </dd>
             </div>
           </dl>
+
+          {product.beekeeper && (
+            <Link
+              href={`/beekeepers/${product.beekeeper.slug}`}
+              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group mt-6 flex items-center justify-between gap-4 rounded-xl border p-4 transition focus-visible:outline focus-visible:outline-offset-2"
+            >
+              <span className="text-porcelain text-sm">
+                Produced by{' '}
+                <span className="text-comb-gold font-semibold">{product.beekeeper.name}</span>
+              </span>
+              <span className="text-comb-gold shrink-0 text-sm font-semibold">
+                Meet the beekeeper{' '}
+                <span aria-hidden="true" className="inline-block transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </Link>
+          )}
 
           {shopifyProduct ? (
             <PurchaseOptions

@@ -92,6 +92,51 @@ export const honeyProduct = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'tastingProfile',
+      title: 'Tasting profile',
+      description:
+        'Same fields on every honey so customers can compare batches — but only fill these in based on actually tasting/checking this specific batch. Leave any field blank rather than guess; it just won\'t show on the site until it\'s real.',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'flavour',
+          title: 'Flavour',
+          description: 'e.g. "Floral, light citrus, soft caramel" — based on this batch, not a generic guess.',
+          type: 'string',
+        }),
+        defineField({
+          name: 'colour',
+          title: 'Colour',
+          type: 'string',
+          options: { list: ['Light', 'Amber', 'Dark'] },
+        }),
+        defineField({
+          name: 'texture',
+          title: 'Texture',
+          type: 'string',
+          options: { list: ['Runny', 'Set', 'Naturally crystallising'] },
+        }),
+        defineField({
+          name: 'harvestSeason',
+          title: 'Harvest season',
+          type: 'string',
+          options: { list: ['Spring', 'Summer', 'Autumn', 'Winter'] },
+        }),
+        defineField({
+          name: 'landscape',
+          title: 'Landscape',
+          description: 'What the bees actually forage near, e.g. "Woodland and farmland" or "Urban meadows and riverside wildflowers".',
+          type: 'string',
+        }),
+        defineField({
+          name: 'greatWith',
+          title: 'Great with',
+          description: 'e.g. "Toast, porridge, strong cheese"',
+          type: 'string',
+        }),
+      ],
+    }),
+    defineField({
       name: 'seasons',
       title: 'Season by season (optional)',
       description: 'Real harvest photos by year, if you have them.',

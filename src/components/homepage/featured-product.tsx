@@ -17,6 +17,7 @@ export type FeaturedProductData = {
   beekeeper: { name: string; slug: string } | null
   // null until a product has at least one season entry in Sanity.
   latestSeasonYear: string | null
+  flavour: string | null
 }
 
 // Picks one real honey product at random on every visit, instead of always
@@ -83,6 +84,7 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
             </p>
           )}
           {product.latestSeasonYear && <p>{product.latestSeasonYear} Harvest</p>}
+          {product.flavour && <p>{product.flavour}</p>}
         </div>
         <dl className="mt-8 space-y-4">
           {facts.map((fact) => (

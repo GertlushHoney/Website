@@ -16,6 +16,7 @@ export type HoneyCard = {
   imageUrl: string | null
   price: number | null
   beekeeper: { name: string; slug: string } | null
+  flavour: string | null
 }
 
 // Filter pills only list regions actually represented among real products —
@@ -106,6 +107,7 @@ function HoneyCardGrid({ cards }: { cards: HoneyCard[] }) {
             {card.beekeeper && (
               <p className="text-porcelain/70 mt-1 text-sm">Beekeeper: {card.beekeeper.name}</p>
             )}
+            {card.flavour && <p className="text-porcelain/60 mt-1 text-sm">{card.flavour}</p>}
             <p className="text-porcelain/50 mt-1 text-sm">{card.weight}</p>
             {card.price != null && (
               <p className="text-porcelain mt-3 text-base font-semibold">

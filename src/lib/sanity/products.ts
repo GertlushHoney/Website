@@ -9,6 +9,19 @@ export type HoneySeason = {
   note: string | null
 }
 
+// Every field is independently optional — Studio guidance is explicit that
+// none of these should be filled in unless it's true of the actual batch
+// (see honeyProduct.ts schema description). Never fall back to a guess when
+// a field is null; just don't render that line.
+export type TastingProfile = {
+  flavour: string | null
+  colour: string | null
+  texture: string | null
+  harvestSeason: string | null
+  landscape: string | null
+  greatWith: string | null
+} | null
+
 export type HoneyProductSummary = {
   _id: string
   name: string
@@ -25,6 +38,7 @@ export type HoneyProductSummary = {
 export type HoneyProductFull = HoneyProductSummary & {
   originStory: PortableTextBlock[]
   seasons: HoneySeason[]
+  tastingProfile: TastingProfile
   beekeeper: {
     _id: string
     name: string
@@ -64,6 +78,10 @@ export async function getHoneyProducts(): Promise<HoneyProductSummary[]> {
 export type HoneyProductSummaryWithBeekeeper = HoneyProductSummary & {
   beekeeper: { name: string; slug: string } | null
   latestSeasonYear: string | null
+  // Only the flavour line — the single most decision-relevant field for a
+  // card comparing several honeys at a glance. The full tastingProfile
+  // (colour/texture/harvest/landscape/greatWith) is on the product page.
+  flavour: string | null
 }
 
 export async function getHoneyProductsWithBeekeeper(): Promise<
@@ -73,7 +91,8 @@ export async function getHoneyProductsWithBeekeeper(): Promise<
     groq`*[_type == "honeyProduct" && active == true] | order(name asc) {
       ${summaryFields},
       beekeeper -> { name, "slug": slug.current },
-      "latestSeasonYear": seasons[-1].year
+      "latestSeasonYear": seasons[-1].year,
+      "flavour": tastingProfile.flavour
     }`
   )
   return result ?? []
@@ -96,6 +115,7 @@ export async function getHoneyProductBySlug(slug: string): Promise<HoneyProductF
       ${summaryFields},
       originStory,
       "seasons": coalesce(seasons, []),
+      tastingProfile,
       beekeeper -> {
         _id,
         name,

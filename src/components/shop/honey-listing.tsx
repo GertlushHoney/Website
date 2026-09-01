@@ -27,6 +27,7 @@ export async function HoneyListing() {
         imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
         price: shopifyProduct?.price ?? null,
         beekeeper: product.beekeeper,
+        flavour: product.flavour,
       }
     })
   )

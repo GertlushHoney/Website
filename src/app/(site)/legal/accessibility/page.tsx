@@ -27,8 +27,10 @@ export default function AccessibilityPage() {
           <p className="mt-2">
             We build and test this site against WCAG 2.1/2.2 AA. Every real page has been run
             through an automated audit and a manual review, and issues found by either have been
-            fixed (2026-08-11) — but that&apos;s still our own testing, not an independent
-            certification. See &quot;Known gaps&quot; below for what that doesn&apos;t cover.
+            fixed — most recently re-run 2026-08-27 after adding the mobile navigation menu, the
+            Gert Lush Standard page and the Refund Policy page. That&apos;s still our own testing,
+            not an independent certification. See &quot;Known gaps&quot; below for what that
+            doesn&apos;t cover.
           </p>
         </section>
 
@@ -37,7 +39,7 @@ export default function AccessibilityPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
               Automated: every real page is crawled with axe-core against the WCAG 2.0/2.1/2.2 A
-              and AA rule sets — currently 0 automated violations across all 26 pages.
+              and AA rule sets — currently 0 automated violations across all 30 pages.
             </li>
             <li>
               Manual: colour contrast is checked by hand for anything automated tools can&apos;t
@@ -47,8 +49,10 @@ export default function AccessibilityPage() {
               site, against both ends of that gradient.
             </li>
             <li>
-              Interactive components: the cookie preferences popover and basket drawer are opened
-              for real and tested for keyboard operation — focus moves into the dialog when it
+              Interactive components: the cookie preferences popover, basket drawer, search
+              overlay and mobile navigation menu are all opened for real (including a dedicated
+              mobile-viewport pass for the navigation menu, since it&apos;s hidden at desktop
+              width) and tested for keyboard operation — focus moves into the dialog when it
               opens, Escape closes it, and focus returns to where you were.
             </li>
           </ul>
@@ -64,9 +68,9 @@ export default function AccessibilityPage() {
             <li>All text and button-border colours meet WCAG AA contrast minimums (4.5:1 for
               normal text, 3:1 for large text and UI component boundaries)</li>
             <li>
-              The cookie preferences popover and basket drawer are keyboard-operable dialogs:
-              focus moves in on open, Escape closes them, and focus returns to the triggering
-              button afterwards
+              The cookie preferences popover, basket drawer, search overlay and mobile navigation
+              menu are all keyboard-operable dialogs: focus moves in on open, Escape closes them,
+              and focus returns to the triggering button afterwards
             </li>
           </ul>
         </section>

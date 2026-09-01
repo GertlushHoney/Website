@@ -28,6 +28,7 @@ const routes = [
   '/our-story',
   '/sustainability',
   '/postcode-honey',
+  '/gert-lush-standard',
   '/shop',
   '/shop/honey',
   '/shop/bee-s3',
@@ -43,10 +44,24 @@ const routes = [
   '/legal/cookies',
   '/legal/privacy',
   '/legal/terms',
+  '/legal/refund-policy',
 ]
 
+// The site-wide password gate (src/middleware.ts) didn't exist when this
+// script was first run (2026-08-11) — added 2026-08-19. httpCredentials is
+// Playwright's real Basic Auth support, not the embedded-URL-credentials
+// approach that breaks a page's own fetch() calls.
 const browser = await chromium.launch()
-const context = await browser.newContext()
+const context = await browser.newContext(
+  process.env.SITE_PASSWORD_USER && process.env.SITE_PASSWORD
+    ? {
+        httpCredentials: {
+          username: process.env.SITE_PASSWORD_USER,
+          password: process.env.SITE_PASSWORD,
+        },
+      }
+    : {}
+)
 const page = await context.newPage()
 
 // The intro splash auto-dismisses after 1.8s and would otherwise cover

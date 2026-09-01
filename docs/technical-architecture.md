@@ -22,6 +22,7 @@ src/app/(site)/
   shop/                      /shop hub, /shop/[slug] (honey + merch), and per-category pages
                               (honey, candles, hamper, soap, lip-balm, experiences)
   postcode-honey/            postcode/region hub with the interactive UK map
+  gert-lush-standard/       the Gert Lush Standard — supplier/batch quality claims, badge source
   beekeepers/                directory + /beekeepers/[slug] profile
   our-story/                 brand story
   stockists/                 locator, become-a-stockist
@@ -32,7 +33,7 @@ src/app/(site)/
   delivery/, faqs/, information/
   contact/                   real contact form (src/components/contact/contact-form.tsx)
   thank-you/                 post-checkout newsletter signup, pre-filled from order confirmation
-  legal/                     privacy, cookies, terms, accessibility
+  legal/                     privacy, cookies, terms, refund-policy, accessibility
   studio/[[...tool]]/        embedded Sanity Studio (behind its own permanent password gate —
                               see "Pre-launch and permanent access control" below)
   tools/feather-image/       internal photo-prep helper — see launch-checklist.md point 8
@@ -65,11 +66,16 @@ stores beekeeper bios; Sanity never stores stock counts.
 The real schema in `src/sanity/schemaTypes/` (superseding the original Project Pack entity list,
 which was never fully built out — this is what actually exists):
 
-- `beekeeper` — name, slug, portrait, bio, quote, general area, active status.
+- `beekeeper` — name, slug, portrait, bio, quote, general area, associated honey name, optional
+  hive scale ("Around 12 hives" — only if the beekeeper is happy to share it), active status,
+  display order.
 - `honeyProduct` — name, slug, tagline, Shopify handle, postcode code (area or Bristol/Bath
   district), beekeeper reference, hero image, weight, origin story, optional subscription price,
-  delivery price, optional season-by-season photos, active flag. Drives `/shop/[slug]` and the
-  postcode map.
+  delivery price, optional season-by-season photos, optional tasting profile (flavour, colour,
+  texture, harvest season, landscape, great-with — see "Tasting profile" below), meetsGertLushStandard
+  flag (default false), optional shared batchCode, optional traceabilityFormat (a per-jar numbering
+  pattern like "GL-BS3-XXX", never a specific jar's own number), active flag. Drives `/shop/[slug]`
+  and the postcode map.
 - `merchProduct` — name, slug, category (candles/hamper/soap/lip-balm/experiences), tagline,
   Shopify handle, hero image, description, delivery price, active flag. Shares the `/shop/[slug]`
   URL space with `honeyProduct`.
@@ -241,6 +247,45 @@ by what the enquiry is about rather than one shared inbox:
 
 All five currently land in one shared inbox via Microsoft 365 aliases (not separate mailboxes) —
 the "To" address is what lets a human triage by eye.
+
+## Homepage, navigation and trust signals (2026-08-27, independent review response)
+
+An external reviewer (John Hutchinson) raised two real issues, both fixed:
+
+- **Mobile navigation was completely missing** — `site-header.tsx`'s `<nav>` was `hidden md:block`
+  with no replacement, so a phone visitor had no way to reach any primary nav link, only the logo,
+  search and basket. Fixed with `mobile-nav.tsx`, a hamburger-triggered slide-out panel matching
+  the same focus-trapped dialog pattern as the basket drawer and search overlay.
+- **Homepage didn't answer "is this a single farm, an umbrella brand, or a marketplace?"** within
+  five seconds, and postcode-only identity ("BS3") read as concealing provenance rather than
+  protecting it. Fixed via a real homepage restructure, `src/app/(site)/page.tsx`: Hero (now names
+  the beekeeper in the H1 itself) → `WhatIsGertLush` ("How Gert Lush works", a 3-stage
+  beekeeper→Gert Lush→you strip) → `FeaturedProduct` (leads with `{postcode} — {place}` plus
+  `Beekeeper: {name}` and harvest year, not postcode alone) → `PostcodeHoney` →
+  `GertLushStandardStrip` → `TrustRow` → `SupplierCtaBanner`. The same postcode+beekeeper hierarchy
+  was carried into the `/shop/honey` listing cards (`honey-region-filter.tsx`), not just the
+  homepage.
+
+**Tasting profile** (`honeyProduct.tastingProfile`) — flavour, colour, texture, harvest season,
+landscape, great-with. Colour/texture/harvest use fixed Studio dropdowns so values stay comparable
+across products; the rest stay free text. Every field defaults to empty and stays honest: a
+product page's "Tasting profile" tab only renders once at least one field is real
+(`Object.values(tastingProfile).some(Boolean)`), and nothing is ever guessed to fill a gap.
+
+**The Gert Lush Standard** (`/gert-lush-standard`, source: `Gert_Lush_Standard_Website_Copy_v1.0.docx`,
+carried across near-verbatim as the user's own prepared copy) — six numbered supplier/batch
+promises, a "what does the mark mean" section, and an explicit "not a government or third-party
+certification" disclaimer. `honeyProduct.meetsGertLushStandard` (boolean, defaults `false`) gates
+`GertLushStandardBadge` on a product page — never assumed true for an active product, switched on
+per-product only after the user confirmed in conversation it's genuinely true today (done for Bee
+S3, 2026-08-27).
+
+**Per-jar vs shared batch codes** — confirmed 2026-08-27 that real jars are numbered individually
+(001, 002, 003…), not sharing one code. A single fixed `batchCode` field would only be accurate for
+jar #1 and wrong for every other jar sold, so it's split into two: `batchCode` (only for a
+genuinely shared run-level code, unused today) and `traceabilityFormat` (describes the per-jar
+pattern without asserting one specific number, e.g. Bee S3's real `"GL-BS3-XXX"` — the actual
+per-jar number is printed on that jar's own physical label, never claimed on the website).
 
 ## Legal pages
 

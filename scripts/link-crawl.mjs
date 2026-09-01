@@ -10,7 +10,16 @@ const broken = []
 const ok = []
 
 const browser = await chromium.launch()
-const context = await browser.newContext()
+const context = await browser.newContext(
+  process.env.SITE_PASSWORD_USER && process.env.SITE_PASSWORD
+    ? {
+        httpCredentials: {
+          username: process.env.SITE_PASSWORD_USER,
+          password: process.env.SITE_PASSWORD,
+        },
+      }
+    : {}
+)
 const page = await context.newPage()
 
 while (queue.length > 0) {

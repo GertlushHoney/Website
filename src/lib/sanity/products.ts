@@ -54,6 +54,31 @@ export async function getHoneyProducts(): Promise<HoneyProductSummary[]> {
   return result ?? []
 }
 
+// Homepage-spotlight and honey-listing-card variant that also projects the
+// beekeeper's name/slug and the most recent season's year — added
+// 2026-08-27 so beekeeper and harvest year can be shown prominently on
+// every honey card, per independent review feedback (John Hutchinson).
+// Kept separate from getHoneyProducts/summaryFields rather than changing
+// them, since those are also used by the search index and postcode map,
+// which have no use for this extra data.
+export type HoneyProductSummaryWithBeekeeper = HoneyProductSummary & {
+  beekeeper: { name: string; slug: string } | null
+  latestSeasonYear: string | null
+}
+
+export async function getHoneyProductsWithBeekeeper(): Promise<
+  HoneyProductSummaryWithBeekeeper[]
+> {
+  const result = await sanityFetch<HoneyProductSummaryWithBeekeeper[]>(
+    groq`*[_type == "honeyProduct" && active == true] | order(name asc) {
+      ${summaryFields},
+      beekeeper -> { name, "slug": slug.current },
+      "latestSeasonYear": seasons[-1].year
+    }`
+  )
+  return result ?? []
+}
+
 // Used by the postcode map — every active product's code, so the map never
 // needs its own hardcoded list of which postcodes have real stock.
 export async function getActivePostcodeCodes(): Promise<

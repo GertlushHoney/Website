@@ -10,8 +10,13 @@ export type FeaturedProductData = {
   tagline: string
   weight: string
   origin: string
+  postcodeCode: string
   imageUrl: string | null
   price: number | null
+  // null for any product with no beekeeper linked in Sanity yet.
+  beekeeper: { name: string; slug: string } | null
+  // null until a product has at least one season entry in Sanity.
+  latestSeasonYear: string | null
 }
 
 // Picks one real honey product at random on every visit, instead of always
@@ -45,7 +50,6 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
           : 'Price on request',
     },
     { label: 'Weight', value: product.weight },
-    { label: 'Origin', value: `${product.origin}, UK` },
   ]
 
   return (
@@ -65,12 +69,21 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
 
       <div className="bg-honeycomb-surface order-1 flex flex-col justify-center px-6 py-16 lg:order-2 lg:px-16">
         <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
-          This season&apos;s harvest
+          {product.postcodeCode} — {product.origin}
         </p>
         <p className="font-display text-comb-gold mt-2 text-2xl italic">{product.name}</p>
         <h2 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
           {product.tagline.trim()}
         </h2>
+        <div className="text-porcelain/80 mt-4 space-y-1 text-sm">
+          {product.beekeeper && (
+            <p>
+              Beekeeper:{' '}
+              <span className="text-porcelain font-semibold">{product.beekeeper.name}</span>
+            </p>
+          )}
+          {product.latestSeasonYear && <p>{product.latestSeasonYear} Harvest</p>}
+        </div>
         <dl className="mt-8 space-y-4">
           {facts.map((fact) => (
             <div key={fact.label} className="border-ink-line flex gap-4 border-t pt-4">
@@ -92,6 +105,14 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
           >
             See origin &amp; beekeeper
           </Link>
+          {product.beekeeper && (
+            <Link
+              href={`/beekeepers/${product.beekeeper.slug}`}
+              className="text-comb-gold hover:text-porcelain focus-visible:outline-honey-amber text-sm font-semibold underline underline-offset-4 focus-visible:outline focus-visible:outline-offset-2"
+            >
+              Meet {product.beekeeper.name}
+            </Link>
+          )}
         </div>
       </div>
     </section>

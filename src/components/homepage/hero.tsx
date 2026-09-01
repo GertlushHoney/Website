@@ -18,10 +18,14 @@ export function Hero() {
         </p>
         <h1 className="mt-4 max-w-xl text-5xl font-bold tracking-tight text-balance sm:text-6xl lg:text-7xl">
           Honey with a postcode.
+          <br />
+          And a beekeeper behind every jar.
         </h1>
         <p className="text-porcelain/70 mt-6 max-w-md text-lg">
-          British honey from independent beekeepers. Every jar traced back to a postcode, a season
-          and the beekeeper behind it.
+          We work with independent British beekeepers, selecting exceptional local honey and
+          taking care of the jarring, labelling, marketing and delivery. Every jar keeps its
+          identity — so you&apos;ll know where it came from, who produced it and the story behind
+          the bees.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-3">
           <Link

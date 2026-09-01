@@ -15,6 +15,7 @@ export type HoneyCard = {
   region: string | undefined
   imageUrl: string | null
   price: number | null
+  beekeeper: { name: string; slug: string } | null
 }
 
 // Filter pills only list regions actually represented among real products —
@@ -97,11 +98,15 @@ function HoneyCardGrid({ cards }: { cards: HoneyCard[] }) {
             )}
           </div>
           <div className="p-6">
-            <p className="font-display text-comb-gold text-lg italic">{card.name}</p>
-            <p className="text-porcelain mt-1 text-sm font-semibold">{card.tagline}</p>
-            <p className="text-porcelain/50 mt-1 text-sm">
-              {card.weight} &middot; {getAreaNameForCode(card.postcodeCode) ?? card.postcodeCode}, UK
+            <p className="text-honey-amber text-xs font-semibold tracking-wide uppercase">
+              {card.postcodeCode} — {getAreaNameForCode(card.postcodeCode) ?? card.postcodeCode}
             </p>
+            <p className="font-display text-comb-gold mt-1 text-lg italic">{card.name}</p>
+            <p className="text-porcelain mt-1 text-sm font-semibold">{card.tagline}</p>
+            {card.beekeeper && (
+              <p className="text-porcelain/70 mt-1 text-sm">Beekeeper: {card.beekeeper.name}</p>
+            )}
+            <p className="text-porcelain/50 mt-1 text-sm">{card.weight}</p>
             {card.price != null && (
               <p className="text-porcelain mt-3 text-base font-semibold">
                 {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(card.price)}

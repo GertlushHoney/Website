@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getHoneyProducts } from '@/lib/sanity/products'
+import { getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import { getRegionForCode } from '@/lib/uk-regions'
@@ -12,7 +12,7 @@ import { HoneyRegionFilter, type HoneyCard } from '@/components/shop/honey-regio
 // surprise-me shortcuts that only make sense for a multi-product,
 // location-tied category.
 export async function HoneyListing() {
-  const products = await getHoneyProducts()
+  const products = await getHoneyProductsWithBeekeeper()
   const cards: HoneyCard[] = await Promise.all(
     products.map(async (product) => {
       const shopifyProduct = await getProductByHandle(product.shopifyHandle)
@@ -26,6 +26,7 @@ export async function HoneyListing() {
         region: getRegionForCode(product.postcodeCode),
         imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
         price: shopifyProduct?.price ?? null,
+        beekeeper: product.beekeeper,
       }
     })
   )

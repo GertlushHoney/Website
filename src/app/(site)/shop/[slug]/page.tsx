@@ -5,6 +5,7 @@ import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { ReviewsSection } from '@/components/product/reviews-section'
+import { GertLushStandardBadge } from '@/components/product/gert-lush-standard-badge'
 import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import Link from 'next/link'
@@ -313,7 +314,28 @@ export default async function ShopProductPage({
                 Royal Mail Tracked 48 &middot; £{product.deliveryPrice.toFixed(2)}
               </dd>
             </div>
+            {(product.tastingProfile?.harvestSeason || product.seasons.length > 0) && (
+              <div className="border-ink-line flex gap-4 border-t pt-3">
+                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Harvest</dt>
+                <dd className="text-porcelain/90 text-sm">
+                  {[
+                    product.tastingProfile?.harvestSeason,
+                    product.seasons.at(-1)?.year,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                </dd>
+              </div>
+            )}
+            {product.batchCode && (
+              <div className="border-ink-line flex gap-4 border-t pt-3">
+                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Batch</dt>
+                <dd className="text-porcelain/90 text-sm">{product.batchCode}</dd>
+              </div>
+            )}
           </dl>
+
+          {product.meetsGertLushStandard && <GertLushStandardBadge />}
 
           {product.beekeeper && (
             <Link

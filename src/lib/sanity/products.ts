@@ -39,6 +39,8 @@ export type HoneyProductFull = HoneyProductSummary & {
   originStory: PortableTextBlock[]
   seasons: HoneySeason[]
   tastingProfile: TastingProfile
+  meetsGertLushStandard: boolean
+  batchCode: string | null
   beekeeper: {
     _id: string
     name: string
@@ -116,6 +118,8 @@ export async function getHoneyProductBySlug(slug: string): Promise<HoneyProductF
       originStory,
       "seasons": coalesce(seasons, []),
       tastingProfile,
+      "meetsGertLushStandard": meetsGertLushStandard == true,
+      batchCode,
       beekeeper -> {
         _id,
         name,

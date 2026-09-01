@@ -3,6 +3,7 @@ import { Hero } from '@/components/homepage/hero'
 import { FeaturedProduct, type FeaturedProductData } from '@/components/homepage/featured-product'
 import { PostcodeHoney } from '@/components/homepage/postcode-honey'
 import { WhatIsGertLush } from '@/components/homepage/what-is-gert-lush'
+import { GertLushStandardStrip } from '@/components/homepage/gert-lush-standard-strip'
 import { TrustRow } from '@/components/homepage/trust-row'
 import { SupplierCtaBanner } from '@/components/homepage/supplier-cta-banner'
 import { getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
@@ -51,6 +52,7 @@ export default async function Home() {
       <Hero />
       <WhatIsGertLush />
       <FeaturedProduct products={featuredProducts} />
+      <GertLushStandardStrip />
       <PostcodeHoney />
       <TrustRow />
       <SupplierCtaBanner />

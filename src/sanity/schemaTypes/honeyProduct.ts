@@ -155,6 +155,21 @@ export const honeyProduct = defineType({
       ],
     }),
     defineField({
+      name: 'meetsGertLushStandard',
+      title: 'Meets the Gert Lush Standard',
+      description:
+        'Only switch this on once this beekeeper has genuinely passed supplier review and this batch has genuinely passed batch acceptance — see /gert-lush-standard. This turns on a real trust claim shown to customers, not a default for every product.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'batchCode',
+      title: 'Batch code (optional)',
+      description:
+        'Your own internal traceability code for this specific batch, e.g. "GL-BS3-26-001" — only set this if you actually maintain batch codes and this is the real one currently in stock.',
+      type: 'string',
+    }),
+    defineField({
       name: 'active',
       title: 'Active',
       description: 'Only active products appear on the shop and the postcode map.',

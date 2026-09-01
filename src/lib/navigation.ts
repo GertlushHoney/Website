@@ -22,6 +22,7 @@ export const footerNav = {
     { label: 'Experiences', href: '/shop/experiences' },
   ],
   Discover: [
+    { label: 'The Gert Lush Standard', href: '/gert-lush-standard' },
     { label: 'Postcode Honey', href: '/postcode-honey' },
     { label: 'Our Story', href: '/our-story' },
     { label: 'Sustainability', href: '/sustainability' },

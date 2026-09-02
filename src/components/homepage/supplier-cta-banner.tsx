@@ -17,6 +17,7 @@ export function SupplierCtaBanner() {
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"
         />
+        <div className="to-ink-surface absolute inset-0 hidden bg-gradient-to-r from-transparent lg:block" />
       </div>
 
       <div className="bg-honeycomb-surface order-1 flex flex-col justify-center px-6 py-16 lg:order-2 lg:px-16">

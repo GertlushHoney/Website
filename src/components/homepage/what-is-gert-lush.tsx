@@ -1,71 +1,10 @@
+import { BeekeeperIcon, JarIcon, HomeIcon } from '@/components/icons/line-icons'
+
 // "How Gert Lush works" — a 3-stage strip directly beneath the hero, making
 // the business model visual rather than expecting people to read an About
 // page. Added 2026-08-27 per independent review feedback (John Hutchinson):
 // resolves the "is this a single farm, an umbrella brand, or a marketplace?"
 // ambiguity within five seconds of landing on the homepage.
-//
-// Icons are simple inline line-art (2026-08-28) — a beekeeper's veiled hat,
-// a honey jar, and a house ("we bring it to your table") — echoing the
-// icon-plus-caption layout from the reference mockup without adopting its
-// colours (this site's own dark/gold palette stays as-is).
-function BeekeeperIcon() {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="mx-auto h-11 w-11"
-      aria-hidden="true"
-    >
-      <ellipse cx="24" cy="15" rx="14" ry="4" />
-      <path d="M14 15 Q24 6 34 15" />
-      <path d="M17 19 Q24 23 31 19" />
-      <path d="M17 19 L17 35 M21.5 19 L21.5 37 M24 19 L24 38 M26.5 19 L26.5 37 M31 19 L31 35" />
-    </svg>
-  )
-}
-
-function JarIcon() {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="mx-auto h-11 w-11"
-      aria-hidden="true"
-    >
-      <rect x="14" y="8" width="20" height="6" rx="2" />
-      <path d="M16 14 L14 20 L14 38 Q14 40 16 40 L32 40 Q34 40 34 38 L34 20 L32 14" />
-      <rect x="18" y="23" width="12" height="9" rx="1" />
-    </svg>
-  )
-}
-
-function HomeIcon() {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="mx-auto h-11 w-11"
-      aria-hidden="true"
-    >
-      <path d="M10 22 L24 10 L38 22" />
-      <path d="M14 19 L14 38 L34 38 L34 19" />
-      <rect x="21" y="28" width="6" height="10" />
-    </svg>
-  )
-}
-
 const stages = [
   {
     number: '1',

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ShieldCheckIcon } from '@/components/icons/line-icons'
 
 // Compact homepage version of the Gert Lush Standard — the doc this is
 // sourced from (Gert_Lush_Standard_Website_Copy_v1.0.docx) offers this as
@@ -10,24 +11,6 @@ import Link from 'next/link'
 // afterthought next to the icon/photo treatment every other homepage
 // section got. Now a bordered "seal" card with a shield icon and a real
 // CTA, so it reads as a feature being shown off, not a caption.
-function ShieldCheckIcon() {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="mx-auto h-14 w-14"
-      aria-hidden="true"
-    >
-      <path d="M24 5 L39 11 L39 23 Q39 36 24 43 Q9 36 9 23 L9 11 Z" />
-      <path d="M16 23 L21.5 28.5 L32 17" />
-    </svg>
-  )
-}
-
 export function GertLushStandardStrip() {
   return (
     <section className="border-ink-line border-b px-6 py-16 lg:px-16">

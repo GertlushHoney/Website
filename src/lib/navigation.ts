@@ -40,7 +40,7 @@ export const footerNav = {
   Trade: [
     { label: 'Wholesale', href: '/stockists' },
     { label: 'Corporate Gifts', href: '/stockists' },
-    { label: 'Weddings and Events', href: '/stockists' },
+    { label: 'Weddings and Events', href: '/weddings-events' },
     { label: 'Become a Stockist', href: '/stockists' },
     { label: 'Become a Supplier', href: '/become-a-supplier' },
   ],

@@ -20,7 +20,13 @@ export default async function LipBalmPage() {
     <ComingSoonProduct
       eyebrow="Shop · Lip Balm"
       title="Beeswax lip balm."
-      description="A beeswax lip balm is on the list of products we'd like to make — nothing's confirmed on ingredients or price yet, so we're not selling it before it exists."
+      description="Made with beeswax, jojoba oil and a blend of shea and cocoa butter. The recipe and pricing are confirmed, but final packaging and labelling aren't, so it isn't in stock yet."
+      details={
+        <ul className="text-porcelain/70 mt-4 list-disc space-y-1 pl-5 text-sm">
+          <li>Four flavours to start: Sweet Orange, Unscented with Honey, Lavender, Rose</li>
+          <li>Minimum 13g tin — £5</li>
+        </ul>
+      }
       waitlistSubject="Lip balm waiting list"
     />
   )

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Stockists',
@@ -46,11 +47,15 @@ export default function StockistsPage() {
           Planning something bigger?
         </h2>
         <p className="text-porcelain/70 mt-4 text-sm">
-          Volume orders for corporate gifts, weddings or events aren&apos;t formally set up yet,
-          but get in touch and we&apos;ll work out what&apos;s possible.
+          Volume orders for corporate gifts aren&apos;t formally set up yet, but get in touch and
+          we&apos;ll work out what&apos;s possible.{' '}
+          <Link href="/weddings-events" className="text-comb-gold underline underline-offset-2">
+            Planning a wedding?
+          </Link>{' '}
+          — see wedding favours instead.
         </p>
         <a
-          href="mailto:sales@gertlushhoney.co.uk?subject=Corporate%20or%20event%20gifting%20enquiry"
+          href="mailto:sales@gertlushhoney.co.uk?subject=Corporate%20gifting%20enquiry"
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Request a gifting proposal

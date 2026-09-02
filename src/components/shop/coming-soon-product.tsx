@@ -9,11 +9,17 @@ export function ComingSoonProduct({
   eyebrow,
   title,
   description,
+  details,
   waitlistSubject,
 }: {
   eyebrow: string
   title: string
   description: string
+  // Optional extra confirmed detail (scents, sizes, pricing) rendered below
+  // the intro paragraph — for categories where more than the headline
+  // description is already real, unlike a category with nothing confirmed
+  // yet at all.
+  details?: React.ReactNode
   waitlistSubject: string
 }) {
   return (
@@ -27,6 +33,7 @@ export function ComingSoonProduct({
         {title}
       </h1>
       <p className="text-porcelain/70 mt-4 text-base">{description}</p>
+      {details}
 
       <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-2xl border p-8">
         <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">

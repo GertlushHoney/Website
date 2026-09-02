@@ -106,7 +106,7 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
               href={`/beekeepers/${product.beekeeper.slug}`}
               className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
             >
-              Meet {product.beekeeper.name}
+              Meet the Beekeeper - {product.beekeeper.name.trim().split(' ')[0]}
             </Link>
           ) : (
             <Link

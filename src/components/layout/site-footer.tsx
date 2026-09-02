@@ -29,6 +29,12 @@ export function SiteFooter() {
         <p className="text-porcelain/60 mt-16 text-xs">
           Gert Lush Honey. Bristol honey. Proper lush.
         </p>
+        <p className="text-porcelain/50 mt-4 text-xs">
+          &copy; {new Date().getFullYear()} GERT LUSH HONEY
+          <br className="sm:hidden" />
+          <span className="hidden sm:inline"> &middot; </span>
+          Proudly produced in Bristol &bull; All rights reserved
+        </p>
       </div>
     </footer>
   )

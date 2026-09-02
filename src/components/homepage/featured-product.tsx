@@ -101,18 +101,19 @@ export function FeaturedProduct({ products }: { products: FeaturedProductData[] 
           >
             Buy {product.name}
           </Link>
-          <Link
-            href={`/shop/${product.slug}`}
-            className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-          >
-            See origin &amp; beekeeper
-          </Link>
-          {product.beekeeper && (
+          {product.beekeeper ? (
             <Link
               href={`/beekeepers/${product.beekeeper.slug}`}
-              className="text-comb-gold hover:text-porcelain focus-visible:outline-honey-amber text-sm font-semibold underline underline-offset-4 focus-visible:outline focus-visible:outline-offset-2"
+              className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
             >
               Meet {product.beekeeper.name}
+            </Link>
+          ) : (
+            <Link
+              href={`/shop/${product.slug}`}
+              className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+            >
+              See origin
             </Link>
           )}
         </div>

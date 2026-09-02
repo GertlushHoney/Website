@@ -16,10 +16,13 @@ export function Hero() {
         <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
           Gert Lush Honey &middot; Postcode Honey
         </p>
-        <h1 className="mt-4 max-w-xl text-5xl font-bold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-          Honey with a postcode.
-          <br />
-          And a beekeeper behind every jar.
+        <h1 className="mt-4 max-w-xl text-balance">
+          <span className="block text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+            Honey with a postcode.
+          </span>
+          <span className="text-porcelain/80 mt-2 block text-xl font-semibold tracking-tight sm:text-2xl lg:text-3xl">
+            And a beekeeper behind every jar.
+          </span>
         </h1>
         <p className="text-porcelain/70 mt-6 max-w-md text-lg">
           We work with independent British beekeepers, selecting exceptional local honey and

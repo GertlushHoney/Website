@@ -23,7 +23,10 @@ const CARDS = [
     title: 'Thinking of becoming a beekeeper?',
     description:
       'A practical guide to getting started — local associations, courses, costs, equipment, and the route to Master Beekeeper.',
-    image: null,
+    image: {
+      src: '/images/source/bees-on-comb.jpg',
+      alt: 'Honeybees working a frame of comb, close up',
+    },
   },
   {
     href: '/become-a-supplier',
@@ -31,7 +34,10 @@ const CARDS = [
     title: 'Becoming a beekeeper supplier',
     description:
       'Keep bees and have surplus honey? We buy bulk honey from independent beekeepers across Britain and handle the retail side, so you can stick to the bees.',
-    image: null,
+    image: {
+      src: '/images/source/beekeeping-experience-bramble-farm.jpg',
+      alt: 'Beekeepers inspecting a frame at the hives on Bramble Farm',
+    },
   },
   {
     href: '/gert-lush-standard',
@@ -39,7 +45,10 @@ const CARDS = [
     title: 'The Gert Lush Standard',
     description:
       'Good beekeeping. Proper provenance. Carefully handled honey — the standard every beekeeper and batch is reviewed against before it reaches you.',
-    image: null,
+    image: {
+      src: '/images/source/honey-strain-dark.jpg',
+      alt: 'Honey being strained through a fine mesh sieve',
+    },
   },
   {
     href: '/asian-hornets',
@@ -58,7 +67,10 @@ const CARDS = [
     title: 'FAQs',
     description:
       'Answers to common questions about Gert Lush Honey — sourcing, ordering, delivery, storage and more.',
-    image: null,
+    image: {
+      src: '/images/source/bramble-farm-view.jpg',
+      alt: "Bramble Farm, Bristol's Northern Slopes",
+    },
   },
 ]
 

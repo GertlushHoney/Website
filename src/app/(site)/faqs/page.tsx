@@ -56,6 +56,24 @@ const sections: FaqSection[] = [
           "Both, in a sense. We don't keep hives ourselves for every jar — we buy suitable bulk honey from independent beekeepers we trust, check and quality-control it, then jar, label and sell it under one Gert Lush standard. The beekeeper behind each batch stays visibly credited on the jar; nothing is sold anonymously.",
       },
       {
+        q: 'What is the Gert Lush Standard?',
+        a: (
+          <>
+            It means the beekeeper has passed our supplier review and the honey has passed our
+            batch acceptance checks. See{' '}
+            <Link
+              href="/gert-lush-standard"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              The Gert Lush Standard
+            </Link>{' '}
+            for the full detail.
+          </>
+        ),
+        plainAnswer:
+          'It means the beekeeper has passed our supplier review and the honey has passed our batch acceptance checks.',
+      },
+      {
         q: 'Who is the beekeeper behind Bee S3?',
         a: (
           <>

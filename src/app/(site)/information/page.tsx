@@ -34,6 +34,14 @@ const CARDS = [
     image: null,
   },
   {
+    href: '/gert-lush-standard',
+    eyebrow: 'Trust and provenance',
+    title: 'The Gert Lush Standard',
+    description:
+      'Good beekeeping. Proper provenance. Carefully handled honey — the standard every beekeeper and batch is reviewed against before it reaches you.',
+    image: null,
+  },
+  {
     href: '/asian-hornets',
     eyebrow: 'Protecting British bees',
     title: 'Asian hornets',

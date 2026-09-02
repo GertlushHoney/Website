@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 
 export const metadata: Metadata = {
@@ -32,6 +33,32 @@ export default function BecomeASupplierPage() {
         behind the batch. No stall to run, no customers to chase — just a fair price for your
         surplus.
       </p>
+
+      <section className="mt-10">
+        <h2 className="text-porcelain text-xl font-bold tracking-tight">What we look for</h2>
+        <p className="text-porcelain/70 mt-3 text-sm">
+          We&apos;re not expecting commercial-scale paperwork or a formal certification — most
+          independent beekeepers won&apos;t have that, and we&apos;re not asking for it. What we do
+          look at, before and when we take on your honey:
+        </p>
+        <ul className="text-porcelain/70 mt-3 list-disc space-y-1 pl-5 text-sm">
+          <li>How you manage your bees&apos; health, and how you handle challenges like Varroa</li>
+          <li>Any treatments you use, and keeping basic records of them</li>
+          <li>Keeping feeding separate from honey that&apos;s meant for us</li>
+          <li>How you extract and store your honey, and the cleanliness of your equipment</li>
+          <li>Being able to substantiate where your honey actually comes from</li>
+        </ul>
+        <p className="text-porcelain/70 mt-3 text-sm">
+          This is the same review every beekeeper we work with goes through — see{' '}
+          <Link
+            href="/gert-lush-standard"
+            className="text-comb-gold underline underline-offset-2"
+          >
+            The Gert Lush Standard
+          </Link>{' '}
+          for the full detail.
+        </p>
+      </section>
 
       <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-2xl border p-8">
         <h2 className="text-porcelain text-xl font-bold tracking-tight">To get started</h2>

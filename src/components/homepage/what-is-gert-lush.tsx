@@ -41,12 +41,14 @@ export function WhatIsGertLush() {
                 key={stage.number}
                 className={`text-center lg:px-6 ${index > 0 ? 'lg:border-ink-line lg:border-l' : ''}`}
               >
-                <div className="text-comb-gold">
-                  <Icon />
+                <div className="flex items-center justify-center gap-3">
+                  <div className="text-comb-gold">
+                    <Icon />
+                  </div>
+                  <span className="border-comb-gold text-comb-gold flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-xl font-semibold">
+                    {stage.number}
+                  </span>
                 </div>
-                <span className="border-comb-gold text-comb-gold mx-auto mt-4 flex h-16 w-16 items-center justify-center rounded-full border-2 text-3xl font-semibold">
-                  {stage.number}
-                </span>
                 <p className="text-porcelain mt-3 text-sm font-semibold">{stage.title}</p>
                 <p className="text-porcelain/60 mt-2 text-sm">{stage.body}</p>
               </div>

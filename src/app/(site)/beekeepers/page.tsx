@@ -23,10 +23,9 @@ export default async function BeekeepersPage() {
         The people behind the honey.
       </h1>
       <p className="text-porcelain/70 mt-4 text-base">
-        Gert Lush Honey is a premium honey brand supported by a network of independent partner
-        apiaries. We don&apos;t keep hives ourselves for every jar — we buy bulk honey from
-        beekeepers we trust, check and quality-control it, jar it, and sell it under one Gert Lush
-        standard. The beekeeper stays visibly credited on every jar; we handle everything else.
+        Gert Lush began with our own bees at Bramble Farm. Today we&apos;re building a network of
+        independent British beekeepers whose honey we select, check, jar and sell — while keeping
+        each beekeeper and place at the heart of the story.
       </p>
 
       <div className="relative mt-10 aspect-[21/9] overflow-hidden rounded-2xl">

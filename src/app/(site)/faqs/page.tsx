@@ -42,10 +42,11 @@ const sections: FaqSection[] = [
         q: 'Is Gert Lush Honey a beekeeper, or do you buy the honey in?',
         a: (
           <>
-            Both, in a sense. We don&apos;t keep hives ourselves for every jar — we buy suitable
-            bulk honey from independent beekeepers we trust, check and quality-control it, then
-            jar, label and sell it under one Gert Lush standard. The beekeeper behind each batch
-            stays visibly credited on the jar; nothing is sold anonymously. See{' '}
+            Both, in a sense. Gert Lush began with our own bees at Bramble Farm, and today
+            we&apos;re building a network of independent British beekeepers whose honey we select,
+            check, jar and sell — keeping each beekeeper and place at the heart of the story. The
+            beekeeper behind each batch stays visibly credited on the jar; nothing is sold
+            anonymously. See{' '}
             <Link href="/beekeepers" className="text-comb-gold underline underline-offset-2">
               Our Beekeepers
             </Link>
@@ -53,7 +54,7 @@ const sections: FaqSection[] = [
           </>
         ),
         plainAnswer:
-          "Both, in a sense. We don't keep hives ourselves for every jar — we buy suitable bulk honey from independent beekeepers we trust, check and quality-control it, then jar, label and sell it under one Gert Lush standard. The beekeeper behind each batch stays visibly credited on the jar; nothing is sold anonymously.",
+          "Both, in a sense. Gert Lush began with our own bees at Bramble Farm, and today we're building a network of independent British beekeepers whose honey we select, check, jar and sell — keeping each beekeeper and place at the heart of the story. The beekeeper behind each batch stays visibly credited on the jar; nothing is sold anonymously.",
       },
       {
         q: 'What is the Gert Lush Standard?',

@@ -20,6 +20,7 @@ export const informationCard = defineType({
           { title: 'Become a Supplier', value: '/become-a-supplier' },
           { title: 'The Gert Lush Standard', value: '/gert-lush-standard' },
           { title: 'Asian Hornets', value: '/asian-hornets' },
+          { title: 'Bee-Friendly Gardens', value: '/bee-friendly-garden' },
           { title: 'FAQs', value: '/faqs' },
         ],
       },

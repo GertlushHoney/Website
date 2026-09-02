@@ -29,6 +29,7 @@ export const footerNav = {
     { label: 'Stockists', href: '/stockists' },
     { label: 'Becoming a Beekeeper', href: '/becoming-a-beekeeper' },
     { label: 'Asian Hornets', href: '/asian-hornets' },
+    { label: 'Bee-Friendly Gardens', href: '/bee-friendly-garden' },
   ],
   Help: [
     { label: 'Contact', href: '/contact' },

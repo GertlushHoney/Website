@@ -63,6 +63,17 @@ const CARDS = [
     },
   },
   {
+    href: '/bee-friendly-garden',
+    eyebrow: 'Helping bees at home',
+    title: 'Make your garden more bee friendly',
+    description:
+      'Practical, research-backed ways to help bees — plant colour and shape, flowering all season, and building a bee hotel for solitary bees.',
+    // No photo yet — none of our real garden/planting shots exist, and this
+    // page doesn't use stock or generated images. A Sanity override can add
+    // one later once a real photo is available.
+    image: null,
+  },
+  {
     href: '/faqs',
     eyebrow: 'Common questions',
     title: 'FAQs',
@@ -80,15 +91,13 @@ export default async function InformationPage() {
 
   const cards = CARDS.map((card) => {
     const override = overrides[card.href as keyof typeof overrides]
+    const imageSrc = override?.imageUrl || card.image?.src
     return {
       href: card.href,
       eyebrow: override?.eyebrow || card.eyebrow,
       title: override?.title || card.title,
       description: override?.description || card.description,
-      image: {
-        src: override?.imageUrl || card.image.src,
-        alt: card.image.alt,
-      },
+      image: imageSrc ? { src: imageSrc, alt: card.image?.alt ?? '' } : null,
     }
   })
 

@@ -8,6 +8,7 @@ export type InformationCardPageKey =
   | '/become-a-supplier'
   | '/gert-lush-standard'
   | '/asian-hornets'
+  | '/bee-friendly-garden'
   | '/faqs'
 
 type RawInformationCard = {

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getInformationCards } from '@/lib/sanity/information-cards'
 
 export const metadata: Metadata = {
   title: 'Information',
@@ -74,7 +75,23 @@ const CARDS = [
   },
 ]
 
-export default function InformationPage() {
+export default async function InformationPage() {
+  const overrides = await getInformationCards()
+
+  const cards = CARDS.map((card) => {
+    const override = overrides[card.href as keyof typeof overrides]
+    return {
+      href: card.href,
+      eyebrow: override?.eyebrow || card.eyebrow,
+      title: override?.title || card.title,
+      description: override?.description || card.description,
+      image: {
+        src: override?.imageUrl || card.image.src,
+        alt: card.image.alt,
+      },
+    }
+  })
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
       <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
@@ -88,7 +105,7 @@ export default function InformationPage() {
       </p>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {CARDS.map((card) => (
+        {cards.map((card) => (
           <Link
             key={card.href}
             href={card.href}

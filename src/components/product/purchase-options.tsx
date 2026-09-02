@@ -33,6 +33,7 @@ export function PurchaseOptions({
   productName,
   productHandle,
   unitPrice,
+  unitLabel = 'jar',
   subscriptionUnitPrice,
   subscriptionSellingPlanId,
   deliveryPrice,
@@ -46,6 +47,9 @@ export function PurchaseOptions({
   // product, not a generic "email me" list.
   productHandle: string
   unitPrice: number
+  // What one unit is called in copy ("jar", "item", "bar"...) — honey
+  // products default to "jar"; merch products pass their own.
+  unitLabel?: string
   // Omit entirely to offer one-time purchase only — e.g. a product with no
   // Sanity-configured subscription price yet.
   subscriptionUnitPrice?: number
@@ -91,8 +95,8 @@ export function PurchaseOptions({
     ? `${productName} monthly subscription`
     : `${productName} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one jar of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/jar plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} jar${quantity > 1 ? 's' : ''} of ${productName} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
+    ? `I'd like to subscribe to one ${unitLabel} of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productName} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (
@@ -117,7 +121,7 @@ export function PurchaseOptions({
                 className="sr-only"
               />
               <span className="font-semibold">One-time purchase</span>
-              <span className="block text-xs opacity-70">{formatGBP(unitPrice)} a jar</span>
+              <span className="block text-xs opacity-70">{formatGBP(unitPrice)} per {unitLabel}</span>
             </label>
 
             <label
@@ -137,13 +141,13 @@ export function PurchaseOptions({
               />
               <span className="font-semibold">Subscribe monthly</span>
               <span className="block text-xs opacity-70">
-                {formatGBP(subscriptionUnitPrice)}/jar &middot; cancel any time
+                {formatGBP(subscriptionUnitPrice)}/{unitLabel} &middot; cancel any time
               </span>
             </label>
           </div>
         </fieldset>
       ) : (
-        <p className="text-porcelain text-sm font-semibold">{formatGBP(unitPrice)} a jar</p>
+        <p className="text-porcelain text-sm font-semibold">{formatGBP(unitPrice)} per {unitLabel}</p>
       )}
 
       {!isSubscription && (
@@ -177,7 +181,7 @@ export function PurchaseOptions({
         <p className={`mt-2 text-xs ${isSoldOut ? 'text-honey-amber' : 'text-porcelain/50'}`}>
           {isSoldOut
             ? 'Out of stock — check back soon.'
-            : `${stockCount} jar${stockCount === 1 ? '' : 's'} in stock`}
+            : `${stockCount} ${unitLabel}${stockCount === 1 ? '' : 's'} in stock`}
         </p>
       )}
 

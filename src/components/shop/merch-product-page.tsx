@@ -85,6 +85,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               productName={product.name}
               productHandle={product.shopifyHandle}
               unitPrice={shopifyProduct.price}
+              unitLabel="item"
               deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}
               stockCount={shopifyProduct.quantityAvailable}

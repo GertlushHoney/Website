@@ -33,18 +33,21 @@ export function WhatIsGertLush() {
         <h2 className="text-porcelain text-center text-3xl font-bold tracking-tight text-balance">
           How Gert Lush works
         </h2>
-        <div className="mt-10 grid gap-10 sm:grid-cols-3">
-          {stages.map((stage) => {
+        <div className="mt-10 grid gap-10 sm:grid-cols-3 lg:gap-0">
+          {stages.map((stage, index) => {
             const Icon = stage.icon
             return (
-              <div key={stage.number} className="text-center">
+              <div
+                key={stage.number}
+                className={`text-center lg:px-6 ${index > 0 ? 'lg:border-ink-line lg:border-l' : ''}`}
+              >
                 <div className="text-comb-gold">
                   <Icon />
                 </div>
                 <span className="border-comb-gold text-comb-gold mx-auto mt-4 flex h-16 w-16 items-center justify-center rounded-full border-2 text-3xl font-semibold">
                   {stage.number}
                 </span>
-                <p className="text-porcelain mt-4 text-xl font-semibold">{stage.title}</p>
+                <p className="text-porcelain mt-3 text-sm font-semibold">{stage.title}</p>
                 <p className="text-porcelain/60 mt-2 text-sm">{stage.body}</p>
               </div>
             )

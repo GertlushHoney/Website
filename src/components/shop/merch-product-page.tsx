@@ -89,6 +89,10 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}
               stockCount={shopifyProduct.quantityAvailable}
+              variants={shopifyProduct.variants}
+              variantGroupLabel={
+                product.category === 'hamper' ? 'Choose your honey' : 'Choose an option'
+              }
             />
           ) : (
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">

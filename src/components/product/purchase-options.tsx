@@ -29,6 +29,14 @@ function formatGBP(amount: number) {
 // piling up on one day.
 const CANCELLATION_NOTICE_DAYS = 7
 
+export type PurchaseOptionsVariant = {
+  id: string
+  label: string
+  price: number
+  availableForSale: boolean
+  quantityAvailable: number
+}
+
 export function PurchaseOptions({
   productName,
   productHandle,
@@ -40,6 +48,8 @@ export function PurchaseOptions({
   contactEmail = 'sales@gertlushhoney.co.uk',
   variantId,
   stockCount,
+  variants,
+  variantGroupLabel = 'Choose an option',
 }: {
   productName: string
   // The real Shopify product handle — tags the restock-alert signup with
@@ -61,46 +71,106 @@ export function PurchaseOptions({
   deliveryPrice: number
   contactEmail?: string
   // Real Shopify variant to check out with a live cart, when available.
+  // Ignored when `variants` is passed — see below.
   variantId?: string | null
   // Real Shopify inventory count. null/undefined means "unknown" (Shopify
   // not configured, product not found) — shown as nothing, never a guess.
+  // Ignored when `variants` is passed.
   stockCount?: number | null
+  // Every real Shopify variant for this product (e.g. a hamper's honey
+  // selection). When present, price/variantId/stock are derived from
+  // whichever one the customer has selected instead of the flat props
+  // above — a picker only renders when there's more than one to choose
+  // from, so a single-variant product behaves exactly as it did before
+  // this existed.
+  variants?: PurchaseOptionsVariant[]
+  variantGroupLabel?: string
 }) {
   const [type, setType] = useState<PurchaseType>('one-time')
   const [quantity, setQuantity] = useState(1)
-  const isSoldOut = stockCount !== null && stockCount !== undefined && stockCount <= 0
-  const maxQuantity = Math.min(12, stockCount && stockCount > 0 ? stockCount : 12)
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const { addItem, isPending, error: cartError } = useCart()
+
+  const hasVariantChoice = Boolean(variants && variants.length > 1)
+  const activeVariant = variants?.[selectedVariantIndex]
+  const effectivePrice = activeVariant ? activeVariant.price : unitPrice
+  const effectiveVariantId = activeVariant ? activeVariant.id : variantId
+  const effectiveStockCount = activeVariant ? activeVariant.quantityAvailable : stockCount
+
+  const isSoldOut =
+    effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
+  const maxQuantity = Math.min(
+    12,
+    effectiveStockCount && effectiveStockCount > 0 ? effectiveStockCount : 12
+  )
 
   const hasSubscription = subscriptionUnitPrice !== undefined
   const isSubscription = hasSubscription && type === 'subscription'
 
   function handleAddToBasket() {
-    if (!variantId) return
+    if (!effectiveVariantId) return
     if (isSubscription) {
       if (!subscriptionSellingPlanId) return
-      addItem(variantId, 1, subscriptionSellingPlanId)
+      addItem(effectiveVariantId, 1, subscriptionSellingPlanId)
       return
     }
-    addItem(variantId, quantity)
+    addItem(effectiveVariantId, quantity)
   }
 
   const canCheckoutLive =
-    Boolean(variantId) && (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
-  const subtotal = unitPrice * quantity
+    Boolean(effectiveVariantId) && (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
+  const subtotal = effectivePrice * quantity
   const total = subtotal + deliveryPrice
   const monthlyTotal = (subscriptionUnitPrice ?? 0) + deliveryPrice
 
+  const productLabel = activeVariant ? `${productName} — ${activeVariant.label}` : productName
   const subject = isSubscription
-    ? `${productName} monthly subscription`
-    : `${productName} order (x${quantity})`
+    ? `${productLabel} monthly subscription`
+    : `${productLabel} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one ${unitLabel} of ${productName} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productName} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
+    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (
     <div className="border-ink-line bg-honeycomb-surface mt-8 rounded-xl border p-5">
+      {hasVariantChoice && (
+        <fieldset className="mb-4">
+          <legend className="text-porcelain text-sm font-semibold">{variantGroupLabel}</legend>
+          <div className="mt-3 grid gap-2">
+            {variants!.map((variant, index) => (
+              <label
+                key={variant.id}
+                className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-4 py-3 text-sm transition focus-within:outline focus-within:outline-offset-2 ${
+                  index === selectedVariantIndex
+                    ? 'border-comb-gold bg-ink-surface text-porcelain'
+                    : 'border-ink-line text-porcelain/70 hover:text-porcelain'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="variant-choice"
+                  value={variant.id}
+                  checked={index === selectedVariantIndex}
+                  onChange={() => {
+                    setSelectedVariantIndex(index)
+                    setQuantity(1)
+                  }}
+                  className="sr-only"
+                />
+                <span className="flex items-center justify-between gap-3">
+                  <span className="font-semibold">{variant.label}</span>
+                  <span className="text-porcelain/70 shrink-0">{formatGBP(variant.price)}</span>
+                </span>
+                {!variant.availableForSale && (
+                  <span className="text-honey-amber mt-0.5 block text-xs">Out of stock</span>
+                )}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
       {hasSubscription ? (
         <fieldset>
           <legend className="text-porcelain text-sm font-semibold">How would you like it?</legend>
@@ -121,7 +191,7 @@ export function PurchaseOptions({
                 className="sr-only"
               />
               <span className="font-semibold">One-time purchase</span>
-              <span className="block text-xs opacity-70">{formatGBP(unitPrice)} per {unitLabel}</span>
+              <span className="block text-xs opacity-70">{formatGBP(effectivePrice)} per {unitLabel}</span>
             </label>
 
             <label
@@ -147,7 +217,7 @@ export function PurchaseOptions({
           </div>
         </fieldset>
       ) : (
-        <p className="text-porcelain text-sm font-semibold">{formatGBP(unitPrice)} per {unitLabel}</p>
+        <p className="text-porcelain text-sm font-semibold">{formatGBP(effectivePrice)} per {unitLabel}</p>
       )}
 
       {!isSubscription && (
@@ -177,11 +247,11 @@ export function PurchaseOptions({
         </div>
       )}
 
-      {stockCount !== null && stockCount !== undefined && (
+      {effectiveStockCount !== null && effectiveStockCount !== undefined && (
         <p className={`mt-2 text-xs ${isSoldOut ? 'text-honey-amber' : 'text-porcelain/50'}`}>
           {isSoldOut
             ? 'Out of stock — check back soon.'
-            : `${stockCount} ${unitLabel}${stockCount === 1 ? '' : 's'} in stock`}
+            : `${effectiveStockCount} ${unitLabel}${effectiveStockCount === 1 ? '' : 's'} in stock`}
         </p>
       )}
 

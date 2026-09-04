@@ -12,10 +12,11 @@ export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
       title
       handle
       availableForSale
-      variants(first: 1) {
+      variants(first: 20) {
         edges {
           node {
             id
+            title
             availableForSale
             quantityAvailable
             price {

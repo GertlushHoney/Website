@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCart } from '@/components/cart/cart-context'
 import { RestockAlertForm } from '@/components/product/restock-alert-form'
+import { formatHoneySelection, tallyJarSelections } from '@/lib/hamper'
 
 type PurchaseType = 'one-time' | 'subscription'
 
@@ -29,6 +30,16 @@ function formatGBP(amount: number) {
 // piling up on one day.
 const CANCELLATION_NOTICE_DAYS = 7
 
+// Must match the "Honey selection" variant value created in Shopify for
+// each hamper product — see docs/technical-architecture.md. Deliberately
+// not a per-honey Shopify variant (that doesn't scale as the postcode
+// range grows); instead this variant just triggers the picker below,
+// built live from whatever honeys are actually active right now.
+const HONEY_CHOICE_TRIGGER_LABEL = 'Choose your own'
+const HONEY_CHOICE_ATTRIBUTE_KEY = 'Honey selection'
+
+export type HoneyJarOption = { name: string; quantityAvailable: number }
+
 export type PurchaseOptionsVariant = {
   id: string
   label: string
@@ -50,6 +61,8 @@ export function PurchaseOptions({
   stockCount,
   variants,
   variantGroupLabel = 'Choose an option',
+  honeyJarOptions,
+  hamperJarCount,
 }: {
   productName: string
   // The real Shopify product handle — tags the restock-alert signup with
@@ -85,10 +98,24 @@ export function PurchaseOptions({
   // this existed.
   variants?: PurchaseOptionsVariant[]
   variantGroupLabel?: string
+  // Active honeys (with live stock) to offer when the selected variant is
+  // the "Choose your own" one (see HONEY_CHOICE_TRIGGER_LABEL) — fetched
+  // live by the caller, never hardcoded, so both the list and the stock
+  // numbers stay correct as postcode honeys come and go.
+  honeyJarOptions?: HoneyJarOption[]
+  // How many jars this hamper contains — one dropdown per jar in "I'll
+  // choose" mode. Required alongside honeyJarOptions for the picker to
+  // render at all.
+  hamperJarCount?: number
 }) {
   const [type, setType] = useState<PurchaseType>('one-time')
   const [quantity, setQuantity] = useState(1)
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
+  const [honeyPickMode, setHoneyPickMode] = useState<'same' | 'choose'>('same')
+  const [sameHoneyChoice, setSameHoneyChoice] = useState(honeyJarOptions?.[0]?.name ?? '')
+  const [perJarHoney, setPerJarHoney] = useState<string[]>(() =>
+    Array(hamperJarCount ?? 0).fill(honeyJarOptions?.[0]?.name ?? '')
+  )
   const { addItem, isPending, error: cartError } = useCart()
 
   const hasVariantChoice = Boolean(variants && variants.length > 1)
@@ -96,6 +123,23 @@ export function PurchaseOptions({
   const effectivePrice = activeVariant ? activeVariant.price : unitPrice
   const effectiveVariantId = activeVariant ? activeVariant.id : variantId
   const effectiveStockCount = activeVariant ? activeVariant.quantityAvailable : stockCount
+  const needsHoneyChoice =
+    activeVariant?.label === HONEY_CHOICE_TRIGGER_LABEL &&
+    honeyJarOptions !== undefined &&
+    honeyJarOptions.length > 0 &&
+    Boolean(hamperJarCount)
+
+  const honeyPerJar =
+    honeyPickMode === 'same' ? Array(hamperJarCount ?? 0).fill(sameHoneyChoice) : perJarHoney
+  const honeyTally = needsHoneyChoice ? tallyJarSelections(honeyPerJar) : []
+  const honeyStockShortfalls = honeyTally.filter(({ honeyName, jars }) => {
+    const available = honeyJarOptions?.find((o) => o.name === honeyName)?.quantityAvailable ?? 0
+    return jars * quantity > available
+  })
+  const honeyChoiceAttributes =
+    needsHoneyChoice && honeyTally.length > 0
+      ? [{ key: HONEY_CHOICE_ATTRIBUTE_KEY, value: formatHoneySelection(honeyTally) }]
+      : []
 
   const isSoldOut =
     effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
@@ -106,30 +150,35 @@ export function PurchaseOptions({
 
   const hasSubscription = subscriptionUnitPrice !== undefined
   const isSubscription = hasSubscription && type === 'subscription'
+  const hasHoneyStockShortfall = needsHoneyChoice && honeyStockShortfalls.length > 0
 
   function handleAddToBasket() {
-    if (!effectiveVariantId) return
+    if (!effectiveVariantId || hasHoneyStockShortfall) return
     if (isSubscription) {
       if (!subscriptionSellingPlanId) return
-      addItem(effectiveVariantId, 1, subscriptionSellingPlanId)
+      addItem(effectiveVariantId, 1, subscriptionSellingPlanId, honeyChoiceAttributes)
       return
     }
-    addItem(effectiveVariantId, quantity)
+    addItem(effectiveVariantId, quantity, undefined, honeyChoiceAttributes)
   }
 
   const canCheckoutLive =
-    Boolean(effectiveVariantId) && (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
+    Boolean(effectiveVariantId) &&
+    !hasHoneyStockShortfall &&
+    (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
   const subtotal = effectivePrice * quantity
   const total = subtotal + deliveryPrice
   const monthlyTotal = (subscriptionUnitPrice ?? 0) + deliveryPrice
 
   const productLabel = activeVariant ? `${productName} — ${activeVariant.label}` : productName
+  const honeyChoiceSuffix =
+    needsHoneyChoice && honeyTally.length > 0 ? ` (${formatHoneySelection(honeyTally)})` : ''
   const subject = isSubscription
     ? `${productLabel} monthly subscription`
     : `${productLabel} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
+    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (
@@ -169,6 +218,100 @@ export function PurchaseOptions({
             ))}
           </div>
         </fieldset>
+      )}
+
+      {needsHoneyChoice && (
+        <div className="mb-4">
+          <fieldset>
+            <legend className="text-porcelain text-sm font-semibold">Which honey?</legend>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label
+                className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-3 py-2 text-center text-sm transition focus-within:outline focus-within:outline-offset-2 ${
+                  honeyPickMode === 'same'
+                    ? 'border-comb-gold bg-ink-surface text-porcelain'
+                    : 'border-ink-line text-porcelain/70 hover:text-porcelain'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="honey-pick-mode"
+                  value="same"
+                  checked={honeyPickMode === 'same'}
+                  onChange={() => setHoneyPickMode('same')}
+                  className="sr-only"
+                />
+                All the same
+              </label>
+              <label
+                className={`focus-within:outline-honey-amber cursor-pointer rounded-lg border px-3 py-2 text-center text-sm transition focus-within:outline focus-within:outline-offset-2 ${
+                  honeyPickMode === 'choose'
+                    ? 'border-comb-gold bg-ink-surface text-porcelain'
+                    : 'border-ink-line text-porcelain/70 hover:text-porcelain'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="honey-pick-mode"
+                  value="choose"
+                  checked={honeyPickMode === 'choose'}
+                  onChange={() => setHoneyPickMode('choose')}
+                  className="sr-only"
+                />
+                I&apos;ll choose each jar
+              </label>
+            </div>
+          </fieldset>
+
+          {honeyPickMode === 'same' ? (
+            <select
+              aria-label="Honey for every jar"
+              value={sameHoneyChoice}
+              onChange={(e) => setSameHoneyChoice(e.target.value)}
+              className="bg-ink border-ink-line text-porcelain focus-visible:outline-honey-amber mt-3 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
+            >
+              {honeyJarOptions!.map((option) => (
+                <option key={option.name} value={option.name}>
+                  {option.name}
+                  {option.quantityAvailable <= 0 ? ' — out of stock' : ''}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {perJarHoney.map((jarHoney, jarIndex) => (
+                <div key={jarIndex} className="flex items-center gap-2">
+                  <span className="text-porcelain/60 w-12 shrink-0 text-sm">
+                    Jar {jarIndex + 1}
+                  </span>
+                  <select
+                    aria-label={`Honey for jar ${jarIndex + 1}`}
+                    value={jarHoney}
+                    onChange={(e) =>
+                      setPerJarHoney((prev) =>
+                        prev.map((h, i) => (i === jarIndex ? e.target.value : h))
+                      )
+                    }
+                    className="bg-ink border-ink-line text-porcelain focus-visible:outline-honey-amber w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
+                  >
+                    {honeyJarOptions!.map((option) => (
+                      <option key={option.name} value={option.name}>
+                        {option.name}
+                        {option.quantityAvailable <= 0 ? ' — out of stock' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {hasHoneyStockShortfall && (
+            <p className="text-honey-amber mt-2 text-xs" role="alert">
+              Not enough {honeyStockShortfalls.map((s) => s.honeyName).join(', ')} in stock for
+              this selection — pick something else to check out.
+            </p>
+          )}
+        </div>
       )}
 
       {hasSubscription ? (
@@ -291,6 +434,14 @@ export function PurchaseOptions({
           </button>
           <RestockAlertForm productName={productName} productHandle={productHandle} />
         </>
+      ) : hasHoneyStockShortfall ? (
+        <button
+          type="button"
+          disabled
+          className="bg-ink-line text-porcelain/50 mt-4 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
+        >
+          Add to basket
+        </button>
       ) : canCheckoutLive ? (
         <>
           <p className="text-porcelain/60 mt-3 text-sm">

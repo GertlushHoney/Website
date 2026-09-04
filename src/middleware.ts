@@ -38,7 +38,17 @@ function authRequired(realm: string) {
   })
 }
 
+// Webhook endpoints (added 2026-09-04, hamper stock sync) — Shopify calls
+// these directly and can't supply the site-wide Basic Auth credentials, so
+// they're excluded from both gates. Their real security boundary is each
+// route verifying Shopify's HMAC signature itself, not this middleware.
+const UNGATED_PREFIXES = ['/api/webhooks']
+
 export function middleware(request: NextRequest) {
+  if (UNGATED_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
+    return NextResponse.next()
+  }
+
   if (STUDIO_GATED_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
     if (!STUDIO_USERNAME || !STUDIO_PASSWORD) return NextResponse.next()
     if (isAuthorized(request, STUDIO_USERNAME, STUDIO_PASSWORD)) return NextResponse.next()

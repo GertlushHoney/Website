@@ -72,6 +72,10 @@ const CART_FRAGMENT = /* GraphQL */ `
               currencyCode
             }
           }
+          attributes {
+            key
+            value
+          }
           merchandise {
             ... on ProductVariant {
               id

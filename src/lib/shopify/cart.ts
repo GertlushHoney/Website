@@ -25,6 +25,11 @@ export type CartLine = {
   // attached when it was added) — used to label it "Monthly subscription"
   // in the basket rather than guessing from price/quantity.
   sellingPlanName: string | null
+  // Custom key/value line attributes (e.g. a hamper's "Honey selection")
+  // set when the item was added — shown in the basket and visible on the
+  // real Shopify order, but never affects pricing or a separate product's
+  // own stock on its own (see the order-paid webhook for that).
+  attributes: { key: string; value: string }[]
 }
 
 export type Cart = {
@@ -50,6 +55,7 @@ type RawCart = {
           sellingPlan: { id: string; name: string }
           checkoutChargeAmount: { amount: string; currencyCode: string }
         } | null
+        attributes: { key: string; value: string }[]
         merchandise: {
           id: string
           title: string
@@ -87,6 +93,7 @@ function normalizeCart(raw: RawCart): Cart {
       ),
       currencyCode: node.merchandise.price.currencyCode,
       sellingPlanName: node.sellingPlanAllocation?.sellingPlan.name ?? null,
+      attributes: node.attributes,
     })),
   }
 }
@@ -135,10 +142,17 @@ export async function getCart(): Promise<Cart | null> {
 // Pass sellingPlanId to add it as a real recurring subscription line
 // instead of a one-off — it must be a real Selling Plan id from Shopify
 // (see getProductByHandle's subscriptionSellingPlanId), never invented.
+//
+// Pass attributes for a customer-entered choice that isn't its own Shopify
+// variant (e.g. a hamper's "Honey selection") — stored on the order line
+// for manual reference and read by the order-paid webhook to work out
+// which honey's stock to adjust, but Shopify itself does nothing with it
+// automatically.
 export async function addToCart(
   variantId: string,
   quantity: number,
-  sellingPlanId?: string
+  sellingPlanId?: string,
+  attributes?: { key: string; value: string }[]
 ): Promise<Cart> {
   const safeQuantity = Math.min(12, Math.max(1, Math.floor(quantity)))
   const cartId = await getCartId()
@@ -146,6 +160,7 @@ export async function addToCart(
     merchandiseId: variantId,
     quantity: safeQuantity,
     ...(sellingPlanId ? { sellingPlanId } : {}),
+    ...(attributes && attributes.length > 0 ? { attributes } : {}),
   }
 
   if (!cartId) {

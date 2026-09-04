@@ -128,6 +128,11 @@ export function BasketDrawer() {
                         <span className="text-comb-gold font-normal"> &middot; monthly</span>
                       )}
                     </p>
+                    {line.attributes.map((attr) => (
+                      <p key={attr.key} className="text-porcelain/60 text-xs">
+                        {attr.key}: {attr.value}
+                      </p>
+                    ))}
                     <p className="text-porcelain/60 mt-0.5 text-sm">
                       {formatGBP(line.price)}
                       {line.sellingPlanName && '/month'}

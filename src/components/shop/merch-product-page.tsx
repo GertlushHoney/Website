@@ -6,6 +6,8 @@ import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
+import { getHoneyProducts } from '@/lib/sanity/products'
+import { parseHamperJarCount } from '@/lib/hamper'
 import { JsonLd } from '@/components/seo/json-ld'
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
@@ -13,8 +15,30 @@ import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 // actually has a matching, active Sanity document — see each category's
 // page.tsx for the "not real yet" fallback.
 export async function MerchProductPage({ product }: { product: MerchProduct }) {
-  const shopifyProduct = await getProductByHandle(product.shopifyHandle)
+  const [shopifyProduct, honeyProducts] = await Promise.all([
+    getProductByHandle(product.shopifyHandle),
+    // Only a hamper's "Choose your own" variant needs this — fetched
+    // unconditionally anyway since it's a single cheap Sanity query, and
+    // keeps this component simple rather than branching per category.
+    getHoneyProducts(),
+  ])
   const imageUrl = urlForImage(product.heroImage ?? undefined)?.width(1000).height(1000).url()
+
+  // Live stock per honey, for the per-jar picker's "out of stock" gating —
+  // same lookup the order-paid webhook does, just read-only here. Only
+  // fetched/used for hampers, but cheap enough not to bother branching the
+  // Promise.all above on category.
+  const honeyJarOptions =
+    product.category === 'hamper'
+      ? await Promise.all(
+          honeyProducts.map(async (honey) => ({
+            name: honey.name,
+            quantityAvailable: (await getProductByHandle(honey.shopifyHandle))?.quantityAvailable ?? 0,
+          }))
+        )
+      : undefined
+  const hamperJarCount =
+    product.category === 'hamper' ? (parseHamperJarCount(product.name) ?? undefined) : undefined
 
   const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
   const isSoldOut =
@@ -93,6 +117,8 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               variantGroupLabel={
                 product.category === 'hamper' ? 'Choose your honey' : 'Choose an option'
               }
+              honeyJarOptions={honeyJarOptions}
+              hamperJarCount={hamperJarCount}
             />
           ) : (
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">

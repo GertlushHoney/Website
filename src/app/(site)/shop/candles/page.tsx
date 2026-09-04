@@ -13,7 +13,18 @@ export default async function CandlesPage() {
   const products = await getMerchProductsByCategory('candles')
 
   if (products.length > 0) {
-    return <MerchCategoryListing categoryLabel="Candles" products={products} />
+    return (
+      <MerchCategoryListing
+        categoryLabel="Candles"
+        products={products}
+        notice={
+          <p className="text-porcelain/70 mt-4 max-w-2xl text-sm">
+            Buy any candle with one of our handmade bee-decorated plates and the plate is
+            automatically discounted by £1 at checkout — no code needed.
+          </p>
+        }
+      />
+    )
   }
 
   return (

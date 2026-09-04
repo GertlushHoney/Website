@@ -10,9 +10,13 @@ import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 export async function MerchCategoryListing({
   categoryLabel,
   products,
+  notice,
 }: {
   categoryLabel: string
   products: MerchProductSummary[]
+  // Optional category-specific callout (e.g. a bundle offer) — shown below
+  // the heading, above the product grid.
+  notice?: React.ReactNode
 }) {
   const cards = await Promise.all(
     products.map(async (product) => ({
@@ -30,6 +34,7 @@ export async function MerchCategoryListing({
         Shop &middot; {categoryLabel}
       </p>
       <h1 className="text-porcelain mt-3 text-3xl font-bold tracking-tight">{categoryLabel}</h1>
+      {notice}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
         {cards.map(({ product, shopifyProduct, imageUrl }) => (

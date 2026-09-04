@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { primaryNav } from '@/lib/navigation'
 
@@ -8,6 +9,12 @@ import { primaryNav } from '@/lib/navigation'
 // (focus-trapped, Escape/backdrop/close-button dismissal, focus restored to
 // the trigger on close). Only rendered below the `md` breakpoint — the
 // header's own <nav> already shows these links inline at `md` and up.
+//
+// The overlay is portaled to document.body rather than rendered in place —
+// SiteHeader has backdrop-blur-md, and per spec a backdrop-filter creates a
+// new containing block for `position: fixed` descendants, so without the
+// portal this panel was sized against the ~64px header bar instead of the
+// viewport (looked like the menu "wasn't showing" on real devices).
 export function MobileNav() {
   const [open, setOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -63,52 +70,54 @@ export function MobileNav() {
         <span className="bg-porcelain block h-0.5 w-5" />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex justify-start">
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/60"
-          />
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Primary"
-            tabIndex={-1}
-            className="bg-ink border-ink-line relative flex h-full w-full max-w-xs flex-col border-r shadow-2xl focus:outline-none"
-          >
-            <div className="border-ink-line flex items-center justify-between border-b p-5">
-              <span className="font-display text-comb-gold text-lg tracking-wide uppercase">
-                Menu
-              </span>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-                className="text-porcelain/60 hover:text-porcelain focus-visible:outline-honey-amber rounded-full p-1 focus-visible:outline focus-visible:outline-offset-2"
-              >
-                ✕
-              </button>
-            </div>
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex justify-start">
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="absolute inset-0 bg-black/60"
+            />
+            <div
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Primary"
+              tabIndex={-1}
+              className="bg-ink border-ink-line relative flex h-full w-full max-w-xs flex-col border-r shadow-2xl focus:outline-none"
+            >
+              <div className="border-ink-line flex items-center justify-between border-b p-5">
+                <span className="font-display text-comb-gold text-lg tracking-wide uppercase">
+                  Menu
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                  className="text-porcelain/60 hover:text-porcelain focus-visible:outline-honey-amber rounded-full p-1 focus-visible:outline focus-visible:outline-offset-2"
+                >
+                  ✕
+                </button>
+              </div>
 
-            <ul className="flex-1 overflow-y-auto p-5">
-              {primaryNav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="text-porcelain focus-visible:outline-honey-amber block rounded-lg px-2 py-3 text-base font-medium focus-visible:outline focus-visible:-outline-offset-2"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+              <ul className="flex-1 overflow-y-auto p-5">
+                {primaryNav.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="text-porcelain focus-visible:outline-honey-amber block rounded-lg px-2 py-3 text-base font-medium focus-visible:outline focus-visible:-outline-offset-2"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }

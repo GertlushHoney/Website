@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { SearchItem } from '@/lib/search'
@@ -9,6 +10,10 @@ import type { SearchItem } from '@/lib/search'
 // Escape/backdrop/close-button dismissal, focus restored to the trigger on
 // close) — replaces the old header "Search" button, which had no
 // onClick handler at all and did nothing when clicked.
+//
+// Portaled to document.body for the same reason as MobileNav's overlay:
+// SiteHeader's backdrop-blur-md creates a containing block for `position:
+// fixed` descendants, which would otherwise squash this into the header bar.
 export function SearchOverlay({ items }: { items: SearchItem[] }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -80,85 +85,87 @@ export function SearchOverlay({ items }: { items: SearchItem[] }) {
         Search
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50">
-          <button
-            type="button"
-            aria-label="Close search"
-            onClick={close}
-            className="absolute inset-0 bg-black/60"
-          />
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Search"
-            className="border-ink-line bg-ink relative mx-auto mt-24 w-[calc(100vw-2rem)] max-w-lg rounded-2xl border shadow-2xl"
-          >
-            <div className="border-ink-line flex items-center gap-3 border-b px-5 py-4">
-              <span aria-hidden="true" className="text-porcelain/40">
-                &#8981;
-              </span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search honey, candles, soap…"
-                className="text-porcelain placeholder:text-porcelain/40 flex-1 bg-transparent text-sm focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close search"
-                className="text-porcelain/60 hover:text-porcelain focus-visible:outline-honey-amber rounded-full p-1 focus-visible:outline focus-visible:outline-offset-2"
-              >
-                ✕
-              </button>
-            </div>
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50">
+            <button
+              type="button"
+              aria-label="Close search"
+              onClick={close}
+              className="absolute inset-0 bg-black/60"
+            />
+            <div
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Search"
+              className="border-ink-line bg-ink relative mx-auto mt-24 w-[calc(100vw-2rem)] max-w-lg rounded-2xl border shadow-2xl"
+            >
+              <div className="border-ink-line flex items-center gap-3 border-b px-5 py-4">
+                <span aria-hidden="true" className="text-porcelain/40">
+                  &#8981;
+                </span>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search honey, candles, soap…"
+                  className="text-porcelain placeholder:text-porcelain/40 flex-1 bg-transparent text-sm focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close search"
+                  className="text-porcelain/60 hover:text-porcelain focus-visible:outline-honey-amber rounded-full p-1 focus-visible:outline focus-visible:outline-offset-2"
+                >
+                  ✕
+                </button>
+              </div>
 
-            <div className="max-h-[60vh] overflow-y-auto p-2">
-              {results.length === 0 ? (
-                <p className="text-porcelain/50 px-3 py-6 text-center text-sm">
-                  No matches for &quot;{query}&quot;.
-                </p>
-              ) : (
-                <ul>
-                  {results.map((item) => (
-                    <li key={item.id}>
-                      <Link
-                        href={item.href}
-                        onClick={close}
-                        className="hover:bg-honeycomb-surface focus-visible:outline-honey-amber flex items-center gap-3 rounded-xl p-2.5 focus-visible:outline focus-visible:-outline-offset-2"
-                      >
-                        <div className="from-ink-surface to-ink relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-b">
-                          {item.imageUrl && (
-                            <Image
-                              src={item.imageUrl}
-                              alt=""
-                              fill
-                              sizes="48px"
-                              className="object-contain p-1"
-                            />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-porcelain truncate text-sm font-semibold">
-                            {item.name}
-                          </p>
-                          <p className="text-porcelain/50 truncate text-xs">
-                            {item.category} &middot; {item.tagline}
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="max-h-[60vh] overflow-y-auto p-2">
+                {results.length === 0 ? (
+                  <p className="text-porcelain/50 px-3 py-6 text-center text-sm">
+                    No matches for &quot;{query}&quot;.
+                  </p>
+                ) : (
+                  <ul>
+                    {results.map((item) => (
+                      <li key={item.id}>
+                        <Link
+                          href={item.href}
+                          onClick={close}
+                          className="hover:bg-honeycomb-surface focus-visible:outline-honey-amber flex items-center gap-3 rounded-xl p-2.5 focus-visible:outline focus-visible:-outline-offset-2"
+                        >
+                          <div className="from-ink-surface to-ink relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-b">
+                            {item.imageUrl && (
+                              <Image
+                                src={item.imageUrl}
+                                alt=""
+                                fill
+                                sizes="48px"
+                                className="object-contain p-1"
+                              />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-porcelain truncate text-sm font-semibold">
+                              {item.name}
+                            </p>
+                            <p className="text-porcelain/50 truncate text-xs">
+                              {item.category} &middot; {item.tagline}
+                            </p>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   )
 }

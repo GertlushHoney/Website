@@ -141,8 +141,14 @@ export function PurchaseOptions({
       ? [{ key: HONEY_CHOICE_ATTRIBUTE_KEY, value: formatHoneySelection(honeyTally) }]
       : []
 
-  const isSoldOut =
-    effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
+  // A variant with inventory tracking off reports quantityAvailable: 0
+  // while still being availableForSale: true (e.g. the hampers, which are
+  // always "in stock" by design — see docs/technical-architecture.md).
+  // availableForSale is the authoritative signal either way; quantity is
+  // only meaningful (and only shown) when it's actually being tracked.
+  const isSoldOut = activeVariant
+    ? !activeVariant.availableForSale
+    : effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
   const maxQuantity = Math.min(
     12,
     effectiveStockCount && effectiveStockCount > 0 ? effectiveStockCount : 12
@@ -390,13 +396,15 @@ export function PurchaseOptions({
         </div>
       )}
 
-      {effectiveStockCount !== null && effectiveStockCount !== undefined && (
-        <p className={`mt-2 text-xs ${isSoldOut ? 'text-honey-amber' : 'text-porcelain/50'}`}>
-          {isSoldOut
-            ? 'Out of stock — check back soon.'
-            : `${effectiveStockCount} ${unitLabel}${effectiveStockCount === 1 ? '' : 's'} in stock`}
-        </p>
-      )}
+      {effectiveStockCount !== null &&
+        effectiveStockCount !== undefined &&
+        (isSoldOut || effectiveStockCount > 0) && (
+          <p className={`mt-2 text-xs ${isSoldOut ? 'text-honey-amber' : 'text-porcelain/50'}`}>
+            {isSoldOut
+              ? 'Out of stock — check back soon.'
+              : `${effectiveStockCount} ${unitLabel}${effectiveStockCount === 1 ? '' : 's'} in stock`}
+          </p>
+        )}
 
       <dl className="mt-4 space-y-1 text-sm">
         <div className="flex justify-between">

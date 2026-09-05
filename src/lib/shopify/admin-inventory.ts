@@ -134,15 +134,6 @@ export async function adjustInventory(
 // route) log the outcome themselves rather than this throwing and failing
 // the whole webhook over one unmatched line.
 export async function deductHoneyStock(honeyName: string, jars: number): Promise<boolean> {
-  // TEMPORARY diagnostic — remove once the Vercel env var issue is
-  // confirmed fixed. Logs presence only, never the actual secret values.
-  console.log('deductHoneyStock env check', {
-    hasDomain: Boolean(process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN),
-    hasClientId: Boolean(process.env.SHOPIFY_ADMIN_CLIENT_ID),
-    hasClientSecret: Boolean(process.env.SHOPIFY_ADMIN_CLIENT_SECRET),
-    isConfigured: isShopifyAdminConfigured(),
-  })
-
   if (!isShopifyAdminConfigured() || jars <= 0) return false
 
   const [inventoryItemId, locationId] = await Promise.all([

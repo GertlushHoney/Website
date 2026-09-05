@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { PortableText } from 'next-sanity'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { ReviewsSection } from '@/components/product/reviews-section'
@@ -114,6 +115,24 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
                 <dd className="text-porcelain/90 text-sm">{product.weight}</dd>
               </div>
             </dl>
+          )}
+
+          {product.beekeeper && (
+            <Link
+              href={`/beekeepers/${product.beekeeper.slug}`}
+              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group mt-6 flex items-center justify-between gap-4 rounded-xl border p-4 transition focus-visible:outline focus-visible:outline-offset-2"
+            >
+              <span className="text-porcelain text-sm">
+                Led by{' '}
+                <span className="text-comb-gold font-semibold">{product.beekeeper.name}</span>
+              </span>
+              <span className="text-comb-gold shrink-0 text-sm font-semibold">
+                Meet the beekeeper{' '}
+                <span aria-hidden="true" className="inline-block transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </Link>
           )}
 
           {shopifyProduct ? (

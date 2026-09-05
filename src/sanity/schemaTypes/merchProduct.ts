@@ -92,6 +92,14 @@ export const merchProduct = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'beekeeper',
+      title: 'Beekeeper',
+      description:
+        'Optional — for Experiences, the real beekeeper running it. Links to their profile page.',
+      type: 'reference',
+      to: [{ type: 'beekeeper' }],
+    }),
+    defineField({
       name: 'sessions',
       title: 'Bookable dates',
       description:

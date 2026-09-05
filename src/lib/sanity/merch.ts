@@ -43,6 +43,9 @@ export type MerchProduct = MerchProductSummary & {
   // Only ever populated for category "experiences" — null for everything
   // else, and null (not []) for an experience with no dates added yet.
   sessions: ExperienceSession[] | null
+  // Optional — the real beekeeper running an Experience. Null for
+  // everything else, and for an experience with none set yet.
+  beekeeper: { name: string; slug: string } | null
 }
 
 const summaryFields = groq`
@@ -86,7 +89,8 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
     groq`*[_type == "merchProduct" && slug.current == $slug && active == true][0] {
       ${summaryFields},
       description,
-      sessions[]{ _key, date, placesTotal, placesBooked }
+      sessions[]{ _key, date, placesTotal, placesBooked },
+      beekeeper -> { name, "slug": slug.current }
     }`,
     { slug }
   )

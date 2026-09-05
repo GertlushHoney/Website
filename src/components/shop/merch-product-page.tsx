@@ -40,11 +40,23 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
   const hamperJarCount =
     product.category === 'hamper' ? (parseHamperJarCount(product.name) ?? undefined) : undefined
 
+  // An Experience's real limit is each session's remaining places, not the
+  // Shopify product's own (untracked) stock — see PurchaseOptions.
+  const experienceSessions =
+    product.category === 'experiences' && product.sessions
+      ? product.sessions.map((session) => ({
+          key: session._key,
+          date: session.date,
+          placesRemaining: Math.max(0, session.placesTotal - session.placesBooked),
+        }))
+      : undefined
+
   const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
-  const isSoldOut =
-    shopifyProduct?.quantityAvailable !== null &&
-    shopifyProduct?.quantityAvailable !== undefined &&
-    shopifyProduct.quantityAvailable <= 0
+  const isSoldOut = experienceSessions
+    ? experienceSessions.every((session) => session.placesRemaining <= 0)
+    : shopifyProduct?.quantityAvailable !== null &&
+      shopifyProduct?.quantityAvailable !== undefined &&
+      shopifyProduct.quantityAvailable <= 0
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -119,6 +131,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               }
               honeyJarOptions={honeyJarOptions}
               hamperJarCount={hamperJarCount}
+              experienceSessions={experienceSessions}
             />
           ) : (
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">

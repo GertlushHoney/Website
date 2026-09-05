@@ -37,8 +37,20 @@ const CANCELLATION_NOTICE_DAYS = 7
 // built live from whatever honeys are actually active right now.
 const HONEY_CHOICE_TRIGGER_LABEL = 'Choose your own'
 const HONEY_CHOICE_ATTRIBUTE_KEY = 'Honey selection'
+const SESSION_DATE_ATTRIBUTE_KEY = 'Session date'
+
+function formatSessionDate(dateISO: string) {
+  return new Date(`${dateISO}T00:00:00`).toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
 
 export type HoneyJarOption = { name: string; quantityAvailable: number }
+
+export type ExperienceSessionOption = { key: string; date: string; placesRemaining: number }
 
 export type PurchaseOptionsVariant = {
   id: string
@@ -63,6 +75,7 @@ export function PurchaseOptions({
   variantGroupLabel = 'Choose an option',
   honeyJarOptions,
   hamperJarCount,
+  experienceSessions,
 }: {
   productName: string
   // The real Shopify product handle — tags the restock-alert signup with
@@ -107,6 +120,11 @@ export function PurchaseOptions({
   // choose" mode. Required alongside honeyJarOptions for the picker to
   // render at all.
   hamperJarCount?: number
+  // Real bookable dates for an Experience, with live remaining-places
+  // counts — fetched from Sanity by the caller. When present, shows a
+  // date picker and gates quantity/checkout on the selected date's
+  // places rather than the flat stockCount prop above.
+  experienceSessions?: ExperienceSessionOption[]
 }) {
   const [type, setType] = useState<PurchaseType>('one-time')
   const [quantity, setQuantity] = useState(1)
@@ -115,6 +133,9 @@ export function PurchaseOptions({
   const [sameHoneyChoice, setSameHoneyChoice] = useState(honeyJarOptions?.[0]?.name ?? '')
   const [perJarHoney, setPerJarHoney] = useState<string[]>(() =>
     Array(hamperJarCount ?? 0).fill(honeyJarOptions?.[0]?.name ?? '')
+  )
+  const [selectedSessionKey, setSelectedSessionKey] = useState(
+    () => experienceSessions?.find((s) => s.placesRemaining > 0)?.key ?? experienceSessions?.[0]?.key ?? ''
   )
   const { addItem, isPending, error: cartError } = useCart()
 
@@ -140,37 +161,55 @@ export function PurchaseOptions({
     needsHoneyChoice && honeyTally.length > 0
       ? [{ key: HONEY_CHOICE_ATTRIBUTE_KEY, value: formatHoneySelection(honeyTally) }]
       : []
+  const needsSessionChoice = Boolean(experienceSessions && experienceSessions.length > 0)
+  const activeSession = needsSessionChoice
+    ? experienceSessions!.find((s) => s.key === selectedSessionKey)
+    : undefined
+  // The raw ISO date (not the pretty display format) — the order-paid
+  // webhook matches this exactly against Sanity's session.date, so it
+  // can't be the human-readable string shown elsewhere on this page.
+  const sessionAttributes = activeSession
+    ? [{ key: SESSION_DATE_ATTRIBUTE_KEY, value: activeSession.date }]
+    : []
+
+  const bookingAttributes = [...honeyChoiceAttributes, ...sessionAttributes]
 
   // A variant with inventory tracking off reports quantityAvailable: 0
   // while still being availableForSale: true (e.g. the hampers, which are
   // always "in stock" by design — see docs/technical-architecture.md).
   // availableForSale is the authoritative signal either way; quantity is
   // only meaningful (and only shown) when it's actually being tracked.
+  // An Experience's own Shopify stock is irrelevant too — its real limit
+  // is the selected session's remaining places (see hasSessionShortfall).
   const isSoldOut = activeVariant
     ? !activeVariant.availableForSale
-    : effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
-  const maxQuantity = Math.min(
-    12,
-    effectiveStockCount && effectiveStockCount > 0 ? effectiveStockCount : 12
-  )
+    : needsSessionChoice
+      ? false
+      : effectiveStockCount !== null && effectiveStockCount !== undefined && effectiveStockCount <= 0
+  const maxQuantity = needsSessionChoice
+    ? Math.max(1, activeSession?.placesRemaining ?? 1)
+    : Math.min(12, effectiveStockCount && effectiveStockCount > 0 ? effectiveStockCount : 12)
 
   const hasSubscription = subscriptionUnitPrice !== undefined
   const isSubscription = hasSubscription && type === 'subscription'
   const hasHoneyStockShortfall = needsHoneyChoice && honeyStockShortfalls.length > 0
+  const hasSessionShortfall =
+    needsSessionChoice && (!activeSession || activeSession.placesRemaining < quantity)
 
   function handleAddToBasket() {
-    if (!effectiveVariantId || hasHoneyStockShortfall) return
+    if (!effectiveVariantId || hasHoneyStockShortfall || hasSessionShortfall) return
     if (isSubscription) {
       if (!subscriptionSellingPlanId) return
-      addItem(effectiveVariantId, 1, subscriptionSellingPlanId, honeyChoiceAttributes)
+      addItem(effectiveVariantId, 1, subscriptionSellingPlanId, bookingAttributes)
       return
     }
-    addItem(effectiveVariantId, quantity, undefined, honeyChoiceAttributes)
+    addItem(effectiveVariantId, quantity, undefined, bookingAttributes)
   }
 
   const canCheckoutLive =
     Boolean(effectiveVariantId) &&
     !hasHoneyStockShortfall &&
+    !hasSessionShortfall &&
     (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
   const subtotal = effectivePrice * quantity
   const total = subtotal + deliveryPrice
@@ -179,12 +218,13 @@ export function PurchaseOptions({
   const productLabel = activeVariant ? `${productName} — ${activeVariant.label}` : productName
   const honeyChoiceSuffix =
     needsHoneyChoice && honeyTally.length > 0 ? ` (${formatHoneySelection(honeyTally)})` : ''
+  const sessionSuffix = activeSession ? ` (${formatSessionDate(activeSession.date)})` : ''
   const subject = isSubscription
     ? `${productLabel} monthly subscription`
     : `${productLabel} order (x${quantity})`
   const body = isSubscription
     ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix}${sessionSuffix} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (
@@ -320,6 +360,39 @@ export function PurchaseOptions({
         </div>
       )}
 
+      {needsSessionChoice && (
+        <div className="mb-4">
+          <label htmlFor="session-choice" className="text-porcelain text-sm font-semibold">
+            Which date?
+          </label>
+          <select
+            id="session-choice"
+            value={selectedSessionKey}
+            onChange={(e) => {
+              setSelectedSessionKey(e.target.value)
+              setQuantity(1)
+            }}
+            className="bg-ink border-ink-line text-porcelain focus-visible:outline-honey-amber mt-2 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
+          >
+            {experienceSessions!.map((session) => (
+              <option key={session.key} value={session.key}>
+                {formatSessionDate(session.date)}
+                {session.placesRemaining <= 0
+                  ? ' — fully booked'
+                  : ` — ${session.placesRemaining} place${session.placesRemaining === 1 ? '' : 's'} left`}
+              </option>
+            ))}
+          </select>
+          {hasSessionShortfall && (
+            <p className="text-honey-amber mt-2 text-xs" role="alert">
+              {activeSession && activeSession.placesRemaining > 0
+                ? `Only ${activeSession.placesRemaining} place${activeSession.placesRemaining === 1 ? '' : 's'} left on this date — reduce the quantity or pick another date.`
+                : 'This date is fully booked — pick another to check out.'}
+            </p>
+          )}
+        </div>
+      )}
+
       {hasSubscription ? (
         <fieldset>
           <legend className="text-porcelain text-sm font-semibold">How would you like it?</legend>
@@ -396,7 +469,8 @@ export function PurchaseOptions({
         </div>
       )}
 
-      {effectiveStockCount !== null &&
+      {!needsSessionChoice &&
+        effectiveStockCount !== null &&
         effectiveStockCount !== undefined &&
         (isSoldOut || effectiveStockCount > 0) && (
           <p className={`mt-2 text-xs ${isSoldOut ? 'text-honey-amber' : 'text-porcelain/50'}`}>
@@ -442,7 +516,7 @@ export function PurchaseOptions({
           </button>
           <RestockAlertForm productName={productName} productHandle={productHandle} />
         </>
-      ) : hasHoneyStockShortfall ? (
+      ) : hasHoneyStockShortfall || hasSessionShortfall ? (
         <button
           type="button"
           disabled

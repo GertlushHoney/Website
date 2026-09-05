@@ -4,6 +4,10 @@ import { getHoneyProducts } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { deductHoneyStock } from '@/lib/shopify/admin-inventory'
 import { parseHamperJarCount, parseHoneySelection, type HoneyTally } from '@/lib/hamper'
+import {
+  findExperienceSessionByDate,
+  incrementSessionPlacesBooked,
+} from '@/lib/sanity/experience-booking'
 
 // Hamper stock sync (see docs/technical-architecture.md). A hamper is its
 // own Shopify product with inventory tracking turned off (it's always
@@ -27,6 +31,12 @@ import { parseHamperJarCount, parseHoneySelection, type HoneyTally } from '@/lib
 const SURPRISE_VARIANT_LABEL = 'Surprise selection'
 const CHOOSE_YOUR_OWN_VARIANT_LABEL = 'Choose your own'
 const HONEY_CHOICE_PROPERTY_NAME = 'Honey selection'
+// Same key PurchaseOptions attaches an Experience booking's chosen date
+// under — its value is the raw ISO date, not a display-formatted string,
+// so it matches Sanity's session.date exactly. Detected generically (not
+// tied to a specific product name) so a second Experience works without
+// any webhook changes.
+const SESSION_DATE_PROPERTY_NAME = 'Session date'
 
 type ShopifyOrderLineItem = {
   title: string
@@ -107,6 +117,36 @@ export async function POST(request: NextRequest) {
   // something Shopify retrying the same webhook delivery will fix. Errors
   // are logged for manual follow-up instead.
   for (const line of order.line_items ?? []) {
+    const sessionDate = line.properties?.find((p) => p.name === SESSION_DATE_PROPERTY_NAME)?.value
+
+    if (sessionDate) {
+      try {
+        const match = await findExperienceSessionByDate(sessionDate)
+        if (!match) {
+          console.error(
+            `order-paid webhook: order ${order.name} — no experience session found for date "${sessionDate}" (from "${line.title}")`
+          )
+          continue
+        }
+        const booked = await incrementSessionPlacesBooked(
+          match.docId,
+          match.session._key,
+          line.quantity
+        )
+        if (!booked) {
+          console.error(
+            `order-paid webhook: order ${order.name} — couldn't record ${line.quantity} place(s) for "${line.title}" on ${sessionDate}`
+          )
+        }
+      } catch (error) {
+        console.error(
+          `order-paid webhook: order ${order.name} — failed recording experience booking for "${line.title}"`,
+          error
+        )
+      }
+      continue
+    }
+
     const jarsPerHamper = parseHamperJarCount(line.title)
     if (jarsPerHamper === null) continue
 

@@ -27,8 +27,22 @@ export type MerchProductSummary = {
   weight: string | null
 }
 
+// One real bookable date for an Experience — see merchProduct.sessions in
+// the Sanity schema. _key is Sanity's own array-item id, needed so the
+// order-paid webhook can atomically increment the right session's
+// placesBooked without touching any other date.
+export type ExperienceSession = {
+  _key: string
+  date: string
+  placesTotal: number
+  placesBooked: number
+}
+
 export type MerchProduct = MerchProductSummary & {
   description: PortableTextBlock[]
+  // Only ever populated for category "experiences" — null for everything
+  // else, and null (not []) for an experience with no dates added yet.
+  sessions: ExperienceSession[] | null
 }
 
 const summaryFields = groq`
@@ -71,7 +85,8 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
   return sanityFetch<MerchProduct>(
     groq`*[_type == "merchProduct" && slug.current == $slug && active == true][0] {
       ${summaryFields},
-      description
+      description,
+      sessions[]{ _key, date, placesTotal, placesBooked }
     }`,
     { slug }
   )

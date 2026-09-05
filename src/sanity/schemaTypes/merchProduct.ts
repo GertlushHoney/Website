@@ -91,6 +91,49 @@ export const merchProduct = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'sessions',
+      title: 'Bookable dates',
+      description:
+        "For Experiences only — leave empty for every other category. Each entry is one real bookable date; the site shows a customer only the dates that still have places, and reduces a date's places automatically once an order for it is actually paid.",
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'session',
+          fields: [
+            defineField({
+              name: 'date',
+              title: 'Date',
+              type: 'date',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'placesTotal',
+              title: 'Total places',
+              type: 'number',
+              validation: (rule) => rule.required().min(1),
+            }),
+            defineField({
+              name: 'placesBooked',
+              title: 'Places booked',
+              description:
+                "Updated automatically by the site as orders come in — you shouldn't normally need to edit this by hand.",
+              type: 'number',
+              initialValue: 0,
+              validation: (rule) => rule.required().min(0),
+            }),
+          ],
+          preview: {
+            select: { date: 'date', placesTotal: 'placesTotal', placesBooked: 'placesBooked' },
+            prepare: ({ date, placesTotal, placesBooked }) => ({
+              title: date,
+              subtitle: `${placesBooked ?? 0} / ${placesTotal} places booked`,
+            }),
+          },
+        },
+      ],
+    }),
   ],
   preview: {
     select: { title: 'name', subtitle: 'category', media: 'heroImage' },

@@ -34,7 +34,10 @@ export default async function BeekeeperProfilePage({
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
-      <Link href="/beekeepers" className="text-comb-gold text-sm underline underline-offset-2">
+      <Link
+        href="/beekeepers"
+        className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
+      >
         ← Our Beekeepers
       </Link>
 

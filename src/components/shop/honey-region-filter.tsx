@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
+import { Stars } from '@/components/product/reviews-section'
 
 export type HoneyCard = {
   id: string
@@ -17,6 +18,8 @@ export type HoneyCard = {
   price: number | null
   beekeeper: { name: string; slug: string } | null
   flavour: string | null
+  averageReviewRating: number | null
+  reviewCount: number
 }
 
 // Filter pills only list regions actually represented among real products —
@@ -47,7 +50,7 @@ export function HoneyRegionFilter({ cards }: { cards: HoneyCard[] }) {
           className={`focus-visible:outline-honey-amber rounded-full border px-4 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2 ${
             region === 'all'
               ? 'bg-honey-amber text-ink border-honey-amber'
-              : 'border-porcelain/40 text-porcelain hover:border-porcelain'
+              : 'border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain'
           }`}
         >
           All regions
@@ -61,7 +64,7 @@ export function HoneyRegionFilter({ cards }: { cards: HoneyCard[] }) {
             className={`focus-visible:outline-honey-amber rounded-full border px-4 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2 ${
               region === r
                 ? 'bg-honey-amber text-ink border-honey-amber'
-                : 'border-porcelain/40 text-porcelain hover:border-porcelain'
+                : 'border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain'
             }`}
           >
             {r}
@@ -98,7 +101,15 @@ function HoneyCardGrid({ cards }: { cards: HoneyCard[] }) {
               />
             )}
           </div>
-          <div className="p-6">
+          <div className="relative p-6 pr-40">
+            <p className="absolute top-6 right-6 text-2xl">
+              <Stars rating={card.averageReviewRating !== null ? Math.round(card.averageReviewRating) : 0} />
+              {card.averageReviewRating !== null && (
+                <span className="text-porcelain/60 ml-2 align-middle text-sm font-semibold">
+                  {card.averageReviewRating.toFixed(1)} ({card.reviewCount})
+                </span>
+              )}
+            </p>
             <p className="text-honey-amber text-xs font-semibold tracking-wide uppercase">
               {card.postcodeCode} — {getAreaNameForCode(card.postcodeCode) ?? card.postcodeCode}
             </p>

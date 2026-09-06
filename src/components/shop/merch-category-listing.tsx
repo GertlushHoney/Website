@@ -4,6 +4,8 @@ import { getProductByHandle } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import type { MerchProductSummary } from '@/lib/sanity/merch'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
+import { Stars } from '@/components/product/reviews-section'
 
 // A category page (e.g. /shop/candles) once it has one or more real,
 // active products — each links to its own page at /shop/[slug].
@@ -19,11 +21,19 @@ export async function MerchCategoryListing({
   notice?: React.ReactNode
 }) {
   const cards = await Promise.all(
-    products.map(async (product) => ({
-      product,
-      shopifyProduct: await getProductByHandle(product.shopifyHandle),
-      imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
-    }))
+    products.map(async (product) => {
+      const [shopifyProduct, reviews] = await Promise.all([
+        getProductByHandle(product.shopifyHandle),
+        getApprovedReviews(product.slug),
+      ])
+      return {
+        product,
+        shopifyProduct,
+        imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
+        averageReviewRating: averageRating(reviews),
+        reviewCount: reviews.length,
+      }
+    })
   )
 
   return (
@@ -37,7 +47,7 @@ export async function MerchCategoryListing({
       {notice}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        {cards.map(({ product, shopifyProduct, imageUrl }) => (
+        {cards.map(({ product, shopifyProduct, imageUrl, averageReviewRating, reviewCount }) => (
           <Link
             key={product._id}
             href={`/shop/${product.slug}`}
@@ -54,7 +64,15 @@ export async function MerchCategoryListing({
                 />
               )}
             </div>
-            <div className="p-6">
+            <div className="relative p-6 pr-40">
+              <p className="absolute top-6 right-6 text-2xl">
+                <Stars rating={averageReviewRating !== null ? Math.round(averageReviewRating) : 0} />
+                {averageReviewRating !== null && (
+                  <span className="text-porcelain/60 ml-2 align-middle text-sm font-semibold">
+                    {averageReviewRating.toFixed(1)} ({reviewCount})
+                  </span>
+                )}
+              </p>
               <p className="font-display text-comb-gold text-lg italic">{product.name}</p>
               <p className="text-porcelain mt-1 text-sm font-semibold">{product.tagline}</p>
               {product.weight && <p className="text-porcelain/50 mt-1 text-sm">{product.weight}</p>}

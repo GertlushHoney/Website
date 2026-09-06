@@ -31,7 +31,7 @@ export type HoneyProductSummary = {
   postcodeCode: string
   heroImage: SanityImageSource | null
   weight: string
-  deliveryPrice: number
+  shippingWeightGrams: number | null
   subscriptionPrice: number | null
 }
 
@@ -60,7 +60,7 @@ const summaryFields = groq`
   postcodeCode,
   heroImage,
   weight,
-  deliveryPrice,
+  shippingWeightGrams,
   subscriptionPrice
 `
 

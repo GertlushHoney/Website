@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from './cart-context'
+import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
 
 function formatGBP(amount: number) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount)
@@ -183,7 +184,10 @@ export function BasketDrawer() {
               <span>Subtotal</span>
               <span>{formatGBP(cart.subtotal)}</span>
             </p>
-            <p className="text-porcelain/50 mt-1 text-xs">Delivery calculated at checkout.</p>
+            <p className="text-porcelain/50 mt-1 text-xs">
+              Delivery calculated at checkout by weight &middot; free over £
+              {FREE_DELIVERY_THRESHOLD_GBP}
+            </p>
             <a
               href={cart.checkoutUrl}
               className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 block rounded-full px-6 py-3 text-center text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"

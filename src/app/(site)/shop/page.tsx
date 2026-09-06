@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { getMerchProductsByCategory, MERCH_CATEGORY_LABELS, type MerchCategory } from '@/lib/sanity/merch'
 import { getShopTiles } from '@/lib/sanity/shop-tiles'
 import { urlForImage } from '@/lib/sanity/image'
+import { ShopTilesView } from '@/components/shop/shop-tiles-view'
 
 export const metadata: Metadata = {
   title: 'Shop',
@@ -107,34 +106,8 @@ export default async function ShopPage() {
         Small-batch honey, and more from Gert Lush as it becomes real.
       </p>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {tiles.map((tile) => (
-          <Link
-            key={tile.href}
-            href={tile.href}
-            className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group grid overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-2"
-          >
-            <div className="from-ink-surface to-ink relative aspect-square bg-gradient-to-b">
-              {tile.imageUrl && (
-                <Image
-                  src={tile.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className={
-                    tile.objectFit === 'contain'
-                      ? 'object-contain p-10 transition group-hover:scale-105'
-                      : 'object-cover transition group-hover:scale-105'
-                  }
-                />
-              )}
-            </div>
-            <div className="p-5">
-              <span className="text-porcelain text-lg font-semibold">{tile.label}</span>
-              <span className="text-porcelain/50 mt-1 block text-xs">{tile.subtitle}</span>
-            </div>
-          </Link>
-        ))}
+      <div className="mt-12">
+        <ShopTilesView tiles={tiles} />
       </div>
     </div>
   )

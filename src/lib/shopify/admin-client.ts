@@ -1,10 +1,11 @@
 // Shopify Admin API — a deliberate, narrow exception to this codebase's
 // otherwise Storefront-API-only rule (see docs/technical-architecture.md,
-// "Security boundaries"). The ONLY thing this client is used for is
-// tagging a customer with which sold-out product they want a restock
-// alert for (src/lib/shopify/restock.ts) — nothing else in this codebase
-// touches the Admin API. Never import this file from a client component;
-// every caller must be a 'use server' function.
+// "Security boundaries"). Used for: tagging a customer with which
+// sold-out product they want a restock alert for (restock.ts), adjusting
+// a honey's real stock after a bundled hamper sale (admin-inventory.ts),
+// and pushing a product's real shipping weight (admin-shipping.ts). Never
+// import this file from a client component; every caller must be a
+// 'use server' function.
 //
 // Apps created via Shopify's Dev Dashboard (the only way to create a new
 // custom app since Shopify retired the old in-admin "Develop apps" flow

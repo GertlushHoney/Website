@@ -27,6 +27,11 @@ const points = [
   },
 ]
 
+// Pointy-top hexagon — same shape used for the shop tiles' phone-carousel
+// cards and the Gert Lush Standard stamp, so this reads as the same visual
+// system rather than a one-off shape introduced just here.
+const HEX_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+
 export function TrustRow() {
   return (
     <section className="border-ink-line border-b px-6 py-16 lg:px-16">
@@ -34,19 +39,35 @@ export function TrustRow() {
         <h2 className="text-porcelain text-center text-3xl font-bold tracking-tight text-balance">
           Why people choose Gert Lush
         </h2>
-        <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
-          {points.map((point, index) => {
+        <div className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-10">
+          {points.map((point) => {
             const Icon = point.icon
             return (
-              <div
-                key={point.title}
-                className={`text-center lg:px-6 ${index > 0 ? 'lg:border-ink-line lg:border-l' : ''}`}
-              >
-                <div className="text-comb-gold">
-                  <Icon />
+              <div key={point.title} className="w-40 text-center">
+                <div className="relative mx-auto flex h-[172px] w-[150px] items-center justify-center">
+                  {/* Outline ring — outer hex in gold, inner hex inset by the
+                      ring width in the page's own background colour, so only
+                      a thin gold hexagon border shows, not a filled shape. */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0"
+                    style={{ clipPath: HEX_CLIP, backgroundColor: 'var(--color-comb-gold)' }}
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-[2px]"
+                    style={{ clipPath: HEX_CLIP, backgroundColor: 'var(--color-ink)' }}
+                  />
+                  <div className="relative flex flex-col items-center gap-2 px-3">
+                    <div className="text-comb-gold">
+                      <Icon className="h-9 w-9" />
+                    </div>
+                    <p className="text-porcelain text-sm leading-tight font-semibold">
+                      {point.title}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-porcelain mt-3 text-sm font-semibold">{point.title}</p>
-                <p className="text-porcelain/60 mt-2 text-sm">{point.body}</p>
+                <p className="text-porcelain/60 mt-3 text-sm">{point.body}</p>
               </div>
             )
           })}

@@ -70,6 +70,14 @@ export const honeyProduct = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'shippingWeightGrams',
+      title: 'Shipping weight (g)',
+      description:
+        'The real packaged weight — jar, honey and any padding — in grams. Used to push a real weight to Shopify so its weight-based delivery rates have something accurate to calculate against. Separate from "Weight / size" above, which is just what shoppers read on the page.',
+      type: 'number',
+      validation: (rule) => rule.positive(),
+    }),
+    defineField({
       name: 'originStory',
       title: 'Origin story',
       description: 'The "Where it’s from" tab content.',
@@ -83,13 +91,6 @@ export const honeyProduct = defineType({
       description:
         'Only set this once you actually want to offer a monthly subscription for this product. Leave empty to show one-time purchase only.',
       type: 'number',
-    }),
-    defineField({
-      name: 'deliveryPrice',
-      title: 'Delivery price (£)',
-      type: 'number',
-      initialValue: 4.99,
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'tastingProfile',

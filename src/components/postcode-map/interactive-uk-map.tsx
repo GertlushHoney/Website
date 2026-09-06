@@ -212,12 +212,14 @@ export function InteractiveUkMap({
   return (
     <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-start">
       <div>
-        <p className="text-porcelain/50 mb-3 text-sm">
-          Select a postcode area on the map, or{' '}
-          <a href="#postcode-select" className="text-comb-gold underline underline-offset-2">
+        <p className="text-porcelain/50 mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-sm">
+          <span>Select a postcode area on the map, or</span>
+          <a
+            href="#postcode-select"
+            className="border-porcelain/40 bg-porcelain/10 text-comb-gold hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex rounded-full border px-3 py-1 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
+          >
             skip to the list
           </a>
-          .
         </p>
         <div
           ref={containerRef}
@@ -230,7 +232,7 @@ export function InteractiveUkMap({
           <button
             type="button"
             onClick={backToUk}
-            className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-4 inline-block rounded-full border px-5 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
+            className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber mt-4 inline-block rounded-full border px-5 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
           >
             ← Back to UK map
           </button>
@@ -315,15 +317,14 @@ export function InteractiveUkMap({
                   ? `Select a ${currentAreaData?.areaLabel} district to see what’s available.`
                   : 'Select a postcode area to see what’s available.'}
               </p>
-              <p className="text-porcelain/50 mt-4 text-sm">
-                Keep bees yourself?{' '}
+              <p className="text-porcelain/50 mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-sm">
+                <span>Keep bees yourself?</span>
                 <Link
                   href="/become-a-supplier"
-                  className="text-comb-gold underline underline-offset-2"
+                  className="border-porcelain/40 bg-porcelain/10 text-comb-gold hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex rounded-full border px-3 py-1 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
                 >
                   Become a supplier
                 </Link>
-                .
               </p>
             </>
           ) : activeProduct ? (
@@ -366,7 +367,7 @@ export function InteractiveUkMap({
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <a
                   href={`mailto:sales@gertlushhoney.co.uk?subject=Postcode%20honey%20interest%20-%20${selectedCode}&body=I'd like to hear about honey from ${encodeURIComponent(areaName ?? selectedCode)} (${selectedCode}) when it's available.`}
-                  className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+                  className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
                 >
                   Join the waiting list
                 </a>

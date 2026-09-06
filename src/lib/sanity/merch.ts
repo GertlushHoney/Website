@@ -21,10 +21,10 @@ export type MerchProductSummary = {
   tagline: string
   shopifyHandle: string
   heroImage: SanityImageSource | null
-  deliveryPrice: number
   // Optional, unlike honeyProduct's weight — not every category (e.g.
   // Experiences) has a natural size/weight to show.
   weight: string | null
+  shippingWeightGrams: number | null
 }
 
 // One real bookable date for an Experience — see merchProduct.sessions in
@@ -56,8 +56,8 @@ const summaryFields = groq`
   tagline,
   shopifyHandle,
   heroImage,
-  deliveryPrice,
-  weight
+  weight,
+  shippingWeightGrams
 `
 
 // For a category listing page (/shop/candles etc.) — every active product
@@ -94,4 +94,45 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
     }`,
     { slug }
   )
+}
+
+// One bookable date, flattened out of whichever experience product it
+// belongs to — for the /shop/experiences calendar, which shows every
+// upcoming date across all active experiences on one page rather than
+// one product tile per experience.
+export type UpcomingExperienceSession = {
+  productSlug: string
+  productName: string
+  key: string
+  date: string
+  placesRemaining: number
+}
+
+export async function getUpcomingExperienceSessions(): Promise<UpcomingExperienceSession[]> {
+  const products = await sanityFetch<
+    { name: string; slug: string; sessions: ExperienceSession[] | null }[]
+  >(
+    groq`*[_type == "merchProduct" && category == "experiences" && active == true] {
+      name,
+      "slug": slug.current,
+      sessions[]{ _key, date, placesTotal, placesBooked }
+    }`
+  )
+
+  // Filtered/sorted in JS rather than GROQ — the per-year session count is
+  // tiny, and a plain ISO-date string comparison is all "upcoming" needs.
+  const today = new Date().toISOString().slice(0, 10)
+  return (products ?? [])
+    .flatMap((product) =>
+      (product.sessions ?? [])
+        .filter((session) => session.date >= today)
+        .map((session) => ({
+          productSlug: product.slug,
+          productName: product.name,
+          key: session._key,
+          date: session.date,
+          placesRemaining: Math.max(0, session.placesTotal - session.placesBooked),
+        }))
+    )
+    .sort((a, b) => a.date.localeCompare(b.date))
 }

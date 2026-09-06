@@ -1,11 +1,11 @@
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { ReviewForm } from '@/components/product/review-form'
 
-function Stars({ rating }: { rating: number }) {
+export function Stars({ rating }: { rating: number }) {
   return (
     <span aria-hidden="true">
       {[1, 2, 3, 4, 5].map((value) => (
-        <span key={value} className={value <= rating ? 'text-honey-amber' : 'text-porcelain/25'}>
+        <span key={value} className={value <= rating ? 'text-honey-amber' : 'text-porcelain/40'}>
           ★
         </span>
       ))}

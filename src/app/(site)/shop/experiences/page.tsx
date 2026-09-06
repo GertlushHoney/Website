@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { MerchCategoryListing } from '@/components/shop/merch-category-listing'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
-import { getMerchProductsByCategory } from '@/lib/sanity/merch'
+import { ExperienceCalendar } from '@/components/shop/experience-calendar'
+import { getMerchProductsByCategory, getUpcomingExperienceSessions } from '@/lib/sanity/merch'
 
 export const metadata: Metadata = {
   title: 'Experiences',
@@ -10,17 +10,46 @@ export const metadata: Metadata = {
   alternates: { canonical: '/shop/experiences' },
 }
 
-// Same pattern as candles/soap/hamper/lip-balm: a real merchProduct with
-// category "experiences" (e.g. a priced, bookable Bee Day Experience) would
-// show here automatically via MerchCategoryListing. Until one exists, this
-// falls back to the honest "register interest" card below — moved here
+// Unlike the other merch categories, Experiences isn't a tile grid of
+// products — it's a calendar of bookable dates (people think in terms of
+// "when", not "which product"), each date linking through to its own
+// experience page. Falls back to the honest "register interest" card below
+// until at least one active Experience with a date exists — moved here
 // from the old /gifts page (removed 2026-08-10, folded into this category
 // tile plus the Stockists page for corporate/event gifting).
 export default async function ExperiencesPage() {
-  const products = await getMerchProductsByCategory('experiences')
+  const [products, sessions] = await Promise.all([
+    getMerchProductsByCategory('experiences'),
+    getUpcomingExperienceSessions(),
+  ])
 
   if (products.length > 0) {
-    return <MerchCategoryListing categoryLabel="Experiences" products={products} />
+    return (
+      <div className="mx-auto max-w-4xl px-6 py-16">
+        <BackToCategoryLink href="/shop" label="Shop" />
+
+        <p className="text-honey-amber mt-6 text-sm font-semibold tracking-wide uppercase">
+          Shop &middot; Experiences
+        </p>
+        <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
+          A different kind of gift.
+        </h1>
+        <p className="text-porcelain/70 mt-4 max-w-2xl text-base">
+          Hands-on days out with our beekeepers — pick a date below to see what&apos;s included
+          and book your place.
+        </p>
+
+        {sessions.length > 0 ? (
+          <div className="mt-12">
+            <ExperienceCalendar sessions={sessions} />
+          </div>
+        ) : (
+          <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-10 rounded-xl border p-5 text-sm">
+            No dates are currently scheduled — check back soon.
+          </p>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -59,7 +88,7 @@ export default async function ExperiencesPage() {
           </p>
           <a
             href="mailto:sales@gertlushhoney.co.uk?subject=Bee%20Day%20Experience%20-%20register%20interest&body=I'd like to hear when the Bee Day Experience at Bramble Farm is available."
-            className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber mt-6 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+            className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber mt-6 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
           >
             Register your interest
           </a>

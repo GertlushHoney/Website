@@ -19,10 +19,17 @@ const PASSWORD = process.env.SITE_PASSWORD
 // share this same gate rather than getting their own — that internal photo
 // helper has no auth of its own (see docs/launch-checklist.md point 8), so
 // it needs to stay behind something permanent too, not just the temporary
-// site-wide gate.
+// site-wide gate. /api/sync-shipping-weights (added 2026-09-06) is the same
+// story for the /tools/sync-shipping-weights helper — it writes real data
+// to the live Shopify store, so it must never be reachable unauthenticated.
 const STUDIO_USERNAME = process.env.STUDIO_PASSWORD_USER
 const STUDIO_PASSWORD = process.env.STUDIO_PASSWORD
-const STUDIO_GATED_PREFIXES = ['/studio', '/tools', '/api/feather-image']
+const STUDIO_GATED_PREFIXES = [
+  '/studio',
+  '/tools',
+  '/api/feather-image',
+  '/api/sync-shipping-weights',
+]
 
 function isAuthorized(request: NextRequest, username: string, password: string): boolean {
   const auth = request.headers.get('authorization')

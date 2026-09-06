@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useCart } from '@/components/cart/cart-context'
 import { RestockAlertForm } from '@/components/product/restock-alert-form'
 import { formatHoneySelection, tallyJarSelections } from '@/lib/hamper'
+import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
 
 type PurchaseType = 'one-time' | 'subscription'
 
@@ -18,9 +20,12 @@ function formatGBP(amount: number) {
 // exists for the product (subscriptionSellingPlanId, created via the
 // Shopify Subscriptions app in the merchant's admin — never assumed or
 // invented here); otherwise they fall back to the same honest mailto.
-// Delivery is a flat per-order fee (Royal Mail Tracked 48), not per jar —
-// charged once per order/shipment, same for subscriptions since no
-// free-delivery threshold or subscriber perk has been decided.
+// Delivery (Royal Mail Tracked 48) is charged once per order/shipment,
+// never per jar. Its real cost is now weight-based (see
+// docs/technical-architecture.md, "Shipping weight sync") and computed by
+// Shopify itself at checkout — this component never states a specific
+// number, only that it's calculated at checkout and free over
+// FREE_DELIVERY_THRESHOLD_GBP (see src/lib/delivery.ts).
 //
 // No minimum term (dropped 2026-08-10) — cancel any time, provided at
 // least 7 days' notice before the next monthly charge. Billed on the
@@ -67,7 +72,6 @@ export function PurchaseOptions({
   unitLabel = 'jar',
   subscriptionUnitPrice,
   subscriptionSellingPlanId,
-  deliveryPrice,
   contactEmail = 'sales@gertlushhoney.co.uk',
   variantId,
   stockCount,
@@ -76,6 +80,7 @@ export function PurchaseOptions({
   honeyJarOptions,
   hamperJarCount,
   experienceSessions,
+  beekeeper,
 }: {
   productName: string
   // The real Shopify product handle — tags the restock-alert signup with
@@ -94,7 +99,6 @@ export function PurchaseOptions({
   // option (if subscriptionUnitPrice is set) but fall back to the mailto
   // flow rather than a real recurring cart.
   subscriptionSellingPlanId?: string | null
-  deliveryPrice: number
   contactEmail?: string
   // Real Shopify variant to check out with a live cart, when available.
   // Ignored when `variants` is passed — see below.
@@ -125,6 +129,11 @@ export function PurchaseOptions({
   // date picker and gates quantity/checkout on the selected date's
   // places rather than the flat stockCount prop above.
   experienceSessions?: ExperienceSessionOption[]
+  // Real beekeeper behind this product, if any — shown as a secondary
+  // button right next to Add to basket rather than a separate card
+  // elsewhere on the page. Absent for merch products, which have no
+  // beekeeper link.
+  beekeeper?: { name: string; slug: string } | null
 }) {
   const [type, setType] = useState<PurchaseType>('one-time')
   const [quantity, setQuantity] = useState(1)
@@ -212,8 +221,6 @@ export function PurchaseOptions({
     !hasSessionShortfall &&
     (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
   const subtotal = effectivePrice * quantity
-  const total = subtotal + deliveryPrice
-  const monthlyTotal = (subscriptionUnitPrice ?? 0) + deliveryPrice
 
   const productLabel = activeVariant ? `${productName} — ${activeVariant.label}` : productName
   const honeyChoiceSuffix =
@@ -223,9 +230,18 @@ export function PurchaseOptions({
     ? `${productLabel} monthly subscription`
     : `${productLabel} order (x${quantity})`
   const body = isSubscription
-    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus ${formatGBP(deliveryPrice)} delivery (${formatGBP(monthlyTotal)}/month total). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix}${sessionSuffix} (${formatGBP(subtotal)} + ${formatGBP(deliveryPrice)} delivery = ${formatGBP(total)} total).`
+    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus delivery (calculated on the actual parcel weight — free over £${FREE_DELIVERY_THRESHOLD_GBP}). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix}${sessionSuffix} (${formatGBP(subtotal)} plus delivery, calculated on the actual parcel weight — free over £${FREE_DELIVERY_THRESHOLD_GBP}).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+
+  const beekeeperButton = beekeeper && (
+    <Link
+      href={`/beekeepers/${beekeeper.slug}`}
+      className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+    >
+      Meet the beekeeper
+    </Link>
+  )
 
   return (
     <div className="border-ink-line bg-honeycomb-surface mt-8 rounded-xl border p-5">
@@ -489,14 +505,9 @@ export function PurchaseOptions({
             {formatGBP(isSubscription ? subscriptionUnitPrice : subtotal)}
           </dd>
         </div>
-        <div className="flex justify-between">
-          <dt className="text-porcelain/60">Delivery</dt>
-          <dd className="text-porcelain/90">{formatGBP(deliveryPrice)}</dd>
-        </div>
       </dl>
-      <p className="text-porcelain border-ink-line mt-2 flex justify-between border-t pt-2 text-lg font-semibold">
-        <span>{isSubscription ? 'Total / month' : 'Total'}</span>
-        <span>{formatGBP(isSubscription ? monthlyTotal : total)}</span>
+      <p className="text-porcelain/50 mt-2 text-xs">
+        Delivery calculated at checkout by weight &middot; free over £{FREE_DELIVERY_THRESHOLD_GBP}
       </p>
       {isSubscription && (
         <p className="text-porcelain/50 mt-1 text-xs">
@@ -507,23 +518,29 @@ export function PurchaseOptions({
 
       {isSoldOut && !isSubscription ? (
         <>
-          <button
-            type="button"
-            disabled
-            className="bg-ink-line text-porcelain/50 mt-4 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
-          >
-            Sold out
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled
+              className="bg-ink-line text-porcelain/50 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
+            >
+              Sold out
+            </button>
+            {beekeeperButton}
+          </div>
           <RestockAlertForm productName={productName} productHandle={productHandle} />
         </>
       ) : hasHoneyStockShortfall || hasSessionShortfall ? (
-        <button
-          type="button"
-          disabled
-          className="bg-ink-line text-porcelain/50 mt-4 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
-        >
-          Add to basket
-        </button>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            disabled
+            className="bg-ink-line text-porcelain/50 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
+          >
+            Add to basket
+          </button>
+          {beekeeperButton}
+        </div>
       ) : canCheckoutLive ? (
         <>
           <p className="text-porcelain/60 mt-3 text-sm">
@@ -534,14 +551,17 @@ export function PurchaseOptions({
               {cartError}
             </p>
           )}
-          <button
-            type="button"
-            onClick={handleAddToBasket}
-            disabled={isPending}
-            className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4 disabled:opacity-60"
-          >
-            {isPending ? 'Adding…' : 'Add to basket'}
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleAddToBasket}
+              disabled={isPending}
+              className="bg-honey-amber text-ink focus-visible:outline-porcelain inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4 disabled:opacity-60"
+            >
+              {isPending ? 'Adding…' : 'Add to basket'}
+            </button>
+            {beekeeperButton}
+          </div>
         </>
       ) : (
         <>
@@ -552,12 +572,15 @@ export function PurchaseOptions({
               : "we're finishing the shop first."}{' '}
             Email us and we&apos;ll sort it directly.
           </p>
-          <a
-            href={mailtoHref}
-            className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-          >
-            {isSubscription ? 'Email to subscribe' : 'Email to order'}
-          </a>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <a
+              href={mailtoHref}
+              className="bg-honey-amber text-ink focus-visible:outline-porcelain inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+            >
+              {isSubscription ? 'Email to subscribe' : 'Email to order'}
+            </a>
+            {beekeeperButton}
+          </div>
         </>
       )}
     </div>

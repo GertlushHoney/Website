@@ -3,6 +3,7 @@ import { getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import { getRegionForCode } from '@/lib/uk-regions'
+import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { SurpriseMeButton } from '@/components/shop/surprise-me-button'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { HoneyRegionFilter, type HoneyCard } from '@/components/shop/honey-region-filter'
@@ -15,7 +16,10 @@ export async function HoneyListing() {
   const products = await getHoneyProductsWithBeekeeper()
   const cards: HoneyCard[] = await Promise.all(
     products.map(async (product) => {
-      const shopifyProduct = await getProductByHandle(product.shopifyHandle)
+      const [shopifyProduct, reviews] = await Promise.all([
+        getProductByHandle(product.shopifyHandle),
+        getApprovedReviews(product.slug),
+      ])
       return {
         id: product._id,
         slug: product.slug,
@@ -28,6 +32,8 @@ export async function HoneyListing() {
         price: shopifyProduct?.price ?? null,
         beekeeper: product.beekeeper,
         flavour: product.flavour,
+        averageReviewRating: averageRating(reviews),
+        reviewCount: reviews.length,
       }
     })
   )

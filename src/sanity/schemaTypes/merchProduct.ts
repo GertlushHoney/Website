@@ -78,11 +78,12 @@ export const merchProduct = defineType({
       type: 'string',
     }),
     defineField({
-      name: 'deliveryPrice',
-      title: 'Delivery price (£)',
+      name: 'shippingWeightGrams',
+      title: 'Shipping weight (g)',
+      description:
+        'The real packaged weight in grams — used to push a real weight to Shopify so its weight-based delivery rates have something accurate to calculate against. Separate from "Size / weight" above, which is just what shoppers read on the page. Leave blank for products (like Experiences) with nothing to ship.',
       type: 'number',
-      initialValue: 4.99,
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.positive(),
     }),
     defineField({
       name: 'active',

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -29,6 +30,16 @@ export default function WeddingsAndEventsPage() {
         tell us what you need and we&apos;ll work out what&apos;s possible for your date.
       </p>
 
+      <div className="relative mx-auto mt-10 aspect-[1122/1402] w-full max-w-sm overflow-hidden rounded-2xl">
+        <Image
+          src="/images/source/wedding-favour-hero.png"
+          alt="A mini hexagonal honey jar favoured 'Love is Sweet, Wedding Favour, Thank You', tied with ribbon among wedding flowers and candlelight"
+          fill
+          sizes="(min-width: 640px) 384px, 100vw"
+          className="object-cover"
+        />
+      </div>
+
       <section className="mt-10">
         <h2 className="text-porcelain text-xl font-bold tracking-tight">Mini honey jars</h2>
         <p className="text-porcelain/70 mt-3 text-sm">
@@ -37,6 +48,15 @@ export default function WeddingsAndEventsPage() {
           can&apos;t quote a price here, but let us know your guest count and preferred size and
           we&apos;ll come back with real numbers.
         </p>
+        <div className="relative mt-5 aspect-[1448/1086] w-full overflow-hidden rounded-2xl">
+          <Image
+            src="/images/source/wedding-favour-comparison.png"
+            alt="Size comparison: a 55ml wedding favour jar next to a standard 280ml Bee S3 jar"
+            fill
+            sizes="(min-width: 640px) 672px, 100vw"
+            className="object-cover"
+          />
+        </div>
       </section>
 
       <section className="mt-8">

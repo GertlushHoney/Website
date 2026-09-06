@@ -198,7 +198,7 @@ export default function SustainabilityPage() {
         </Link>
         <Link
           href="/beekeepers"
-          className="border-porcelain/40 text-porcelain hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+          className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Meet our beekeepers
         </Link>

@@ -4,16 +4,17 @@ import { notFound } from 'next/navigation'
 import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
 import { PurchaseOptions } from '@/components/product/purchase-options'
-import { ReviewsSection } from '@/components/product/reviews-section'
-import { GertLushStandardBadge } from '@/components/product/gert-lush-standard-badge'
+import { ReviewsSection, Stars } from '@/components/product/reviews-section'
+import { GertLushStandardStamp } from '@/components/product/gert-lush-standard-stamp'
 import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
-import Link from 'next/link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
 import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
+import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
+import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
 import { JsonLd } from '@/components/seo/json-ld'
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
@@ -53,9 +54,13 @@ export default async function ShopProductPage({
     notFound()
   }
 
-  const shopifyProduct = await getProductByHandle(product.shopifyHandle)
+  const [shopifyProduct, reviews] = await Promise.all([
+    getProductByHandle(product.shopifyHandle),
+    getApprovedReviews(product.slug),
+  ])
   const heroImageUrl = urlForImage(product.heroImage ?? undefined)?.width(1200).height(1200).url()
   const areaName = getAreaNameForCode(product.postcodeCode)
+  const averageReviewRating = averageRating(reviews)
 
   const tabs = [
     {
@@ -219,26 +224,41 @@ export default async function ShopProductPage({
       label: 'Details',
       content: (
         <dl className="max-w-2xl space-y-3">
-          {[
-            ['Name of food', 'Honey'],
-            ['Net quantity', product.weight],
-            ['Country of origin', 'United Kingdom'],
-            ['Ingredients', 'Honey. Nothing added.'],
-            ['Storage', 'Store in a cool, dry place away from direct sunlight.'],
-            ['Best before / batch', 'Printed on the jar lid.'],
+          {(
             [
-              'Delivery',
-              `Royal Mail Tracked 48, £${product.deliveryPrice.toFixed(2)} flat rate (tracked, typically 2–3 working days).`,
-            ],
-            ['Important', 'Not suitable for children under 12 months.'],
-          ].map(([label, value]) => (
-            <div key={label} className="border-ink-line flex gap-4 border-t pt-3">
-              <dt className="text-porcelain/50 w-40 shrink-0 text-sm">{label}</dt>
-              <dd className="text-porcelain/90 text-sm">{value}</dd>
-            </div>
-          ))}
+              ['Name of food', 'Honey'],
+              ['Net quantity', product.weight],
+              ['Country of origin', 'United Kingdom'],
+              ['Ingredients', 'Honey. Nothing added.'],
+              ['Storage', 'Store in a cool, dry place away from direct sunlight.'],
+              ['Best before / batch', 'Printed on the jar lid.'],
+              [
+                'Delivery',
+                `Royal Mail Tracked 48 (typically 2–3 working days). Cost is calculated at checkout by weight — free on orders over £${FREE_DELIVERY_THRESHOLD_GBP}.`,
+              ],
+              product.traceabilityFormat
+                ? [
+                    'Traceability',
+                    `Every jar carries its own individual code (${product.traceabilityFormat}), printed on the label.`,
+                  ]
+                : null,
+              ['Important', 'Not suitable for children under 12 months.'],
+            ] as ([string, string] | null)[]
+          )
+            .filter((row): row is [string, string] => row !== null)
+            .map(([label, value]) => (
+              <div key={label} className="border-ink-line flex gap-4 border-t pt-3">
+                <dt className="text-porcelain/50 w-40 shrink-0 text-sm">{label}</dt>
+                <dd className="text-porcelain/90 text-sm">{value}</dd>
+              </div>
+            ))}
         </dl>
       ),
+    },
+    {
+      id: 'reviews',
+      label: 'Reviews',
+      content: <ReviewsSection productSlug={product.slug} productName={product.name} />,
     },
   ].filter(Boolean) as { id: string; label: string; content: React.ReactNode }[]
 
@@ -270,34 +290,59 @@ export default async function ShopProductPage({
       <BackToCategoryLink href="/shop/honey" label="Honey" />
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">
-        <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
-          <div
-            className="absolute inset-0 rounded-2xl"
-            style={{
-              backgroundImage:
-                'radial-gradient(circle at 50% 45%, rgba(217,150,20,0.16), transparent 60%)',
-            }}
-          />
-          {heroImageUrl && (
-            <Image
-              src={heroImageUrl}
-              alt={`A jar of ${product.name} honey, ${product.tagline}`}
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+        <div className="flex flex-col gap-4 self-start">
+          <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
+            <div
+              className="absolute inset-0 rounded-2xl"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 50% 45%, rgba(217,150,20,0.16), transparent 60%)',
+              }}
             />
+            {heroImageUrl && (
+              <Image
+                src={heroImageUrl}
+                alt={`A jar of ${product.name} honey, ${product.tagline}`}
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+              />
+            )}
+          </div>
+
+          {averageReviewRating !== null ? (
+            <p className="text-porcelain/70 flex items-center justify-center gap-2 text-sm">
+              <span className="text-3xl">
+                <Stars rating={Math.round(averageReviewRating)} />
+              </span>
+              <span className="text-porcelain font-semibold">
+                {averageReviewRating.toFixed(1)}
+              </span>
+              out of 5 ({reviews.length} review{reviews.length === 1 ? '' : 's'})
+            </p>
+          ) : (
+            <p className="text-porcelain/50 text-center text-3xl">
+              <Stars rating={0} />
+            </p>
           )}
         </div>
 
-        <div className="flex flex-col justify-center">
-          <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
-            Gert Lush Honey
-          </p>
-          <p className="font-display text-comb-gold mt-2 text-3xl italic">{product.name}</p>
-          <h1 className="text-porcelain mt-2 text-3xl font-bold tracking-tight text-balance">
-            {product.tagline}
-          </h1>
+        <div className="relative flex flex-col justify-center">
+          {product.meetsGertLushStandard && (
+            <div className="absolute top-0 right-0">
+              <GertLushStandardStamp />
+            </div>
+          )}
+          <div className={product.meetsGertLushStandard ? 'pr-40' : undefined}>
+            <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
+              Gert Lush Honey
+            </p>
+            <p className="font-display text-comb-gold mt-2 text-3xl italic">{product.name}</p>
+            <h1 className="text-porcelain mt-2 text-3xl font-bold tracking-tight text-balance">
+              {product.tagline}
+            </h1>
+          </div>
 
           <dl className="mt-8 space-y-3">
             <div className="border-ink-line flex gap-4 border-t pt-3">
@@ -311,7 +356,8 @@ export default async function ShopProductPage({
             <div className="border-ink-line flex gap-4 border-t pt-3">
               <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Delivery</dt>
               <dd className="text-porcelain/90 text-sm">
-                Royal Mail Tracked 48 &middot; £{product.deliveryPrice.toFixed(2)}
+                Royal Mail Tracked 48 &middot; calculated at checkout &middot; free over £
+                {FREE_DELIVERY_THRESHOLD_GBP}
               </dd>
             </div>
             {(product.tastingProfile?.harvestSeason || product.seasons.length > 0) && (
@@ -333,36 +379,7 @@ export default async function ShopProductPage({
                 <dd className="text-porcelain/90 text-sm">{product.batchCode}</dd>
               </div>
             )}
-            {product.traceabilityFormat && (
-              <div className="border-ink-line flex gap-4 border-t pt-3">
-                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Traceability</dt>
-                <dd className="text-porcelain/90 text-sm">
-                  Every jar carries its own individual code ({product.traceabilityFormat}),
-                  printed on the label.
-                </dd>
-              </div>
-            )}
           </dl>
-
-          {product.meetsGertLushStandard && <GertLushStandardBadge />}
-
-          {product.beekeeper && (
-            <Link
-              href={`/beekeepers/${product.beekeeper.slug}`}
-              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group mt-6 flex items-center justify-between gap-4 rounded-xl border p-4 transition focus-visible:outline focus-visible:outline-offset-2"
-            >
-              <span className="text-porcelain text-sm">
-                Produced by{' '}
-                <span className="text-comb-gold font-semibold">{product.beekeeper.name}</span>
-              </span>
-              <span className="text-comb-gold shrink-0 text-sm font-semibold">
-                Meet the beekeeper{' '}
-                <span aria-hidden="true" className="inline-block transition group-hover:translate-x-0.5">
-                  →
-                </span>
-              </span>
-            </Link>
-          )}
 
           {shopifyProduct ? (
             <PurchaseOptions
@@ -371,9 +388,9 @@ export default async function ShopProductPage({
               unitPrice={shopifyProduct.price}
               subscriptionUnitPrice={product.subscriptionPrice ?? undefined}
               subscriptionSellingPlanId={shopifyProduct.subscriptionSellingPlanId}
-              deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}
               stockCount={shopifyProduct.quantityAvailable}
+              beekeeper={product.beekeeper}
             />
           ) : (
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">
@@ -393,8 +410,6 @@ export default async function ShopProductPage({
       <div className="mt-16">
         <ProductTabs tabs={tabs} />
       </div>
-
-      <ReviewsSection productSlug={product.slug} productName={product.name} />
     </div>
   )
 }

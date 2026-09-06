@@ -1,8 +1,8 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { PortableText } from 'next-sanity'
 import { PurchaseOptions } from '@/components/product/purchase-options'
-import { ReviewsSection } from '@/components/product/reviews-section'
+import { ReviewsSection, Stars } from '@/components/product/reviews-section'
+import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle } from '@/lib/shopify/product'
@@ -16,14 +16,16 @@ import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 // actually has a matching, active Sanity document — see each category's
 // page.tsx for the "not real yet" fallback.
 export async function MerchProductPage({ product }: { product: MerchProduct }) {
-  const [shopifyProduct, honeyProducts] = await Promise.all([
+  const [shopifyProduct, honeyProducts, reviews] = await Promise.all([
     getProductByHandle(product.shopifyHandle),
     // Only a hamper's "Choose your own" variant needs this — fetched
     // unconditionally anyway since it's a single cheap Sanity query, and
     // keeps this component simple rather than branching per category.
     getHoneyProducts(),
+    getApprovedReviews(product.slug),
   ])
   const imageUrl = urlForImage(product.heroImage ?? undefined)?.width(1000).height(1000).url()
+  const averageReviewRating = averageRating(reviews)
 
   // Live stock per honey, for the per-jar picker's "out of stock" gating —
   // same lookup the order-paid webhook does, just read-only here. Only
@@ -82,16 +84,34 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
       <BackToCategoryLink href={`/shop/${product.category}`} label={categoryLabel} />
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">
-        <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
-          {imageUrl && (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
-            />
+        <div className="flex flex-col gap-4 self-start">
+          <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
+            {imageUrl && (
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+              />
+            )}
+          </div>
+
+          {averageReviewRating !== null ? (
+            <p className="text-porcelain/70 flex items-center justify-center gap-2 text-sm">
+              <span className="text-3xl">
+                <Stars rating={Math.round(averageReviewRating)} />
+              </span>
+              <span className="text-porcelain font-semibold">
+                {averageReviewRating.toFixed(1)}
+              </span>
+              out of 5 ({reviews.length} review{reviews.length === 1 ? '' : 's'})
+            </p>
+          ) : (
+            <p className="text-porcelain/50 text-center text-3xl">
+              <Stars rating={0} />
+            </p>
           )}
         </div>
 
@@ -117,31 +137,12 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
             </dl>
           )}
 
-          {product.beekeeper && (
-            <Link
-              href={`/beekeepers/${product.beekeeper.slug}`}
-              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group mt-6 flex items-center justify-between gap-4 rounded-xl border p-4 transition focus-visible:outline focus-visible:outline-offset-2"
-            >
-              <span className="text-porcelain text-sm">
-                Led by{' '}
-                <span className="text-comb-gold font-semibold">{product.beekeeper.name}</span>
-              </span>
-              <span className="text-comb-gold shrink-0 text-sm font-semibold">
-                Meet the beekeeper{' '}
-                <span aria-hidden="true" className="inline-block transition group-hover:translate-x-0.5">
-                  →
-                </span>
-              </span>
-            </Link>
-          )}
-
           {shopifyProduct ? (
             <PurchaseOptions
               productName={product.name}
               productHandle={product.shopifyHandle}
               unitPrice={shopifyProduct.price}
               unitLabel="item"
-              deliveryPrice={product.deliveryPrice}
               variantId={shopifyProduct.availableForSale ? shopifyProduct.variantId : null}
               stockCount={shopifyProduct.quantityAvailable}
               variants={shopifyProduct.variants}
@@ -151,6 +152,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               honeyJarOptions={honeyJarOptions}
               hamperJarCount={hamperJarCount}
               experienceSessions={experienceSessions}
+              beekeeper={product.beekeeper}
             />
           ) : (
             <p className="border-ink-line bg-honeycomb-surface text-porcelain/70 mt-8 rounded-xl border p-5 text-sm">

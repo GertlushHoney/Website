@@ -96,16 +96,15 @@ export function BasketDrawer() {
           )}
 
           {lines.length === 0 ? (
-            <p className="text-porcelain/60 text-sm">
-              Your basket is empty.{' '}
+            <p className="text-porcelain/60 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-sm">
+              <span>Your basket is empty.</span>
               <Link
                 href="/shop"
                 onClick={close}
-                className="text-comb-gold underline underline-offset-2"
+                className="border-porcelain/40 bg-porcelain/10 text-comb-gold hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex rounded-full border px-3 py-1 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
               >
                 Browse the shop
               </Link>
-              .
             </p>
           ) : (
             <ul className="space-y-5">

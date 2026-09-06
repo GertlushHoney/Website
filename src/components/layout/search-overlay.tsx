@@ -80,7 +80,7 @@ export function SearchOverlay({ items }: { items: SearchItem[] }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
-        className="hover:text-porcelain focus-visible:outline-honey-amber rounded-full focus-visible:outline focus-visible:outline-offset-2"
+        className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition focus-visible:outline focus-visible:outline-offset-2"
       >
         Search
       </button>

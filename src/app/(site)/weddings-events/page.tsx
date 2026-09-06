@@ -30,14 +30,25 @@ export default function WeddingsAndEventsPage() {
         tell us what you need and we&apos;ll work out what&apos;s possible for your date.
       </p>
 
-      <div className="relative mx-auto mt-10 aspect-[1122/1402] w-full max-w-sm overflow-hidden rounded-2xl">
-        <Image
-          src="/images/source/wedding-favour-hero.png"
-          alt="A mini hexagonal honey jar favoured 'Love is Sweet, Wedding Favour, Thank You', tied with ribbon among wedding flowers and candlelight"
-          fill
-          sizes="(min-width: 640px) 384px, 100vw"
-          className="object-cover"
-        />
+      <div className="mx-auto mt-10 grid max-w-lg grid-cols-2 gap-4">
+        <div className="relative aspect-[1122/1402] overflow-hidden rounded-2xl">
+          <Image
+            src="/images/source/wedding-favour-hero.png"
+            alt="A mini hexagonal honey jar favoured 'Love is Sweet, Wedding Favour, Thank You', tied with ribbon among wedding flowers and candlelight"
+            fill
+            sizes="(min-width: 640px) 256px, 45vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="relative aspect-[1122/1402] overflow-hidden rounded-2xl">
+          <Image
+            src="/images/source/wedding-favour-personalise.png"
+            alt="A personalised honey favour jar reading 'Adam & Nadine, Love is Sweet, 12 June 2027, Thank You', with the caption 'Why not personalise?'"
+            fill
+            sizes="(min-width: 640px) 256px, 45vw"
+            className="object-cover"
+          />
+        </div>
       </div>
 
       <section className="mt-10">

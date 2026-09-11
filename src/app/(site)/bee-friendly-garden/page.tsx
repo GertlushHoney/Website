@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { BeeFriendlyFlowchart } from '@/components/garden/bee-friendly-flowchart'
 
 export const metadata: Metadata = {
   title: 'Make Your Garden More Bee Friendly',
@@ -49,6 +51,18 @@ export default function BeeFriendlyGardenPage() {
 
         <section>
           <h2 className="text-porcelain text-xl font-bold tracking-tight">
+            Quick check: is this plant bee-friendly?
+          </h2>
+          <p className="mt-3">
+            The same criteria above, as a quick check for a specific plant you&apos;re looking at:
+          </p>
+          <div className="border-ink-line bg-honeycomb-surface mt-5 rounded-2xl border p-5">
+            <BeeFriendlyFlowchart />
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-xl font-bold tracking-tight">
             Plant for the whole season, not just summer
           </h2>
           <p className="mt-3">
@@ -79,6 +93,78 @@ export default function BeeFriendlyGardenPage() {
             available, and is one of the most important late-season food sources for bees
             building up reserves before winter.
           </p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <figure>
+              <div className="relative aspect-square overflow-hidden rounded-xl">
+                <Image
+                  src="/images/source/garden-crocus.jpg"
+                  alt="A purple crocus flowering in early spring"
+                  fill
+                  sizes="(min-width: 640px) 220px, 33vw"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="text-porcelain/50 mt-2 text-xs">
+                Crocus &mdash; late winter/early spring. Photo: Mihael Simoni&#269;,{' '}
+                <a
+                  href="https://creativecommons.org/licenses/by-sa/3.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  CC BY-SA 3.0
+                </a>
+                .
+              </figcaption>
+            </figure>
+            <figure>
+              <div className="relative aspect-square overflow-hidden rounded-xl bg-black">
+                <Image
+                  src="/images/source/garden-lavender.jpg"
+                  alt="A close-up of purple lavender flowers"
+                  fill
+                  sizes="(min-width: 640px) 220px, 33vw"
+                  className="object-contain"
+                />
+              </div>
+              <figcaption className="text-porcelain/50 mt-2 text-xs">
+                Lavender &mdash; summer. Photo: Norbert Nagel,{' '}
+                <a
+                  href="https://creativecommons.org/licenses/by-sa/3.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  CC BY-SA 3.0
+                </a>
+                .
+              </figcaption>
+            </figure>
+            <figure>
+              <div className="relative aspect-square overflow-hidden rounded-xl">
+                <Image
+                  src="/images/source/garden-ivy-bees.jpg"
+                  alt="Bees foraging on flowering ivy in autumn"
+                  fill
+                  sizes="(min-width: 640px) 220px, 33vw"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="text-porcelain/50 mt-2 text-xs">
+                Ivy in flower, with bees &mdash; autumn. Photo: Alan Fryer,{' '}
+                <a
+                  href="https://creativecommons.org/licenses/by-sa/2.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  CC BY-SA 2.0
+                </a>
+                .
+              </figcaption>
+            </figure>
+          </div>
         </section>
 
         <section>
@@ -117,6 +203,32 @@ export default function BeeFriendlyGardenPage() {
             colonies and nest alone in narrow tunnels. They&apos;re excellent pollinators in their
             own right, and just as worth encouraging.
           </p>
+
+          <figure className="mt-5">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl">
+              <Image
+                src="/images/source/garden-bee-hotel.jpg"
+                alt="Simple wooden bee hotels made from blocks of drilled holes, for solitary bees"
+                fill
+                sizes="(min-width: 768px) 680px, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <figcaption className="text-porcelain/50 mt-2 text-xs">
+              Drilled hardwood blocks, exactly the kind of simple tube nesting described below.
+              Photo: Ruth Hartnup,{' '}
+              <a
+                href="https://creativecommons.org/licenses/by/2.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2"
+              >
+                CC BY 2.0
+              </a>
+              .
+            </figcaption>
+          </figure>
+
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
             <li>
               <span className="text-porcelain font-medium">Tubes:</span> use a mix of diameters

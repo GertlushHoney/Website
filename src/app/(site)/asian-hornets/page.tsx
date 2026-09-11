@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { yellowLeggedHornetUpdate as update } from '@/lib/national-bee-unit'
 
 export const metadata: Metadata = {
   title: 'Asian Hornets',
@@ -26,6 +27,29 @@ export default function AsianHornetsPage() {
         currently facing UK beekeepers — and the public reporting sightings early is what keeps it
         in check.
       </p>
+
+      <div className="border-honey-amber/40 bg-honeycomb-surface mt-6 rounded-2xl border p-5">
+        <p className="text-honey-amber text-xs font-semibold tracking-wide uppercase">
+          UK update &middot; as of {update.asOfDate}
+        </p>
+        <p className="text-porcelain mt-2 text-sm">
+          <span className="font-semibold">{update.sightingsCount}</span> credible yellow-legged
+          hornet sightings and <span className="font-semibold">{update.nestsCount}</span> nests
+          found in the UK in {update.year}.
+        </p>
+        <a
+          href={update.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-comb-gold mt-2 inline-block text-sm underline underline-offset-2"
+        >
+          See the live map and full nest list on BeeBase
+        </a>
+        <p className="text-porcelain/40 mt-2 text-xs">
+          Figures checked against APHA&apos;s National Bee Unit — their site blocks automated
+          fetching, so these are updated by hand rather than pulled live.
+        </p>
+      </div>
 
       <div className="relative mt-10 aspect-[16/9] overflow-hidden rounded-2xl">
         <Image
@@ -68,18 +92,55 @@ export default function AsianHornetsPage() {
 
         <section>
           <h2 className="text-porcelain text-xl font-bold tracking-tight">
-            How to tell it apart from a normal hornet
+            How to tell it apart from our native European hornet
           </h2>
           <p className="mt-3">
-            It&apos;s smaller than our native European hornet. Look for:
+            The two get mixed up constantly, usually the wrong way round — people assume the
+            invasive one must be the bigger, scarier-looking insect. It&apos;s the opposite: the
+            Asian hornet is the smaller of the two, and our native European hornet is the one
+            that&apos;s been here all along and isn&apos;t a threat to report.
           </p>
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
-            <li>A dark brown or black body, almost velvety in appearance</li>
-            <li>Yellow tips on the legs — the feature that gives it its official name</li>
-            <li>A yellow-orange face</li>
-            <li>One distinctly orange band near the end of the abdomen, with narrow yellow edges on the other segments</li>
-          </ul>
-          <p className="text-porcelain/60 mt-3 text-sm">
+
+          <div className="bg-porcelain/95 mt-5 rounded-2xl p-4">
+            <div className="relative aspect-[908/490] w-full overflow-hidden rounded-lg">
+              <Image
+                src="/images/source/asian-vs-european-hornet-comparison.png"
+                alt="Size and colour comparison chart: the yellow-legged (Asian) hornet is smaller and darker, with narrow yellow leg-tips and one orange band on the abdomen; the European hornet is larger with a more typical reddish-brown and yellow wasp-like pattern"
+                fill
+                sizes="(min-width: 768px) 680px, 100vw"
+                className="object-contain"
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
+                Asian hornet
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
+                <li>Smaller — workers around 17&ndash;20mm, queens up to about 30mm</li>
+                <li>Dark brown or black body, almost velvety in appearance</li>
+                <li>Legs are dark with yellow tips only — not yellow all the way up</li>
+                <li>A yellow-orange face</li>
+                <li>One distinctly orange band near the end of the abdomen, with narrow yellow edges on the other segments</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-porcelain/70 text-sm font-semibold tracking-wide uppercase">
+                European hornet (native, no need to report)
+              </p>
+              <ul className="text-porcelain/70 mt-2 list-disc space-y-1 pl-5 text-sm">
+                <li>Larger — queens can reach 35mm or more</li>
+                <li>Reddish-brown and yellow, a more typical &ldquo;wasp&rdquo; colouring</li>
+                <li>Legs are a plain reddish-brown, not dark with yellow tips</li>
+                <li>A pale yellow face, not orange</li>
+                <li>Several yellow-and-brown/black stripes running down the abdomen, not just one band</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="text-porcelain/60 mt-4 text-sm">
             If you&apos;re not sure, report it anyway with a photo — that&apos;s exactly what the
             identification step in the app and reporting form is for. It&apos;s far better to
             report a native hornet by mistake than to miss a real one.

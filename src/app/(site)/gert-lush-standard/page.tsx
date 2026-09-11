@@ -130,11 +130,14 @@ export default function GertLushStandardPage() {
         </p>
       </section>
 
-      <p className="text-porcelain/60 mt-10 text-sm">
-        <Link href="/beekeepers" className="text-comb-gold underline underline-offset-2">
+      <p className="text-porcelain/60 mt-10 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-sm">
+        <Link
+          href="/beekeepers"
+          className="border-porcelain/40 bg-porcelain/10 text-comb-gold hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex rounded-full border px-3 py-1 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
+        >
           Meet the beekeepers
-        </Link>{' '}
-        behind honey that meets this standard.
+        </Link>
+        <span>behind honey that meets this standard.</span>
       </p>
     </div>
   )

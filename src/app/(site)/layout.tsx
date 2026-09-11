@@ -5,7 +5,6 @@ import { SiteHeader } from '@/components/layout/site-header'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SkipLink } from '@/components/layout/skip-link'
 import { Splash } from '@/components/layout/splash'
-import { DisableContextMenu } from '@/components/layout/disable-context-menu'
 import { CookiePreferences } from '@/components/legal/cookie-preferences'
 import { CartProvider } from '@/components/cart/cart-context'
 import { BasketDrawer } from '@/components/cart/basket-drawer'
@@ -90,7 +89,6 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <CartProvider initialCart={initialCart}>
-          <DisableContextMenu />
           <Splash />
           <SkipLink />
           <SiteHeader />

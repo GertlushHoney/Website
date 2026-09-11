@@ -80,9 +80,23 @@ export function SearchOverlay({ items }: { items: SearchItem[] }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
-        className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition focus-visible:outline focus-visible:outline-offset-2"
+        className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber flex h-8 w-8 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-offset-2 xl:h-auto xl:w-auto xl:px-3.5 xl:py-1.5 xl:text-[13px] xl:font-medium"
       >
-        Search
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          className="h-4 w-4 xl:hidden"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
+        </svg>
+        <span className="hidden xl:inline">Search</span>
       </button>
 
       {open &&

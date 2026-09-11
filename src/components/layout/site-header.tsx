@@ -29,7 +29,7 @@ export async function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden md:block">
+        <nav aria-label="Primary" className="hidden xl:block">
           <ul className="flex items-center gap-2">
             {primaryNav.map((item) => (
               <li key={item.href}>

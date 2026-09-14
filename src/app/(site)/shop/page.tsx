@@ -76,10 +76,14 @@ function categorySubtitle(category: 'honey' | MerchCategory, count: number): str
   }
 }
 
-// One tile per category (honey included, not given special treatment) so
-// every category behaves the same way: a tile here, a listing page with
-// however many real products exist, then each product's own page. Product
-// pages link back to their category listing — see BackToCategoryLink.
+// One tile per category, all built the same way structurally (a tile
+// here, a listing page with however many real products exist, then each
+// product's own page — see BackToCategoryLink for the way back). Honey is
+// still the natural starting point: it's placed first in `tiles` below so
+// it's the carousel's default/front item, and its copy leads the intro
+// paragraph — see "REFINE SHOP HIERARCHY" audit, 2026-09-15. The other
+// categories aren't downgraded, just positioned as orbiting honey rather
+// than competing with it, per the commercial hierarchy in CLAUDE.md.
 export default async function ShopPage() {
   const [honeyProducts, shopTiles, merchTiles] = await Promise.all([
     getHoneyProducts(),

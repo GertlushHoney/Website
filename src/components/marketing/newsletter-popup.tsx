@@ -4,15 +4,41 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { subscribeToNewsletter } from '@/lib/shopify/customer'
 import type { NewsletterPopupContent } from '@/lib/sanity/newsletter-popup'
 
-const SESSION_KEY = 'gert-lush-newsletter-popup-seen'
+// localStorage, not sessionStorage — once a visitor has been shown this
+// (dismissed or subscribed, doesn't matter which), it should stay gone on
+// every future visit too, not just for the rest of this one tab session.
+// See "REDUCE NEWSLETTER POPUP AGGRESSION" audit, 2026-09-13 — the
+// previous ~6-second sessionStorage-only version could interrupt someone
+// before they'd finished reading the splash screen, and would show again
+// on every new browser session even for someone who'd already dismissed
+// it days earlier.
+const STORAGE_KEY = 'gert-lush-newsletter-popup-seen'
 
-// Once-per-session popup, content editable in Sanity Studio (see
+// Exit-intent only makes sense with a real pointer that can move "toward"
+// the browser chrome and be read as about-to-leave — a touch screen has no
+// equivalent gesture, so this is desktop-only. `(pointer: fine)` is a
+// reasonable proxy for "has a mouse/trackpad" without user-agent sniffing.
+function hasFinePointer(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
+}
+
+// Content editable in Sanity Studio (see
 // src/sanity/schemaTypes/newsletterPopup.ts) so wording, the discount
 // offer, and the delay can all change without a redeploy. Same
 // accessible-dialog shape as the basket drawer and search overlay
 // (focus-trapped, Escape/backdrop/close-button dismissal, focus restored
-// on close) and the same "mark as seen in sessionStorage" pattern as the
-// splash screen, so it never shows twice in one browsing session.
+// on close).
+//
+// Shows on whichever of these happens first:
+//  - content.delaySeconds of genuine dwell time on the site (now a
+//    20-30s-range default, not the old ~6s — see newsletterPopup.ts);
+//  - on desktop only, exit-intent — the cursor leaving via the top of the
+//    viewport, as if reaching for the tab bar/address bar to leave. This
+//    is the one moment showing a popup is low-cost rather than intrusive:
+//    the visitor was about to go anyway, so it can't interrupt browsing
+//    that would otherwise have continued.
+// Never shown at all if localStorage already has the "seen" flag, so it
+// can only ever appear once per browser, full stop.
 export function NewsletterPopup({ content }: { content: NewsletterPopupContent }) {
   const [visible, setVisible] = useState(false)
   const [email, setEmail] = useState('')
@@ -23,14 +49,54 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
 
   useEffect(() => {
     if (!content.enabled) return
-    if (sessionStorage.getItem(SESSION_KEY)) return
+    let alreadySeen = false
+    try {
+      alreadySeen = Boolean(localStorage.getItem(STORAGE_KEY))
+    } catch {
+      // Private browsing / storage blocked — fall back to showing once per
+      // tab session further down is not worth the complexity here; simplest
+      // safe behaviour is to just not show it rather than risk showing it
+      // repeatedly with no way to remember dismissal at all.
+      return
+    }
+    if (alreadySeen) return
 
-    const timer = setTimeout(() => {
+    const usingExitIntent = hasFinePointer()
+
+    // Whichever trigger fires first tears down the other — no point
+    // leaving a timer or listener running for a popup that's already
+    // showing (or about to).
+    function show() {
+      clearTimeout(timer)
+      if (usingExitIntent) {
+        document.removeEventListener('mouseout', handleExitIntent)
+      }
       setVisible(true)
-      sessionStorage.setItem(SESSION_KEY, '1')
-    }, content.delaySeconds * 1000)
+      try {
+        localStorage.setItem(STORAGE_KEY, '1')
+      } catch {
+        // Nothing more to do — worst case it can show again next visit.
+      }
+    }
 
-    return () => clearTimeout(timer)
+    const timer = setTimeout(show, content.delaySeconds * 1000)
+
+    function handleExitIntent(event: MouseEvent) {
+      // clientY <= 0 means the cursor has crossed the top edge of the
+      // viewport, heading toward the browser's own tab/address bar.
+      if (event.clientY <= 0) show()
+    }
+
+    if (usingExitIntent) {
+      document.addEventListener('mouseout', handleExitIntent)
+    }
+
+    return () => {
+      clearTimeout(timer)
+      if (usingExitIntent) {
+        document.removeEventListener('mouseout', handleExitIntent)
+      }
+    }
   }, [content.enabled, content.delaySeconds])
 
   useEffect(() => {

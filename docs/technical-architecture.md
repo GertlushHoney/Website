@@ -117,6 +117,34 @@ Writing a review requires create access to Sanity, which the read-only
 - No `dynamicIO`/`cacheComponents` opt-in yet (Next.js 16 stable-but-still-early feature) —
   revisit once real traffic patterns exist.
 
+**Batched product/review fetching (2026-09-13).** A category listing page (honey or merch) and
+the homepage's featured-product picker used to fetch Shopify price/stock and Sanity reviews with
+one request *per product* (`Promise.all(products.map(async product => ...))`) — fine at 2-3
+products, but Θ(N) network requests per render as the catalogue grows, a real concern once honey
+postcodes reach the 20-50 range this build is meant to handle (both raw request volume and
+Shopify's own Storefront API rate limits). Fixed by batching each into a single request regardless
+of N:
+
+- `getProductsByHandles(handles)` (`src/lib/shopify/product.ts`) builds one GraphQL document with
+  every handle as its own aliased `product(handle: ...)` field (`p0`, `p1`, ...) — one Storefront
+  API round trip for the whole page instead of one per product. Comfortably covers 20-50 handles
+  in a single request; not chunked for a much larger catalogue, since that's not the range this
+  needs to handle today.
+- `getApprovedReviewsForSlugs(slugs)` (`src/lib/sanity/reviews.ts`) does the equivalent for
+  reviews: one `productSlug in $slugs` GROQ query, grouped back out by slug in JS.
+- `getHoneyProducts`, `getHoneyProductsWithBeekeeper`, `getMerchProductsByCategory` and
+  `getAllMerchProducts` (stable catalogue listings, read on nearly every page via the search index
+  alone) are now wrapped in `unstable_cache` with a 60s revalidate window, matching the Shopify
+  client's own existing default — keeps Sanity request volume tied to traffic rather than growing
+  with both traffic *and* catalogue size.
+
+Deliberately **not** cached or batched: anything touching Experience `placesBooked`/session
+availability (`findExperienceSessionByDate`, `getUpcomingExperienceSessions`,
+`incrementSessionPlacesBooked`) — caching real-time capacity would reintroduce exactly the
+overbooking race "Experience booking concurrency" (below) was written to close. The postcode map
+page was reviewed too and needed no change: it already does one `getHoneyProducts()` call and
+builds its lookup table in plain JS, with no per-product fetch at all.
+
 ## Basket architecture
 
 - Shopify Cart API (`cartCreate`, `cartLinesAdd/Update/Remove`) is the only basket state.
@@ -203,6 +231,71 @@ show at all).
 subscribing to Bee S3 still adds a real `£7.00/month` recurring line to the Shopify basket,
 distinct from a one-time line, ready for genuine checkout — confirms the Selling Plan detection
 and cart wiring weren't affected by the copy-only changes.
+
+## Experience booking concurrency (2026-09-13)
+
+**The problem.** An Experience's real capacity limit is a Sanity-only concept — one `sessions[]`
+array item per bookable date, each with `placesTotal`/`placesBooked` (see "Sanity content model").
+Availability is read once, at page render, and `placesBooked` is only ever updated later, by the
+`order-paid` webhook, after Shopify has already taken payment (see "Checkout handoff" — Shopify's
+own inventory tracking is deliberately not used for Experiences, since a session's real limit is
+its remaining places, not the product's untracked stock count). That gap between "read" and
+"write" is a genuine race: two customers can both load the page while a session shows "1 place
+remaining," both check out successfully (Shopify has no idea places are a limited resource), and
+both webhook deliveries then try to book that same last place.
+
+The original `incrementSessionPlacesBooked` made this worse, not just racy: it was a bare
+`.patch(docId).inc({ placesBooked: by })` with no capacity check at all. Sanity's `.inc()` is
+atomic in the sense that two concurrent increments both apply and sum correctly (no lost update),
+but nothing stopped that sum from sailing past `placesTotal` — the two customers above would both
+be recorded as booked, with no error, no log, and no way to tell afterwards that anything had gone
+wrong.
+
+**The fix — optimistic concurrency with a capacity check on every attempt**
+(`src/lib/sanity/experience-booking.ts`, `incrementSessionPlacesBooked`):
+
+1. Read the document's current `_rev` and the specific session's real `placesTotal`/`placesBooked`
+   fresh, right now — never reuse a value read earlier in the request (e.g. from
+   `findExperienceSessionByDate`, called moments before by the webhook to locate the session).
+2. If the requested quantity doesn't fit in what's actually left, refuse immediately — returned as
+   `{ outcome: 'insufficient_capacity', placesRequested, placesRemaining }`, not thrown, since this
+   is a genuine final state (retrying the identical webhook resolves the same way every time), not
+   a transient problem.
+3. Otherwise, attempt `.patch(docId).ifRevisionId(rev).inc({ ...: by }).commit()`. Sanity rejects
+   this (HTTP 409) if the document has changed since step 1 — i.e. another booking committed
+   first — in which case this loops back to step 1 with a fresh read rather than blindly retrying
+   stale numbers. Bounded at 5 attempts; exhausting that under sustained contention throws, and
+   the webhook (which distinguishes data problems it must not retry from real transient failures
+   it should) treats a thrown error here as the latter — it responds with a non-2xx status so
+   Shopify redelivers the webhook later, rather than marking it processed and losing the booking
+   attempt for good.
+
+Two customers racing for the same last place can therefore never both succeed: whichever request's
+write lands first wins normally; the second one's `ifRevisionId` is rejected, forcing a re-read
+that now correctly shows zero places left, so it resolves to `insufficient_capacity` instead of a
+second silent increment.
+
+**Operational alert on a genuine conflict.** `insufficient_capacity` still means a customer has
+already paid Shopify for a place that turned out not to exist — that can only be fixed by a human
+(refund, or move them to another date), never by retrying. The `order-paid` webhook
+(`src/app/api/webhooks/shopify/order-paid/route.ts`) logs this with an unmistakable
+`OVERBOOKING CONFLICT` prefix and calls `recordBookingConflict`, which creates a durable
+`experienceBookingConflict` Sanity document (order id/name, product, session date, places
+requested vs. actually remaining, a timestamp, and a `resolved` checkbox) — genuinely discoverable
+in Studio, not just server logs that depend on someone already watching them. This document type
+is deliberately separate from `processedWebhookEvent` (a different Sanity document type recording
+which webhook deliveries have already run, keyed by Shopify's `X-Shopify-Webhook-Id`, so a
+redelivered webhook is recognised and skipped rather than re-running real side effects): that one
+tracks *which deliveries have run*, this one tracks *which bookings need a human*.
+
+**What this does not do.** This closes the data-integrity gap (the stored count can never exceed
+capacity, and every conflict is recorded) but does not prevent the underlying race from happening
+at all — both customers can still complete payment for the same last place; one of them will
+always need manual follow-up once `insufficient_capacity` is hit. Eliminating that entirely would
+mean reserving a place *before* payment — either giving each session real Shopify-tracked inventory
+(a structural change: one variant/inventory item per bookable date, decremented at checkout instead
+of after) or a short-lived hold created at "Add to basket" and released if checkout doesn't
+complete — genuinely bigger changes than this fix, not attempted here without being asked for.
 
 ## Form submission architecture
 

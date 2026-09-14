@@ -1,19 +1,23 @@
 import type { SchemaTypeDefinition } from 'sanity'
 import { beekeeper } from './beekeeper'
+import { experienceBookingConflict } from './experienceBookingConflict'
 import { honeyProduct } from './honeyProduct'
 import { informationCard } from './informationCard'
 import { merchProduct } from './merchProduct'
 import { newsletterPopup } from './newsletterPopup'
+import { processedWebhookEvent } from './processedWebhookEvent'
 import { productReview } from './productReview'
 import { shopTile } from './shopTile'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
     beekeeper,
+    experienceBookingConflict,
     honeyProduct,
     informationCard,
     merchProduct,
     newsletterPopup,
+    processedWebhookEvent,
     productReview,
     shopTile,
   ],

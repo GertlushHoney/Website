@@ -27,27 +27,31 @@ const fraunces = Fraunces({
   subsets: ['latin'],
 })
 
+// Gert Lush is Bristol-based, but sells honey from independent beekeepers
+// across Britain, not only Bristol — this must never read as "all our
+// honey comes from Bristol hives" (the old wording here did). See "FIX
+// BRISTOL VS NATIONAL PROVENANCE LANGUAGE" audit, 2026-09-13.
 const description =
-  'Small-batch honey from Bristol hives. Every jar has a postcode, a season and a story.'
+  'Small-batch British honey from named independent beekeepers. Every jar has a place, a season and a story.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Gert Lush Honey — Bristol honey. Proper lush.',
+    default: 'Gert Lush Honey — British honey. Proper lush.',
     template: '%s — Gert Lush Honey',
   },
   description,
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
-    title: 'Gert Lush Honey — Bristol honey. Proper lush.',
+    title: 'Gert Lush Honey — British honey. Proper lush.',
     description,
     url: '/',
     images: [{ url: '/images/brand/primary-logo.png', width: 1448, height: 1086 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Gert Lush Honey — Bristol honey. Proper lush.',
+    title: 'Gert Lush Honey — British honey. Proper lush.',
     description,
     images: ['/images/brand/primary-logo.png'],
   },

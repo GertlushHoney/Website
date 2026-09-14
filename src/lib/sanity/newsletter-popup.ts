@@ -16,6 +16,13 @@ export type NewsletterPopupContent = {
 // Sanity-backed fetch in this codebase. No discount mentioned by default,
 // since no real code exists until one is set up in Shopify and entered in
 // Sanity.
+//
+// delaySeconds default was 6 — interrupting visitors before they'd even
+// finished reading the splash screen. 25s is a genuine "you've been
+// looking around for a bit" delay, matched to the schema's own enforced
+// 15-120s range (src/sanity/schemaTypes/newsletterPopup.ts) so an editor
+// can't accidentally dial this back into aggressive territory. See
+// "REDUCE NEWSLETTER POPUP AGGRESSION" audit, 2026-09-13.
 const DEFAULTS: NewsletterPopupContent = {
   enabled: true,
   heading: 'Join the Gert Lush hive',
@@ -23,7 +30,7 @@ const DEFAULTS: NewsletterPopupContent = {
   discountCode: null,
   discountLabel: null,
   buttonLabel: 'Join the hive',
-  delaySeconds: 6,
+  delaySeconds: 25,
 }
 
 export async function getNewsletterPopup(): Promise<NewsletterPopupContent> {

@@ -26,14 +26,22 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
+        {/* Gert Lush is Bristol-based, but the honey itself comes from
+            independent beekeepers across Britain, not only Bristol — this
+            must never read as a claim that every jar was produced there.
+            See "FIX BRISTOL VS NATIONAL PROVENANCE LANGUAGE" audit,
+            2026-09-13. "Packed in Bristol" is accurate: Gert Lush itself
+            handles intake, jarring and branding centrally (see
+            /become-a-supplier) even though the honey is harvested by the
+            beekeeper wherever they are. */}
         <p className="text-porcelain/60 mt-16 text-xs">
-          Gert Lush Honey. Bristol honey. Proper lush.
+          Based and packed in Bristol. Honey from independent British beekeepers.
         </p>
         <p className="text-porcelain/50 mt-4 text-xs">
           &copy; {new Date().getFullYear()} GERT LUSH HONEY
           <br className="sm:hidden" />
           <span className="hidden sm:inline"> &middot; </span>
-          Proudly produced in Bristol &bull; All rights reserved
+          Based and packed in Bristol &bull; All rights reserved
         </p>
       </div>
     </footer>

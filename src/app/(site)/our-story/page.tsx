@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Our Story',
   description:
-    'Bristol honey. Proper lush. The story behind Gert Lush Honey and its postcode honey model.',
+    'British honey. Proper lush. The story behind Gert Lush Honey and its postcode honey model.',
   alternates: { canonical: '/our-story' },
 }
 
@@ -14,7 +14,7 @@ export default function OurStoryPage() {
     <div className="mx-auto max-w-3xl px-6 py-16">
       <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">Our Story</p>
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
-        Bristol honey. Proper lush.
+        British honey. Proper lush.
       </h1>
       <p className="text-porcelain/70 mt-4 text-lg">
         Every jar has a postcode, a season and a story.

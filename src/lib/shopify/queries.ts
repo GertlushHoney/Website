@@ -5,40 +5,47 @@
 // unauthenticated_read_selling_plans Storefront API scope on the Headless
 // channel. Absent/empty means "no real subscription set up for this
 // product yet", handled honestly by the caller, never assumed.
+// Shared with the batched multi-handle query below (getProductsByHandles in
+// src/lib/shopify/product.ts) so a single product's selection set is
+// defined once, not duplicated between the two query shapes.
+export const PRODUCT_FIELDS = /* GraphQL */ `
+  id
+  title
+  handle
+  availableForSale
+  variants(first: 20) {
+    edges {
+      node {
+        id
+        title
+        availableForSale
+        quantityAvailable
+        price {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+  sellingPlanGroups(first: 1) {
+    edges {
+      node {
+        sellingPlans(first: 1) {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
 export const PRODUCT_BY_HANDLE_QUERY = /* GraphQL */ `
   query ProductByHandle($handle: String!) {
     product(handle: $handle) {
-      id
-      title
-      handle
-      availableForSale
-      variants(first: 20) {
-        edges {
-          node {
-            id
-            title
-            availableForSale
-            quantityAvailable
-            price {
-              amount
-              currencyCode
-            }
-          }
-        }
-      }
-      sellingPlanGroups(first: 1) {
-        edges {
-          node {
-            sellingPlans(first: 1) {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        }
-      }
+      ${PRODUCT_FIELDS}
     }
   }
 `

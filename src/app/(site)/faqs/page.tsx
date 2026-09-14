@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { JsonLd } from '@/components/seo/json-ld'
+import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
+import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
 
 export const metadata: Metadata = {
   title: 'FAQs',
@@ -60,8 +62,10 @@ const sections: FaqSection[] = [
         q: 'What is the Gert Lush Standard?',
         a: (
           <>
-            It means the beekeeper has passed our supplier review and the honey has passed our
-            batch acceptance checks. See{' '}
+            {isGertLushStandardLive
+              ? 'It means the beekeeper has passed our supplier review and the honey has passed our batch acceptance checks.'
+              : "It's our own supplier and batch-approval standard — still being finalised, so no product carries the mark yet."}{' '}
+            See{' '}
             <Link
               href="/gert-lush-standard"
               className="text-comb-gold underline underline-offset-2"
@@ -71,8 +75,9 @@ const sections: FaqSection[] = [
             for the full detail.
           </>
         ),
-        plainAnswer:
-          'It means the beekeeper has passed our supplier review and the honey has passed our batch acceptance checks.',
+        plainAnswer: isGertLushStandardLive
+          ? 'It means the beekeeper has passed our supplier review and the honey has passed our batch acceptance checks.'
+          : "It's our own supplier and batch-approval standard — still being finalised, so no product carries the mark yet.",
       },
       {
         q: 'Who is the beekeeper behind Bee S3?',
@@ -93,17 +98,17 @@ const sections: FaqSection[] = [
         q: 'Will there be more postcode honeys?',
         a: (
           <>
-            That&apos;s the plan — Bee S3 is the first, not the last. As more independent
-            beekeepers join, their postcodes will appear on the{' '}
+            That&apos;s the plan — Bee S3 is the first, not the last. Available postcode honeys
+            are shown on our live{' '}
             <Link href="/postcode-honey" className="text-comb-gold underline underline-offset-2">
               postcode map
             </Link>
-            . Only Bristol (BS3) has real stock right now; every other postcode shows an honest
-            waiting-list option.
+            . New areas are added as suitable beekeepers and batches are approved; any postcode
+            without stock yet shows an honest waiting-list option instead.
           </>
         ),
         plainAnswer:
-          "That's the plan — Bee S3 is the first, not the last. As more independent beekeepers join, their postcodes will appear on the postcode map. Only Bristol (BS3) has real stock right now; every other postcode shows an honest waiting-list option.",
+          "That's the plan — Bee S3 is the first, not the last. Available postcode honeys are shown on our live postcode map. New areas are added as suitable beekeepers and batches are approved; any postcode without stock yet shows an honest waiting-list option instead.",
       },
     ],
   },
@@ -112,41 +117,52 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'How much is a jar, and can I subscribe?',
-        a: 'Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription — plus £4.99 delivery either way. Subscriptions have no minimum term; cancel any time with at least 7 days\' notice before your next charge.',
+        a: (
+          <>
+            Prices vary by harvest and product — current prices are shown on each{' '}
+            <Link href="/shop/honey" className="text-comb-gold underline underline-offset-2">
+              honey page
+            </Link>
+            . Where a monthly subscription is available for a honey, it&apos;s offered right there
+            on that product&apos;s page, usually at a small discount versus a one-off jar.
+            Subscriptions have no minimum term; cancel any time with at least 7 days&apos; notice
+            before your next charge.
+          </>
+        ),
         plainAnswer:
-          "Bee S3 is £8.00 for a one-off jar, or £7.00 a jar on a monthly subscription — plus £4.99 delivery either way. Subscriptions have no minimum term; cancel any time with at least 7 days' notice before your next charge.",
+          "Prices vary by harvest and product — current prices are shown on each honey page. Where a monthly subscription is available for a honey, it's offered right there on that product's page, usually at a small discount versus a one-off jar. Subscriptions have no minimum term; cancel any time with at least 7 days' notice before your next charge.",
       },
       {
         q: 'How is it delivered, and how much does delivery cost?',
         a: (
           <>
-            Royal Mail Tracked 48 — tracked, typically 2–3 working days — at a flat £4.99 per
-            order, however many jars you buy. UK delivery only, for now. Full details on the{' '}
+            Royal Mail Tracked 48 — tracked, typically 2–3 working days. Delivery is calculated at
+            checkout based on your actual parcel weight, and it&apos;s free on orders over £
+            {FREE_DELIVERY_THRESHOLD_GBP}. UK delivery only, for now. Full details on the{' '}
             <Link href="/delivery" className="text-comb-gold underline underline-offset-2">
               Delivery page
             </Link>
             .
           </>
         ),
-        plainAnswer:
-          'Royal Mail Tracked 48 — tracked, typically 2–3 working days — at a flat £4.99 per order, however many jars you buy. UK delivery only, for now.',
+        plainAnswer: `Royal Mail Tracked 48 — tracked, typically 2–3 working days. Delivery is calculated at checkout based on your actual parcel weight, and it's free on orders over £${FREE_DELIVERY_THRESHOLD_GBP}. UK delivery only, for now.`,
       },
       {
         q: 'How do I actually place an order right now?',
         a: (
           <>
-            One-off Bee S3 orders go through a real, secure Shopify checkout — hit &quot;Buy
-            now&quot; on the{' '}
+            Every order — one-off or subscription — goes through a real, secure Shopify checkout.
+            Choose &quot;One-time purchase&quot; or &quot;Subscribe monthly&quot; on a product
+            page, like{' '}
             <Link href="/shop/bee-s3" className="text-comb-gold underline underline-offset-2">
-              product page
+              Bee S3
             </Link>
-            . Subscriptions are still set up by hand for now: choose &quot;Subscribe monthly&quot;
-            and it&apos;ll open an email to us to confirm the details before anything&apos;s
-            charged.
+            , and add it straight to your basket — subscriptions use a real recurring Shopify
+            plan wherever one&apos;s set up for that product.
           </>
         ),
         plainAnswer:
-          'One-off Bee S3 orders go through a real, secure Shopify checkout — hit "Buy now" on the product page. Subscriptions are still set up by hand for now: choose "Subscribe monthly" and it\'ll open an email to us to confirm the details before anything\'s charged.',
+          'Every order — one-off or subscription — goes through a real, secure Shopify checkout. Choose "One-time purchase" or "Subscribe monthly" on a product page, like Bee S3, and add it straight to your basket — subscriptions use a real recurring Shopify plan wherever one\'s set up for that product.',
       },
       {
         q: 'Can I buy Gert Lush Honey in a shop, or as a business?',
@@ -220,16 +236,27 @@ const sections: FaqSection[] = [
         q: 'Do you sell candles, soap or other beeswax products?',
         a: (
           <>
-            They&apos;re on the list, but not real products yet — we&apos;d rather say that
-            honestly than list something before it exists. See what&apos;s{' '}
-            <Link href="/shop" className="text-comb-gold underline underline-offset-2">
-              coming soon
+            Yes — alongside the honey, we now sell real{' '}
+            <Link href="/shop/candles" className="text-comb-gold underline underline-offset-2">
+              candles
             </Link>
-            , and register your interest if you&apos;d like to know when they launch.
+            ,{' '}
+            <Link href="/shop/soap" className="text-comb-gold underline underline-offset-2">
+              soap
+            </Link>{' '}
+            and{' '}
+            <Link href="/shop/lip-balm" className="text-comb-gold underline underline-offset-2">
+              lip balm
+            </Link>
+            . See the full range in the{' '}
+            <Link href="/shop" className="text-comb-gold underline underline-offset-2">
+              shop
+            </Link>
+            .
           </>
         ),
         plainAnswer:
-          "They're on the list, but not real products yet — we'd rather say that honestly than list something before it exists. See what's coming soon, and register your interest if you'd like to know when they launch.",
+          'Yes — alongside the honey, we now sell real candles, soap and lip balm. See the full range in the shop.',
       },
       {
         q: "What's the Asian hornet page about?",

@@ -95,12 +95,29 @@ async function getAvailableQuantity(inventoryItemId: string, locationId: string)
 // a fresh key per call (a retried request with the same key is treated as
 // a duplicate and ignored rather than double-applied) — generated here,
 // not something callers need to think about.
+//
+// Returns false (never throws) when there genuinely isn't enough stock to
+// cover a deduction — checked against changeFromQuantity, a read taken
+// immediately before the mutation. That's deliberately not a thrown error:
+// insufficient stock is a real, final state (retrying the same webhook
+// later won't manufacture more honey), not a transient infrastructure
+// blip, so it must be treated the same as this function's other "couldn't
+// do it" outcomes below, not routed into the retry-worthy failure path.
+// changeFromQuantity doubles as Shopify's own optimistic-concurrency guard
+// on the mutation itself (rejected if the real value has moved since this
+// read), so two near-simultaneous deductions against the same honey can't
+// both succeed and drive it negative between them. See "FIX SURPRISE
+// HAMPER STOCK VALIDATION" audit, 2026-09-13.
 export async function adjustInventory(
   inventoryItemId: string,
   locationId: string,
   delta: number
-): Promise<void> {
+): Promise<boolean> {
   const changeFromQuantity = await getAvailableQuantity(inventoryItemId, locationId)
+
+  if (delta < 0 && changeFromQuantity < -delta) {
+    return false
+  }
 
   const data = await shopifyAdminFetch<{
     inventoryAdjustQuantities: { userErrors: { field: string[] | null; message: string }[] }
@@ -125,14 +142,16 @@ export async function adjustInventory(
   if (errors.length > 0) {
     throw new ShopifyAdminError(errors.map((e) => e.message).join('; '))
   }
+  return true
 }
 
 // Looks up a honey by its Shopify product title (matches Sanity's
 // honeyProduct.name and the "Honey selection" cart attribute value) and
-// deducts `jars` from its real stock. Silently does nothing if the Admin
-// API isn't configured or the name doesn't resolve — callers (the webhook
-// route) log the outcome themselves rather than this throwing and failing
-// the whole webhook over one unmatched line.
+// deducts `jars` from its real stock. Returns false (never throws) if the
+// Admin API isn't configured, the name doesn't resolve, or there isn't
+// enough stock left to cover it — callers (the webhook route) log the
+// outcome themselves rather than this throwing and failing the whole
+// webhook over one unmatched or under-stocked line.
 export async function deductHoneyStock(honeyName: string, jars: number): Promise<boolean> {
   if (!isShopifyAdminConfigured() || jars <= 0) return false
 
@@ -142,6 +161,5 @@ export async function deductHoneyStock(honeyName: string, jars: number): Promise
   ])
   if (!inventoryItemId || !locationId) return false
 
-  await adjustInventory(inventoryItemId, locationId, -jars)
-  return true
+  return adjustInventory(inventoryItemId, locationId, -jars)
 }

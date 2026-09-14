@@ -1,4 +1,5 @@
 import { groq } from 'next-sanity'
+import { unstable_cache } from 'next/cache'
 import { sanityFetch } from './client'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
@@ -61,26 +62,39 @@ const summaryFields = groq`
 `
 
 // For a category listing page (/shop/candles etc.) — every active product
-// tagged with that category, however many there are.
-export async function getMerchProductsByCategory(
-  category: MerchCategory
-): Promise<MerchProductSummary[]> {
-  const result = await sanityFetch<MerchProductSummary[]>(
-    groq`*[_type == "merchProduct" && category == $category && active == true] | order(name asc) { ${summaryFields} }`,
-    { category }
-  )
-  return result ?? []
-}
+// tagged with that category, however many there are. Cached for 60s —
+// stable catalogue data, read on every visit to a category page, so
+// caching it keeps Sanity request volume tied to traffic rather than
+// growing with both traffic *and* how many products/categories exist. See
+// "REVIEW PERFORMANCE AS PRODUCT COUNT GROWS" audit, 2026-09-13.
+// unstable_cache folds `category` into the cache key automatically (it's
+// part of the wrapped function's arguments), so each category still gets
+// its own cache entry.
+export const getMerchProductsByCategory = unstable_cache(
+  async (category: MerchCategory): Promise<MerchProductSummary[]> => {
+    const result = await sanityFetch<MerchProductSummary[]>(
+      groq`*[_type == "merchProduct" && category == $category && active == true] | order(name asc) { ${summaryFields} }`,
+      { category }
+    )
+    return result ?? []
+  },
+  ['merch-products-by-category'],
+  { revalidate: 60, tags: ['merch-products'] }
+)
 
 // Every active merch product regardless of category — for the search
 // index (src/lib/search.ts), which needs the whole catalogue at once
-// rather than one category at a time.
-export async function getAllMerchProducts(): Promise<MerchProductSummary[]> {
-  const result = await sanityFetch<MerchProductSummary[]>(
-    groq`*[_type == "merchProduct" && active == true] | order(name asc) { ${summaryFields} }`
-  )
-  return result ?? []
-}
+// rather than one category at a time. Same 60s caching rationale.
+export const getAllMerchProducts = unstable_cache(
+  async (): Promise<MerchProductSummary[]> => {
+    const result = await sanityFetch<MerchProductSummary[]>(
+      groq`*[_type == "merchProduct" && active == true] | order(name asc) { ${summaryFields} }`
+    )
+    return result ?? []
+  },
+  ['all-merch-products'],
+  { revalidate: 60, tags: ['merch-products'] }
+)
 
 // For an individual product's own page (/shop/[slug]) — tried after
 // honeyProduct comes back empty for that slug.

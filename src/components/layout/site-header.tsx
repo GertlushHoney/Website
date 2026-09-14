@@ -11,9 +11,10 @@ export async function SiteHeader() {
 
   return (
     <header className="border-ink-line bg-ink/85 sticky top-0 z-40 border-b backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
         <Link
           href="/"
+          aria-label="Gert Lush Honey"
           className="focus-visible:outline-honey-amber flex shrink-0 items-center gap-2.5 focus-visible:outline focus-visible:outline-offset-4"
         >
           <Image
@@ -24,7 +25,13 @@ export async function SiteHeader() {
             priority
             className="h-8 w-auto"
           />
-          <span className="font-display text-comb-gold text-lg tracking-wide whitespace-nowrap uppercase">
+          {/* Hidden below 400px — the wordmark plus the search/basket/menu
+              icon group no longer fits a true 320-360px phone even with
+              those icons already collapsed (see search-overlay.tsx /
+              basket-button.tsx); the hexagon alone still identifies the
+              brand at that width. Visible again from 400px up, comfortably
+              before the ~393px this combination actually needs. */}
+          <span className="font-display text-comb-gold max-[400px]:hidden text-lg tracking-wide whitespace-nowrap uppercase">
             Gert Lush Honey
           </span>
         </Link>

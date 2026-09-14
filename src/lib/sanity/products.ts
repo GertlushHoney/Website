@@ -1,4 +1,5 @@
 import { groq } from 'next-sanity'
+import { unstable_cache } from 'next/cache'
 import { sanityFetch } from './client'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
@@ -64,12 +65,26 @@ const summaryFields = groq`
   subscriptionPrice
 `
 
-export async function getHoneyProducts(): Promise<HoneyProductSummary[]> {
-  const result = await sanityFetch<HoneyProductSummary[]>(
-    groq`*[_type == "honeyProduct" && active == true] | order(name asc) { ${summaryFields} }`
-  )
-  return result ?? []
-}
+// Cached for 60s (matching the Shopify Storefront client's own default
+// revalidate window — see shopifyFetch) rather than hitting Sanity's API
+// fresh on every single request: this list of active honeys is genuinely
+// stable data (a new postcode honey going live is a rare, deliberate
+// event, not something that needs to appear within seconds), and it's read
+// on nearly every listing/homepage render. Without this, request volume to
+// Sanity scales with *traffic*, not just product count — worth fixing
+// alongside the per-render N+1 batching below as the honey range grows
+// toward 20-50. See "REVIEW PERFORMANCE AS PRODUCT COUNT GROWS" audit,
+// 2026-09-13, and docs/technical-architecture.md.
+export const getHoneyProducts = unstable_cache(
+  async (): Promise<HoneyProductSummary[]> => {
+    const result = await sanityFetch<HoneyProductSummary[]>(
+      groq`*[_type == "honeyProduct" && active == true] | order(name asc) { ${summaryFields} }`
+    )
+    return result ?? []
+  },
+  ['honey-products-summary'],
+  { revalidate: 60, tags: ['honey-products'] }
+)
 
 // Homepage-spotlight and honey-listing-card variant that also projects the
 // beekeeper's name/slug and the most recent season's year — added
@@ -87,19 +102,22 @@ export type HoneyProductSummaryWithBeekeeper = HoneyProductSummary & {
   flavour: string | null
 }
 
-export async function getHoneyProductsWithBeekeeper(): Promise<
-  HoneyProductSummaryWithBeekeeper[]
-> {
-  const result = await sanityFetch<HoneyProductSummaryWithBeekeeper[]>(
-    groq`*[_type == "honeyProduct" && active == true] | order(name asc) {
-      ${summaryFields},
-      beekeeper -> { name, "slug": slug.current },
-      "latestSeasonYear": seasons[-1].year,
-      "flavour": tastingProfile.flavour
-    }`
-  )
-  return result ?? []
-}
+// Same 60s caching rationale as getHoneyProducts above.
+export const getHoneyProductsWithBeekeeper = unstable_cache(
+  async (): Promise<HoneyProductSummaryWithBeekeeper[]> => {
+    const result = await sanityFetch<HoneyProductSummaryWithBeekeeper[]>(
+      groq`*[_type == "honeyProduct" && active == true] | order(name asc) {
+        ${summaryFields},
+        beekeeper -> { name, "slug": slug.current },
+        "latestSeasonYear": seasons[-1].year,
+        "flavour": tastingProfile.flavour
+      }`
+    )
+    return result ?? []
+  },
+  ['honey-products-with-beekeeper'],
+  { revalidate: 60, tags: ['honey-products'] }
+)
 
 // Used by the postcode map — every active product's code, so the map never
 // needs its own hardcoded list of which postcodes have real stock.

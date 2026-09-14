@@ -7,7 +7,7 @@ import { GertLushStandardStrip } from '@/components/homepage/gert-lush-standard-
 import { TrustRow } from '@/components/homepage/trust-row'
 import { SupplierCtaBanner } from '@/components/homepage/supplier-cta-banner'
 import { getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
-import { getProductByHandle } from '@/lib/shopify/product'
+import { getProductsByHandles } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 
@@ -28,24 +28,30 @@ export const metadata: Metadata = {
 // preview pass, kept as part of the same homepage.
 export default async function Home() {
   const honeyProducts = await getHoneyProductsWithBeekeeper()
-  const featuredProducts: FeaturedProductData[] = await Promise.all(
-    honeyProducts.map(async (product) => {
-      const shopifyProduct = await getProductByHandle(product.shopifyHandle)
-      return {
-        slug: product.slug,
-        name: product.name,
-        tagline: product.tagline,
-        weight: product.weight,
-        origin: getAreaNameForCode(product.postcodeCode) ?? product.postcodeCode,
-        postcodeCode: product.postcodeCode,
-        imageUrl: urlForImage(product.heroImage ?? undefined)?.width(900).height(1200).url() ?? null,
-        price: shopifyProduct?.price ?? null,
-        beekeeper: product.beekeeper,
-        latestSeasonYear: product.latestSeasonYear,
-        flavour: product.flavour,
-      }
-    })
+  // One batched Shopify request for every honey's price, not one request
+  // per honey — the homepage only ever displays a single random pick
+  // (FeaturedProduct re-rolls client-side), but until this fix it fetched
+  // live Shopify data for *all* of them on every single homepage visit.
+  // See "REVIEW PERFORMANCE AS PRODUCT COUNT GROWS" audit, 2026-09-13.
+  const shopifyProducts = await getProductsByHandles(
+    honeyProducts.map((product) => product.shopifyHandle)
   )
+  const featuredProducts: FeaturedProductData[] = honeyProducts.map((product) => {
+    const shopifyProduct = shopifyProducts[product.shopifyHandle] ?? null
+    return {
+      slug: product.slug,
+      name: product.name,
+      tagline: product.tagline,
+      weight: product.weight,
+      origin: getAreaNameForCode(product.postcodeCode) ?? product.postcodeCode,
+      postcodeCode: product.postcodeCode,
+      imageUrl: urlForImage(product.heroImage ?? undefined)?.width(900).height(1200).url() ?? null,
+      price: shopifyProduct?.price ?? null,
+      beekeeper: product.beekeeper,
+      latestSeasonYear: product.latestSeasonYear,
+      flavour: product.flavour,
+    }
+  })
 
   return (
     <>

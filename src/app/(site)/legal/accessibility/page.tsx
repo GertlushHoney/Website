@@ -27,10 +27,11 @@ export default function AccessibilityPage() {
           <p className="mt-2">
             We build and test this site against WCAG 2.1/2.2 AA. Every real page has been run
             through an automated audit and a manual review, and issues found by either have been
-            fixed — most recently re-run 2026-08-27 after adding the mobile navigation menu, the
-            Gert Lush Standard page and the Refund Policy page. That&apos;s still our own testing,
-            not an independent certification. See &quot;Known gaps&quot; below for what that
-            doesn&apos;t cover.
+            fixed — most recently re-run 2026-09-13 after adding the product information tabs, the
+            shop carousel, the redesigned newsletter popup and several new pages (Weddings &amp;
+            Events, the Bee-Friendly Garden, individual merchandise/hamper/experience products).
+            That&apos;s still our own testing, not an independent certification. See &quot;Known
+            gaps&quot; below for what that doesn&apos;t cover.
           </p>
         </section>
 
@@ -39,7 +40,7 @@ export default function AccessibilityPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
               Automated: every real page is crawled with axe-core against the WCAG 2.0/2.1/2.2 A
-              and AA rule sets — currently 0 automated violations across all 30 pages.
+              and AA rule sets — currently 0 automated violations across all 34 pages.
             </li>
             <li>
               Manual: colour contrast is checked by hand for anything automated tools can&apos;t
@@ -50,9 +51,10 @@ export default function AccessibilityPage() {
             </li>
             <li>
               Interactive components: the cookie preferences popover, basket drawer, search
-              overlay and mobile navigation menu are all opened for real (including a dedicated
+              overlay, mobile navigation menu, product information tabs/accordions, the shop
+              carousel and the newsletter popup are all opened for real (including a dedicated
               mobile-viewport pass for the navigation menu, since it&apos;s hidden at desktop
-              width) and tested for keyboard operation — focus moves into the dialog when it
+              width) and tested for keyboard operation — focus moves into each dialog when it
               opens, Escape closes it, and focus returns to where you were.
             </li>
           </ul>

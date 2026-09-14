@@ -5,7 +5,7 @@ import { ReviewsSection, Stars } from '@/components/product/reviews-section'
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { urlForImage } from '@/lib/sanity/image'
-import { getProductByHandle } from '@/lib/shopify/product'
+import { getProductByHandle, isProductSoldOut } from '@/lib/shopify/product'
 import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { parseHamperJarCount } from '@/lib/hamper'
@@ -57,9 +57,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
   const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
   const isSoldOut = experienceSessions
     ? experienceSessions.every((session) => session.placesRemaining <= 0)
-    : shopifyProduct?.quantityAvailable !== null &&
-      shopifyProduct?.quantityAvailable !== undefined &&
-      shopifyProduct.quantityAvailable <= 0
+    : isProductSoldOut(shopifyProduct)
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">

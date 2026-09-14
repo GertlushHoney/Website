@@ -101,10 +101,20 @@ function usePrefersReducedMotion(): boolean {
 // The exact same tile design the shop grid has always used (image, label,
 // subtitle in a bordered card) — the carousel only changes how many are
 // visible at once and how you move between them, not what a tile is.
-function Tile({ tile, width }: { tile: ShopTile; width: number }) {
+function Tile({ tile, width, isFront }: { tile: ShopTile; width: number; isFront: boolean }) {
   return (
     <Link
       href={tile.href}
+      // Belt-and-braces alongside the wrapping `inert` below: `inert`
+      // already removes an inactive slide from both the tab order and the
+      // accessibility tree in one native attribute, but a browser without
+      // `inert` support would otherwise leave this link tabbable even
+      // though it's aria-hidden — a real keyboard trap into hidden
+      // content. Explicit tabIndex=-1 closes that gap; `undefined` (not
+      // 0) when active so the link falls back to its normal default
+      // focusability rather than us hardcoding it. See "FIX CAROUSEL
+      // ACCESSIBILITY" audit, 2026-09-13.
+      tabIndex={isFront ? undefined : -1}
       className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group grid overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-2"
       style={{ width }}
     >
@@ -167,14 +177,10 @@ export function TileCarousel({ tiles }: { tiles: ShopTile[] }) {
   const { width, offset: stepOffset } = TIER_CONFIG[tier]
   const stageHeight = width + TILE_TEXT_BLOCK_HEIGHT + 20
   // Sized to the actual content spread (front tile + how far the side tiles
-  // sit off-centre), not an arbitrary fixed width — otherwise the arrows
-  // and dots, which are centred within this container, end up sitting far
-  // away from the tile itself whenever this width doesn't happen to match.
+  // sit off-centre), not an arbitrary fixed width — otherwise the dots,
+  // which are centred within this container, end up sitting far away from
+  // the tile itself whenever this width doesn't happen to match.
   const stageMaxWidth = width + stepOffset * 2 + 120
-  // Distance from centre to each arrow: half the front tile's width, plus
-  // a small gap — anchored to the tile itself rather than the container
-  // edge, so the arrows always hug the tile regardless of container width.
-  const arrowInset = `calc(50% - ${width / 2}px - 48px)`
 
   return (
     <div
@@ -213,6 +219,17 @@ export function TileCarousel({ tiles }: { tiles: ShopTile[] }) {
             <div
               key={tile.href}
               aria-hidden={!isFront}
+              // `inert` is the primary fix here: a non-front slide is
+              // aria-hidden (as before) but its <Link> was still reachable
+              // by Tab — aria-hidden only hides content from the
+              // accessibility tree, it says nothing about focusability, so
+              // a sighted keyboard user could tab into a card that a
+              // screen-reader user is told doesn't exist. `inert` removes
+              // it from both the tab order and the accessibility tree in
+              // one native attribute (Tile's own tabIndex={-1} below is
+              // the fallback for a browser without `inert` support). See
+              // "FIX CAROUSEL ACCESSIBILITY" audit, 2026-09-13.
+              inert={!isFront}
               className="motion-reduce:!transition-none absolute transition-[transform,opacity,filter] duration-700"
               style={{
                 top: '50%',
@@ -225,51 +242,78 @@ export function TileCarousel({ tiles }: { tiles: ShopTile[] }) {
                 pointerEvents: isFront ? 'auto' : 'none',
               }}
             >
-              <Tile tile={tile} width={width} />
+              <Tile tile={tile} width={width} isFront={isFront} />
             </div>
           )
         })}
+      </div>
 
+      {/* Arrows + dots sit in one row below the stage on every breakpoint,
+          rather than the arrows being absolutely positioned beside the
+          tile — that anchored them to the front tile's fixed pixel width,
+          which pushed them outside the viewport on narrow phones (see the
+          "FIX SHOP MOBILE LAYOUT" audit, 2026-09-13). Both buttons are
+          44px square, above the 24px WCAG 2.5.8 minimum and matched to the
+          Apple/Material 44px guidance, since these get tapped from a
+          moving carousel rather than a static list. */}
+      <div className="mt-6 flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={() => goTo(current - 1)}
           aria-label="Previous category"
-          className="border-honey-amber/40 bg-ink-surface text-comb-gold hover:border-comb-gold focus-visible:outline-comb-gold absolute z-[200] flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus-visible:outline focus-visible:outline-offset-2"
-          style={{ top: '50%', left: arrowInset, transform: 'translateY(-50%)' }}
+          className="border-honey-amber/40 bg-ink-surface text-comb-gold hover:border-comb-gold focus-visible:outline-comb-gold flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:outline focus-visible:outline-offset-2"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 6 9 12 15 18" />
           </svg>
         </button>
+
+        {/* Plain buttons in a labelled group, not a tablist — this carousel
+            doesn't implement the full ARIA tabs pattern (no per-dot roving
+            tabindex or arrow-key handling between the dots themselves), so
+            role="tab"/"tablist" would promise a keyboard interaction model
+            that isn't actually there. aria-current marks the active slide
+            instead of aria-selected, which is a tab-pattern-specific
+            attribute. See "FIX CAROUSEL ACCESSIBILITY" audit, 2026-09-13. */}
+        <div role="group" aria-label="Choose a category" className="flex items-center gap-0.5">
+          {tiles.map((tile, index) => {
+            const isActive = index === current
+            return (
+              <button
+                key={tile.href}
+                type="button"
+                aria-label={`Go to ${tile.label}`}
+                aria-current={isActive ? 'true' : undefined}
+                onClick={() => goTo(index)}
+                // The visible dot stays a small 7px pill (unchanged look), but
+                // the button itself carries generous padding so the actual
+                // tap target clears 24px square even between tightly-packed
+                // dots.
+                className="group focus-visible:outline-comb-gold flex items-center justify-center rounded-full p-2.5 focus-visible:outline focus-visible:outline-offset-2"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`block h-[7px] rounded-full border transition-all ${
+                    isActive
+                      ? 'bg-comb-gold border-comb-gold w-4'
+                      : 'border-porcelain/35 group-hover:border-comb-gold w-[7px] bg-transparent'
+                  }`}
+                />
+              </button>
+            )
+          })}
+        </div>
+
         <button
           type="button"
           onClick={() => goTo(current + 1)}
           aria-label="Next category"
-          className="border-honey-amber/40 bg-ink-surface text-comb-gold hover:border-comb-gold focus-visible:outline-comb-gold absolute z-[200] flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus-visible:outline focus-visible:outline-offset-2"
-          style={{ top: '50%', right: arrowInset, transform: 'translateY(-50%)' }}
+          className="border-honey-amber/40 bg-ink-surface text-comb-gold hover:border-comb-gold focus-visible:outline-comb-gold flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:outline focus-visible:outline-offset-2"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 6 15 12 9 18" />
           </svg>
         </button>
-      </div>
-
-      <div role="tablist" aria-label="Choose a category" className="mt-6 flex justify-center gap-2">
-        {tiles.map((tile, index) => (
-          <button
-            key={tile.href}
-            type="button"
-            role="tab"
-            aria-selected={index === current}
-            aria-label={tile.label}
-            onClick={() => goTo(index)}
-            className={`focus-visible:outline-comb-gold h-[7px] rounded-full border transition-all focus-visible:outline focus-visible:outline-offset-2 ${
-              index === current
-                ? 'bg-comb-gold border-comb-gold w-4'
-                : 'border-porcelain/35 hover:border-comb-gold w-[7px] bg-transparent'
-            }`}
-          />
-        ))}
       </div>
     </div>
   )

@@ -16,6 +16,7 @@ const staticRoutes: { path: string; priority: number }[] = [
   { path: '/shop/lip-balm', priority: 0.6 },
   { path: '/shop/hamper', priority: 0.6 },
   { path: '/shop/experiences', priority: 0.6 },
+  { path: '/weddings-events', priority: 0.5 },
   { path: '/postcode-honey', priority: 0.8 },
   { path: '/gert-lush-standard', priority: 0.6 },
   { path: '/beekeepers', priority: 0.7 },

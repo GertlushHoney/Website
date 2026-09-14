@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 
 // Six categories, six tiles — a deliberate even number for the grid (was
 // five before Experiences existed, which left an unbalanced last row).
-const MERCH_CATEGORIES: MerchCategory[] = ['candles', 'hamper', 'soap', 'lip-balm', 'experiences']
+//
+// Order follows the commercial hierarchy honey sits atop, not creation
+// date: hampers (gifting, built around honey) before the standalone hive
+// products (candles/soap/lip balm), which come before experiences
+// (education) last. See "PRESERVE THE BRAND RULE" audit, 2026-09-13 — if
+// honey disappeared, none of these should still make sense on their own,
+// so none are ever removed, but they orbit honey rather than sit level
+// with it.
+const MERCH_CATEGORIES: MerchCategory[] = ['hamper', 'candles', 'soap', 'lip-balm', 'experiences']
 
 // Fallback tile photography, used until an editor creates a matching
 // Sanity "Shop Tile" document (getShopTiles(), which always wins when
@@ -33,11 +41,35 @@ const DEFAULT_TILE_IMAGE: Partial<Record<MerchCategory, { src: string; fit: 'con
   experiences: { src: '/images/shop-tiles/experiences-home-tile.png', fit: 'contain' },
 }
 
-// Every tile shows the same kind of subtitle — a plain count, never a
-// specific product's tagline (even when there's only one) — so all six
-// read consistently at a glance.
-function availabilitySubtitle(count: number) {
-  return count > 0 ? `${count} available` : 'Coming soon'
+// Each tile's subtitle names what the count actually is, rather than
+// claiming "available" — this count is just how many active product
+// documents exist in Sanity for the category (getHoneyProducts /
+// getMerchProductsByCategory both just filter on `active == true`), never
+// checked against each product's real Shopify stock/availableForSale. A
+// category could show "4 soap scents" here while one of those four is
+// individually sold out on its own page — that's fine, since the label
+// never claims real-time purchasable availability in the first place.
+// Hampers and Experiences get a fixed, category-appropriate action phrase
+// instead of a count: a hamper "product" count doesn't mean much (they
+// only differ by jar size), and an Experience's real availability is
+// per-session places, not how many Experience products exist. See "FIX
+// CATEGORY AVAILABILITY LABELS" audit, 2026-09-13.
+function categorySubtitle(category: 'honey' | MerchCategory, count: number): string {
+  if (count === 0) return 'Coming soon'
+  switch (category) {
+    case 'honey':
+      return `${count} ${count === 1 ? 'honey' : 'honeys'}`
+    case 'candles':
+      return `${count} candle design${count === 1 ? '' : 's'}`
+    case 'soap':
+      return `${count} soap scent${count === 1 ? '' : 's'}`
+    case 'lip-balm':
+      return `${count} lip balm flavour${count === 1 ? '' : 's'}`
+    case 'hamper':
+      return 'Explore hampers'
+    case 'experiences':
+      return 'View experiences'
+  }
 }
 
 // One tile per category (honey included, not given special treatment) so
@@ -70,7 +102,7 @@ export default async function ShopPage() {
       : {
           href: '/shop/honey',
           label: honeyOverride?.label ?? 'Honey',
-          subtitle: availabilitySubtitle(honeyProducts.length),
+          subtitle: categorySubtitle('honey', honeyProducts.length),
           imageUrl: honeyImageUrl,
           objectFit: honeyOverride?.fit ?? 'contain',
         },
@@ -85,7 +117,7 @@ export default async function ShopPage() {
       return {
         href: `/shop/${category}`,
         label: override?.label ?? label,
-        subtitle: availabilitySubtitle(products.length),
+        subtitle: categorySubtitle(category, products.length),
         imageUrl: override?.imageUrl ?? defaultTile?.src ?? realImageUrl ?? null,
         objectFit:
           override?.imageUrl != null

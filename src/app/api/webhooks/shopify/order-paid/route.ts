@@ -3,11 +3,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { deductHoneyStock } from '@/lib/shopify/admin-inventory'
-import { parseHamperJarCount, parseHoneySelection, type HoneyTally } from '@/lib/hamper'
+import {
+  parseHamperJarCount,
+  parseHoneySelection,
+  CHOOSE_YOUR_OWN_VARIANT_LABEL,
+  SURPRISE_VARIANT_LABEL,
+  type HoneyTally,
+} from '@/lib/hamper'
 import {
   findExperienceSessionByDate,
   incrementSessionPlacesBooked,
+  recordBookingConflict,
 } from '@/lib/sanity/experience-booking'
+import { isWebhookAlreadyProcessed, markWebhookProcessed } from '@/lib/sanity/processed-webhooks'
 
 // Hamper stock sync (see docs/technical-architecture.md). A hamper is its
 // own Shopify product with inventory tracking turned off (it's always
@@ -28,8 +36,6 @@ import {
 // gate (see middleware.ts) since Shopify can't supply those credentials;
 // the HMAC check below is the real security boundary.
 
-const SURPRISE_VARIANT_LABEL = 'Surprise selection'
-const CHOOSE_YOUR_OWN_VARIANT_LABEL = 'Choose your own'
 const HONEY_CHOICE_PROPERTY_NAME = 'Honey selection'
 // Same key PurchaseOptions attaches an Experience booking's chosen date
 // under — its value is the raw ISO date, not a display-formatted string,
@@ -51,6 +57,15 @@ type ShopifyOrderPayload = {
   line_items: ShopifyOrderLineItem[]
 }
 
+// Logs only the error's own message — never the raw error object (which,
+// depending on the underlying client library, can carry response bodies or
+// request details alongside it) and never the order/line-item payload
+// itself, which can contain a customer's name, address or other order
+// detail. See "FIX WEBHOOK RETRY BEHAVIOUR" audit, 2026-09-13.
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 function isValidSignature(rawBody: string, signatureHeader: string | null, secret: string): boolean {
   if (!signatureHeader) return false
   const expected = createHmac('sha256', secret).update(rawBody, 'utf8').digest('base64')
@@ -61,12 +76,28 @@ function isValidSignature(rawBody: string, signatureHeader: string | null, secre
 }
 
 // "Surprise selection" doesn't name a specific honey, so this picks one
-// for the whole hamper: whichever currently-active honey has the most
-// stock, so the surprise mechanic naturally favours what's abundant
-// rather than eating into something already low. A different rule
-// (round-robin, even split) would be just as valid — this is the
-// simplest one that can't accidentally sell out something already scarce.
-async function pickSurpriseHoney(jarsPerHamper: number): Promise<HoneyTally[]> {
+// for the whole order: whichever currently-active honey has the most
+// stock *among those that actually have enough for every hamper in this
+// order* (jarsPerHamper × the line's quantity — a 3-jar hamper bought ×2
+// needs 6 jars from one honey, not 3), so the surprise mechanic naturally
+// favours what's abundant rather than eating into something already low,
+// without ever picking a honey it can't actually fulfil. Previously this
+// picked the most-stocked honey with no sufficiency check at all, so a
+// hamper could be sold against a honey with less stock than the order
+// needed. See "FIX SURPRISE HAMPER STOCK VALIDATION" audit, 2026-09-13 —
+// the storefront now blocks this before checkout too (purchase-options.tsx),
+// but this check stands on its own: it's what actually prevents the
+// stock deduction below from ever running against insufficient stock,
+// regardless of what happened client-side.
+//
+// The read here is only as fresh as the moment this webhook runs — a
+// concurrent order could still consume the same stock in between. The
+// real race protection is one level down, in adjustInventory's own
+// changeFromQuantity check (a fresh read immediately before the mutation,
+// which Shopify's API itself enforces as an optimistic-concurrency
+// guard) — this function's job is just picking a plausible candidate.
+async function pickSurpriseHoney(jarsPerHamper: number, hamperQuantity: number): Promise<HoneyTally[]> {
+  const totalJarsRequired = jarsPerHamper * hamperQuantity
   const honeys = await getHoneyProducts()
   const withStock = await Promise.all(
     honeys.map(async (honey) => ({
@@ -74,8 +105,11 @@ async function pickSurpriseHoney(jarsPerHamper: number): Promise<HoneyTally[]> {
       quantityAvailable: (await getProductByHandle(honey.shopifyHandle))?.quantityAvailable ?? 0,
     }))
   )
-  const mostInStock = withStock.sort((a, b) => b.quantityAvailable - a.quantityAvailable)[0]
-  return mostInStock ? [{ honeyName: mostInStock.honeyName, jars: jarsPerHamper }] : []
+  const qualifying = withStock
+    .filter((honey) => honey.quantityAvailable >= totalJarsRequired)
+    .sort((a, b) => b.quantityAvailable - a.quantityAvailable)
+  const best = qualifying[0]
+  return best ? [{ honeyName: best.honeyName, jars: jarsPerHamper }] : []
 }
 
 async function resolveHoneyTally(
@@ -83,7 +117,7 @@ async function resolveHoneyTally(
   jarsPerHamper: number
 ): Promise<HoneyTally[]> {
   if (line.variant_title === SURPRISE_VARIANT_LABEL) {
-    return pickSurpriseHoney(jarsPerHamper)
+    return pickSurpriseHoney(jarsPerHamper, line.quantity)
   }
   if (line.variant_title === CHOOSE_YOUR_OWN_VARIANT_LABEL) {
     const value = line.properties?.find((p) => p.name === HONEY_CHOICE_PROPERTY_NAME)?.value
@@ -112,10 +146,62 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // Always 200 past this point — a failure here is a business-logic
-  // problem (an unresolvable honey choice, an Admin API hiccup), not
-  // something Shopify retrying the same webhook delivery will fix. Errors
-  // are logged for manual follow-up instead.
+  // Unrecoverable: a payload missing the fields this route actually keys
+  // everything off (which line item belongs to which order, and what to
+  // call it in logs) can never be salvaged by a retry — Shopify would just
+  // resend the identical body. 400 here, same as the invalid-JSON case
+  // above, rather than a 5xx that implies trying again might help.
+  if (typeof order?.id !== 'number' || typeof order?.name !== 'string') {
+    console.error('order-paid webhook: payload missing required id/name fields')
+    return NextResponse.json({ error: 'Malformed order payload' }, { status: 400 })
+  }
+
+  // Shopify's own delivery id — present on every real webhook request and,
+  // per Shopify's docs, unchanged across retries of the *same* delivery
+  // (a timeout or non-200 response triggers a retry, not a new delivery).
+  // That stability is exactly what makes it usable as an idempotency key.
+  // Its absence on an otherwise HMAC-valid request is unexpected enough
+  // (every Shopify webhook has sent it for years) that refusing outright
+  // is safer than silently processing with no way to de-duplicate a
+  // request that does real stock/booking side effects.
+  const webhookId = request.headers.get('x-shopify-webhook-id')
+  if (!webhookId) {
+    console.error('order-paid webhook: missing X-Shopify-Webhook-Id header')
+    return NextResponse.json({ error: 'Missing webhook id' }, { status: 400 })
+  }
+
+  // Shopify explicitly documents that a webhook can be delivered more than
+  // once — this must never repeat the stock deduction / booking increment
+  // work below for a delivery already fully processed. Returning success
+  // (rather than an error) tells Shopify the delivery is done and stops it
+  // retrying further. See "FIX SHOPIFY WEBHOOK IDEMPOTENCY" audit,
+  // 2026-09-13 — in-memory dedup wouldn't survive a redeploy or a
+  // multi-instance deployment, so this is checked against Sanity, the same
+  // persistent store every other piece of real state in this app uses.
+  if (await isWebhookAlreadyProcessed(webhookId)) {
+    return NextResponse.json({ ok: true, duplicate: true })
+  }
+
+  // Two different kinds of failure can happen per line item, and they must
+  // be told apart:
+  //  - A *data* problem (no matching experience session, an unresolvable
+  //    honey choice) is logged and skipped — retrying the identical
+  //    webhook would fail identically every time, so it can't block the
+  //    rest of the order or the whole response.
+  //  - A *transient* failure (an exception thrown by the Sanity or Shopify
+  //    Admin API calls themselves — a network blip, a rate limit, a 5xx)
+  //    might well succeed if attempted again. hadTransientFailure records
+  //    that at least one occurred; the whole delivery is answered with a
+  //    non-2xx below so Shopify retries it, and is deliberately NOT marked
+  //    processed, so the retry can actually attempt the work again rather
+  //    than silently losing the stock/booking update for good. (A retry
+  //    does mean any *other* line item that already succeeded this pass
+  //    gets attempted again too — accepted here since the alternative,
+  //    permanently dropping a real stock/booking update, is worse; per-line
+  //    idempotency would close that gap but is a larger change than this
+  //    fix calls for.)
+  let hadTransientFailure = false
+
   for (const line of order.line_items ?? []) {
     const sessionDate = line.properties?.find((p) => p.name === SESSION_DATE_PROPERTY_NAME)?.value
 
@@ -128,20 +214,36 @@ export async function POST(request: NextRequest) {
           )
           continue
         }
-        const booked = await incrementSessionPlacesBooked(
+        const result = await incrementSessionPlacesBooked(
           match.docId,
           match.session._key,
           line.quantity
         )
-        if (!booked) {
+        if (result.outcome === 'insufficient_capacity') {
+          // A genuine overbooking conflict, not a transient problem: the
+          // customer has already paid (Shopify confirmed this order) but
+          // there's no place left — someone else's booking won the same
+          // race. Retrying this webhook later resolves identically every
+          // time, so this must not set hadTransientFailure; instead it's
+          // logged loudly and recorded durably for a human to refund or
+          // otherwise accommodate. See docs/technical-architecture.md,
+          // "Experience booking concurrency".
           console.error(
-            `order-paid webhook: order ${order.name} — couldn't record ${line.quantity} place(s) for "${line.title}" on ${sessionDate}`
+            `OVERBOOKING CONFLICT — order-paid webhook: order ${order.name} — requested ${line.quantity} place(s) for "${line.title}" on ${sessionDate}, only ${result.placesRemaining} actually available. Customer has already paid — needs manual follow-up.`
           )
+          await recordBookingConflict({
+            orderId: order.id,
+            orderName: order.name,
+            productTitle: line.title,
+            sessionDate,
+            placesRequested: line.quantity,
+            placesRemaining: result.placesRemaining,
+          })
         }
       } catch (error) {
+        hadTransientFailure = true
         console.error(
-          `order-paid webhook: order ${order.name} — failed recording experience booking for "${line.title}"`,
-          error
+          `order-paid webhook: order ${order.name} — transient failure recording experience booking for "${line.title}": ${errorMessage(error)}`
         )
       }
       continue
@@ -169,9 +271,29 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch (error) {
-      console.error(`order-paid webhook: order ${order.name} — failed processing "${line.title}"`, error)
+      hadTransientFailure = true
+      console.error(
+        `order-paid webhook: order ${order.name} — transient failure processing "${line.title}": ${errorMessage(error)}`
+      )
     }
   }
+
+  if (hadTransientFailure) {
+    // Not marked processed — see the comment above the loop. The non-2xx
+    // is what tells Shopify to actually redeliver this webhook rather than
+    // treating it as done.
+    return NextResponse.json({ error: 'Temporary failure processing order' }, { status: 502 })
+  }
+
+  // Only marked now that the whole delivery has genuinely finished (data
+  // problems logged above notwithstanding — retrying wouldn't fix those) —
+  // never up front, so a request that crashes before reaching here leaves
+  // no record and Shopify's retry can attempt the work again.
+  await markWebhookProcessed(webhookId, {
+    topic: 'orders/paid',
+    orderId: order.id,
+    orderName: order.name,
+  })
 
   return NextResponse.json({ ok: true })
 }

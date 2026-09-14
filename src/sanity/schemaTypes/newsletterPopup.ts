@@ -53,9 +53,11 @@ export const newsletterPopup = defineType({
     defineField({
       name: 'delaySeconds',
       title: 'Delay before showing (seconds)',
+      description:
+        'How long a visitor should be genuinely engaged with the site before this appears — not shown until they\'ve had a real chance to look around. Kept to a 15-120s range deliberately: this popup used to fire after ~6 seconds, interrupting people before they\'d even finished reading the splash screen. On desktop, exit-intent (the cursor moving toward the tab/address bar, as if about to leave) can still show it sooner than this delay — see newsletter-popup.tsx for details.',
       type: 'number',
-      initialValue: 6,
-      validation: (rule) => rule.min(0).max(60),
+      initialValue: 25,
+      validation: (rule) => rule.min(15).max(120),
     }),
   ],
 })

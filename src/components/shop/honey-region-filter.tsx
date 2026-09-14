@@ -101,8 +101,12 @@ function HoneyCardGrid({ cards }: { cards: HoneyCard[] }) {
               />
             )}
           </div>
-          <div className="relative p-6 pr-40">
-            <p className="absolute top-6 right-6 text-2xl">
+          <div className="relative p-6 sm:pr-40">
+            {/* In normal flow on mobile (full card width, title/postcode/
+                beekeeper/price keep all the room) — only pinned to the
+                corner from sm up, where a card is wide enough to spare it.
+                See "FIX MOBILE PRODUCT CARD LAYOUT" audit, 2026-09-13. */}
+            <p className="mb-2 text-lg sm:absolute sm:top-6 sm:right-6 sm:mb-0 sm:text-2xl">
               <Stars rating={card.averageReviewRating !== null ? Math.round(card.averageReviewRating) : 0} />
               {card.averageReviewRating !== null && (
                 <span className="text-porcelain/60 ml-2 align-middle text-sm font-semibold">

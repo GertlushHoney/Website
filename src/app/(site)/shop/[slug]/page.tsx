@@ -11,10 +11,11 @@ import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
 import { getMerchProductBySlug } from '@/lib/sanity/merch'
 import { urlForImage } from '@/lib/sanity/image'
-import { getProductByHandle } from '@/lib/shopify/product'
+import { getProductByHandle, isProductSoldOut } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
+import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
 import { JsonLd } from '@/components/seo/json-ld'
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
@@ -262,10 +263,7 @@ export default async function ShopProductPage({
     },
   ].filter(Boolean) as { id: string; label: string; content: React.ReactNode }[]
 
-  const isSoldOut =
-    shopifyProduct?.quantityAvailable !== null &&
-    shopifyProduct?.quantityAvailable !== undefined &&
-    shopifyProduct.quantityAvailable <= 0
+  const isSoldOut = isProductSoldOut(shopifyProduct)
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -329,12 +327,22 @@ export default async function ShopProductPage({
         </div>
 
         <div className="relative flex flex-col justify-center">
-          {product.meetsGertLushStandard && (
-            <div className="absolute top-0 right-0">
+          {/* In normal flow, above the title, on narrow screens — pinned
+              beside the heading (its original spot) only from sm up, where
+              the info column is wide enough to spare the room without
+              compressing the product name/tagline. See "FIX THE GERT LUSH
+              STANDARD BADGE ON MOBILE" audit, 2026-09-13. */}
+          {/* Gated on the central flag as well as the per-product field —
+              the Standard isn't public yet, so no product can show the
+              certification badge regardless of what's set in Sanity, until
+              GERT_LUSH_STANDARD_STATUS flips to 'live'. See "FINALISE THE
+              GERT LUSH STANDARD STATUS" audit, 2026-09-13. */}
+          {isGertLushStandardLive && product.meetsGertLushStandard && (
+            <div className="mb-4 sm:absolute sm:top-0 sm:right-0 sm:mb-0">
               <GertLushStandardStamp />
             </div>
           )}
-          <div className={product.meetsGertLushStandard ? 'pr-40' : undefined}>
+          <div className={isGertLushStandardLive && product.meetsGertLushStandard ? 'sm:pr-40' : undefined}>
             <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
               Gert Lush Honey
             </p>

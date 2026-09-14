@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
 
 export const metadata: Metadata = {
   title: 'The Gert Lush Standard',
@@ -64,14 +65,21 @@ export default function GertLushStandardPage() {
         Good beekeeping. Proper provenance. Carefully handled honey.
       </h1>
 
-      <div className="border-honey-amber/40 bg-honey-amber/10 mt-8 mb-10 rounded-xl border p-4 text-sm">
-        <p className="text-honey-amber font-semibold">Working draft — pending compliance review</p>
-        <p className="text-porcelain/70 mt-1">
-          This page describes how we intend the Gert Lush Standard to work. It&apos;s only
-          published for real once it matches our actual, final supplier-review and batch-check
-          procedures in practice — not before.
-        </p>
-      </div>
+      {/* Retained while the Standard is still draft; removed entirely once
+          GERT_LUSH_STANDARD_STATUS flips to 'live' — see
+          src/lib/gert-lush-standard.ts, the single flag every page
+          mentioning the Standard now reads, instead of each one deciding
+          its own draft/live wording. */}
+      {!isGertLushStandardLive && (
+        <div className="border-honey-amber/40 bg-honey-amber/10 mt-8 mb-10 rounded-xl border p-4 text-sm">
+          <p className="text-honey-amber font-semibold">Working draft — pending compliance review</p>
+          <p className="text-porcelain/70 mt-1">
+            This page describes how we intend the Gert Lush Standard to work. It&apos;s only
+            published for real once it matches our actual, final supplier-review and batch-check
+            procedures in practice — not before.
+          </p>
+        </div>
+      )}
 
       <div className="text-porcelain/80 space-y-4 text-base">
         <p>
@@ -113,8 +121,9 @@ export default function GertLushStandardPage() {
           What does &quot;Meets the Gert Lush Standard&quot; mean?
         </h2>
         <p className="text-porcelain/70 mt-3 text-sm">
-          It means the beekeeper has passed our supplier review and the honey has passed our batch
-          acceptance process.
+          {isGertLushStandardLive
+            ? 'It means the beekeeper has passed our supplier review and the honey has passed our batch acceptance process.'
+            : "It will mean the beekeeper has passed our supplier review and the honey has passed our batch acceptance process. We're still finalising that process — see the note above — so no product carries this mark yet."}
         </p>
         <p className="text-porcelain/70 mt-3 text-sm">
           We review bee-health management, treatment records, harvesting and extraction practices,
@@ -137,7 +146,11 @@ export default function GertLushStandardPage() {
         >
           Meet the beekeepers
         </Link>
-        <span>behind honey that meets this standard.</span>
+        <span>
+          {isGertLushStandardLive
+            ? 'behind honey that meets this standard.'
+            : "we're building this standard around."}
+        </span>
       </p>
     </div>
   )

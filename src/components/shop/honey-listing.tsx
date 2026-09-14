@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
-import { getProductByHandle } from '@/lib/shopify/product'
+import { getProductsByHandles } from '@/lib/shopify/product'
 import { urlForImage } from '@/lib/sanity/image'
 import { getRegionForCode } from '@/lib/uk-regions'
-import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
+import { getApprovedReviewsForSlugs, averageRating } from '@/lib/sanity/reviews'
 import { SurpriseMeButton } from '@/components/shop/surprise-me-button'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { HoneyRegionFilter, type HoneyCard } from '@/components/shop/honey-region-filter'
@@ -12,31 +12,39 @@ import { HoneyRegionFilter, type HoneyCard } from '@/components/shop/honey-regio
 // MerchCategoryListing, plus the postcode-map, region filter and
 // surprise-me shortcuts that only make sense for a multi-product,
 // location-tied category.
+//
+// Shopify price/stock and Sanity reviews are both fetched in one batched
+// call each, covering every product on the page — not one call per
+// product. See "REVIEW PERFORMANCE AS PRODUCT COUNT GROWS" audit,
+// 2026-09-13: with N honeys, the previous Promise.all(products.map(...))
+// fired 2N separate network requests (N to Shopify, N to Sanity) on every
+// render — fine at 2-3 products, a real scaling concern once this range
+// reaches the 20-50 honeys the site is meant to handle.
 export async function HoneyListing() {
   const products = await getHoneyProductsWithBeekeeper()
-  const cards: HoneyCard[] = await Promise.all(
-    products.map(async (product) => {
-      const [shopifyProduct, reviews] = await Promise.all([
-        getProductByHandle(product.shopifyHandle),
-        getApprovedReviews(product.slug),
-      ])
-      return {
-        id: product._id,
-        slug: product.slug,
-        name: product.name,
-        tagline: product.tagline,
-        weight: product.weight,
-        postcodeCode: product.postcodeCode,
-        region: getRegionForCode(product.postcodeCode),
-        imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
-        price: shopifyProduct?.price ?? null,
-        beekeeper: product.beekeeper,
-        flavour: product.flavour,
-        averageReviewRating: averageRating(reviews),
-        reviewCount: reviews.length,
-      }
-    })
-  )
+  const [shopifyProducts, reviewsBySlug] = await Promise.all([
+    getProductsByHandles(products.map((product) => product.shopifyHandle)),
+    getApprovedReviewsForSlugs(products.map((product) => product.slug)),
+  ])
+  const cards: HoneyCard[] = products.map((product) => {
+    const shopifyProduct = shopifyProducts[product.shopifyHandle] ?? null
+    const reviews = reviewsBySlug[product.slug] ?? []
+    return {
+      id: product._id,
+      slug: product.slug,
+      name: product.name,
+      tagline: product.tagline,
+      weight: product.weight,
+      postcodeCode: product.postcodeCode,
+      region: getRegionForCode(product.postcodeCode),
+      imageUrl: urlForImage(product.heroImage ?? undefined)?.width(400).height(400).url() ?? null,
+      price: shopifyProduct?.price ?? null,
+      beekeeper: product.beekeeper,
+      flavour: product.flavour,
+      averageReviewRating: averageRating(reviews),
+      reviewCount: reviews.length,
+    }
+  })
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">

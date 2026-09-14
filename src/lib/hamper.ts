@@ -14,6 +14,15 @@ export function parseHamperJarCount(productTitle: string): number | null {
   return match ? Number(match[1]) : null
 }
 
+// The two hamper variant labels that trigger special handling — must match
+// the real Shopify variant titles exactly. Previously each of
+// purchase-options.tsx and the order-paid webhook hardcoded its own copy of
+// these two strings; centralised here so the client-side stock check added
+// in "FIX SURPRISE HAMPER STOCK VALIDATION" (2026-09-13) can never silently
+// drift out of sync with what the webhook actually resolves at fulfilment.
+export const CHOOSE_YOUR_OWN_VARIANT_LABEL = 'Choose your own'
+export const SURPRISE_VARIANT_LABEL = 'Surprise selection'
+
 export type HoneyTally = { honeyName: string; jars: number }
 
 // The "Choose your own" cart attribute is a human-readable summary (shown

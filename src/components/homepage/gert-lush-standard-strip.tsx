@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ShieldCheckIcon } from '@/components/icons/line-icons'
 import { GertLushStandardStamp } from '@/components/product/gert-lush-standard-stamp'
+import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
 
 // Compact homepage version of the Gert Lush Standard — the doc this is
 // sourced from (Gert_Lush_Standard_Website_Copy_v1.0.docx) offers this as
@@ -12,13 +13,31 @@ import { GertLushStandardStamp } from '@/components/product/gert-lush-standard-s
 // afterthought next to the icon/photo treatment every other homepage
 // section got. Now a bordered "seal" card with a shield icon and a real
 // CTA, so it reads as a feature being shown off, not a caption.
+//
+// Reworked again 2026-09-13 ("FINALISE THE GERT LUSH STANDARD STATUS"):
+// this used to show the actual certification stamp and claim "Beekeeper
+// reviewed · Batch checked" in the present tense unconditionally, while the
+// Standard's own page called itself a "working draft — pending compliance
+// review" — a direct public contradiction. Both now read off the same
+// central flag as the per-product badge, so a visitor never sees the seal
+// treated as live in one place and admittedly unfinished in another.
 export function GertLushStandardStrip() {
+  const eyebrow = isGertLushStandardLive
+    ? 'Beekeeper reviewed · Batch checked · Provenance recorded'
+    : 'Being introduced · beekeeper review · batch checks'
+  const body = isGertLushStandardLive
+    ? 'We review the people, process and provenance behind our honey, then check each batch again before it is packed by Gert Lush.'
+    : "We're introducing a formal standard for reviewing the people, process and provenance behind our honey, and checking each batch before it's packed by Gert Lush."
+  const cta = isGertLushStandardLive ? 'Read the Gert Lush Standard' : 'See how it will work'
+
   return (
     <section className="border-ink-line border-b px-6 py-16 lg:px-16">
       <div className="mx-auto flex max-w-6xl items-center justify-center gap-20">
-        <div className="hidden shrink-0 lg:block">
-          <GertLushStandardStamp />
-        </div>
+        {isGertLushStandardLive && (
+          <div className="hidden shrink-0 lg:block">
+            <GertLushStandardStamp />
+          </div>
+        )}
 
         <div className="border-comb-gold/40 bg-honeycomb-surface flex max-w-2xl flex-col items-center gap-3 rounded-2xl border p-10 text-center">
           <div className="text-comb-gold">
@@ -27,24 +46,21 @@ export function GertLushStandardStrip() {
           <h2 className="text-porcelain mt-2 text-3xl font-bold tracking-tight">
             The Gert Lush Standard
           </h2>
-          <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">
-            Beekeeper reviewed &middot; Batch checked &middot; Provenance recorded
-          </p>
-          <p className="text-porcelain/70 max-w-xl text-base">
-            We review the people, process and provenance behind our honey, then check each batch
-            again before it is packed by Gert Lush.
-          </p>
+          <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">{eyebrow}</p>
+          <p className="text-porcelain/70 max-w-xl text-base">{body}</p>
           <Link
             href="/gert-lush-standard"
             className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-3 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
           >
-            Read the Gert Lush Standard
+            {cta}
           </Link>
         </div>
 
-        <div className="hidden shrink-0 lg:block">
-          <GertLushStandardStamp />
-        </div>
+        {isGertLushStandardLive && (
+          <div className="hidden shrink-0 lg:block">
+            <GertLushStandardStamp />
+          </div>
+        )}
       </div>
     </section>
   )

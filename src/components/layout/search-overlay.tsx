@@ -137,6 +137,18 @@ export function SearchOverlay({ items }: { items: SearchItem[] }) {
                 </button>
               </div>
 
+              {/* Results re-render on every keystroke with no visible page
+                  navigation to cue a screen-reader user that anything
+                  changed — axe has no rule for this (it can't know content
+                  is "supposed" to announce itself), caught only by manually
+                  testing the overlay with the tab list open. See "RERUN
+                  ACCESSIBILITY TESTING" audit, 2026-09-13. */}
+              <p aria-live="polite" className="sr-only">
+                {query.trim()
+                  ? `${results.length} result${results.length === 1 ? '' : 's'} for "${query.trim()}"`
+                  : ''}
+              </p>
+
               <div className="max-h-[60vh] overflow-y-auto p-2">
                 {results.length === 0 ? (
                   <p className="text-porcelain/50 px-3 py-6 text-center text-sm">

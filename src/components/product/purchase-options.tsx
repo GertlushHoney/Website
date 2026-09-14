@@ -4,7 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '@/components/cart/cart-context'
 import { RestockAlertForm } from '@/components/product/restock-alert-form'
-import { formatHoneySelection, tallyJarSelections } from '@/lib/hamper'
+import {
+  formatHoneySelection,
+  tallyJarSelections,
+  CHOOSE_YOUR_OWN_VARIANT_LABEL,
+  SURPRISE_VARIANT_LABEL,
+} from '@/lib/hamper'
 import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
 
 type PurchaseType = 'one-time' | 'subscription'
@@ -35,12 +40,6 @@ function formatGBP(amount: number) {
 // piling up on one day.
 const CANCELLATION_NOTICE_DAYS = 7
 
-// Must match the "Honey selection" variant value created in Shopify for
-// each hamper product — see docs/technical-architecture.md. Deliberately
-// not a per-honey Shopify variant (that doesn't scale as the postcode
-// range grows); instead this variant just triggers the picker below,
-// built live from whatever honeys are actually active right now.
-const HONEY_CHOICE_TRIGGER_LABEL = 'Choose your own'
 const HONEY_CHOICE_ATTRIBUTE_KEY = 'Honey selection'
 const SESSION_DATE_ATTRIBUTE_KEY = 'Session date'
 
@@ -154,10 +153,30 @@ export function PurchaseOptions({
   const effectiveVariantId = activeVariant ? activeVariant.id : variantId
   const effectiveStockCount = activeVariant ? activeVariant.quantityAvailable : stockCount
   const needsHoneyChoice =
-    activeVariant?.label === HONEY_CHOICE_TRIGGER_LABEL &&
+    activeVariant?.label === CHOOSE_YOUR_OWN_VARIANT_LABEL &&
     honeyJarOptions !== undefined &&
     honeyJarOptions.length > 0 &&
     Boolean(hamperJarCount)
+
+  // "Surprise selection" doesn't let the customer pick a honey — one is
+  // resolved automatically at fulfilment (see the order-paid webhook's
+  // pickSurpriseHoney), favouring whichever honey has the most stock. That
+  // resolution must never be allowed to run against a honey that doesn't
+  // actually have enough for the *whole* order — a 3-jar hamper bought ×2
+  // needs 6 jars from one honey, not 3. This mirrors that same rule here,
+  // client-side, so checkout is blocked up front rather than only being
+  // caught (or worse, silently overselling) once the webhook runs after
+  // payment. See "FIX SURPRISE HAMPER STOCK VALIDATION" audit, 2026-09-13.
+  const needsSurpriseStockCheck =
+    activeVariant?.label === SURPRISE_VARIANT_LABEL &&
+    honeyJarOptions !== undefined &&
+    Boolean(hamperJarCount)
+  const totalJarsRequiredForSurprise = (hamperJarCount ?? 0) * quantity
+  const hasQualifyingSurpriseHoney = needsSurpriseStockCheck
+    ? (honeyJarOptions?.some((option) => option.quantityAvailable >= totalJarsRequiredForSurprise) ??
+      false)
+    : true
+  const hasSurpriseStockShortfall = needsSurpriseStockCheck && !hasQualifyingSurpriseHoney
 
   const honeyPerJar =
     honeyPickMode === 'same' ? Array(hamperJarCount ?? 0).fill(sameHoneyChoice) : perJarHoney
@@ -206,7 +225,8 @@ export function PurchaseOptions({
     needsSessionChoice && (!activeSession || activeSession.placesRemaining < quantity)
 
   function handleAddToBasket() {
-    if (!effectiveVariantId || hasHoneyStockShortfall || hasSessionShortfall) return
+    if (!effectiveVariantId || hasHoneyStockShortfall || hasSessionShortfall || hasSurpriseStockShortfall)
+      return
     if (isSubscription) {
       if (!subscriptionSellingPlanId) return
       addItem(effectiveVariantId, 1, subscriptionSellingPlanId, bookingAttributes)
@@ -219,6 +239,7 @@ export function PurchaseOptions({
     Boolean(effectiveVariantId) &&
     !hasHoneyStockShortfall &&
     !hasSessionShortfall &&
+    !hasSurpriseStockShortfall &&
     (isSubscription ? Boolean(subscriptionSellingPlanId) : true)
   const subtotal = effectivePrice * quantity
 
@@ -530,16 +551,24 @@ export function PurchaseOptions({
           </div>
           <RestockAlertForm productName={productName} productHandle={productHandle} />
         </>
-      ) : hasHoneyStockShortfall || hasSessionShortfall ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled
-            className="bg-ink-line text-porcelain/50 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
-          >
-            Add to basket
-          </button>
-          {beekeeperButton}
+      ) : hasHoneyStockShortfall || hasSessionShortfall || hasSurpriseStockShortfall ? (
+        <div className="mt-4">
+          {hasSurpriseStockShortfall && (
+            <p className="text-honey-amber mb-3 text-xs" role="alert">
+              Not enough stock of any single honey for a surprise hamper this size — reduce the
+              quantity, or choose your own honey instead.
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled
+              className="bg-ink-line text-porcelain/50 inline-block cursor-not-allowed rounded-full px-6 py-2.5 text-sm font-semibold"
+            >
+              Add to basket
+            </button>
+            {beekeeperButton}
+          </div>
         </div>
       ) : canCheckoutLive ? (
         <>

@@ -62,8 +62,15 @@ export function ShopTilesView({ tiles }: { tiles: ShopTile[] }) {
               <Link
                 key={tile.href}
                 href={tile.href}
-                className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group grid overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-2"
-                style={{ width: CAROUSEL_DESKTOP_TILE_WIDTH }}
+                // width: 100% capped by max-width (rather than a fixed
+                // width) so a tile never exceeds the viewport on a narrow
+                // phone — flexbox still fits multiple per row on wider
+                // screens since wrapping is decided against the max-width
+                // cap, not the 100% figure (see "FIX SHOP GRID WIDTH"
+                // audit, 2026-09-13, which found this fixed at a hard
+                // 400px and overflowing below ~432px).
+                className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group grid w-full overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-2"
+                style={{ maxWidth: CAROUSEL_DESKTOP_TILE_WIDTH }}
               >
                 <div className="from-ink-surface to-ink relative aspect-square bg-gradient-to-b">
                   {tile.imageUrl && (

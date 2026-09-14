@@ -33,38 +33,52 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">What this site actually collects</h2>
           <p className="mt-2">
-            Most &quot;order&quot;, &quot;subscribe&quot; or &quot;apply&quot; buttons on this site
-            still just open an email in your own email app, addressed to us — the site itself
-            doesn&apos;t capture or store what you type there. We only receive whatever you choose
-            to send us by email.
+            Most products on this site can be bought directly: adding something to your basket and
+            checking out is handled by Shopify, our e-commerce provider — see &quot;Third parties we
+            use&quot; below for what that means in practice. Where a product has a real Shopify
+            variant and (for a monthly subscription) a configured subscription plan, &quot;Add to
+            basket&quot; adds it to a real, live basket rather than doing anything else.
           </p>
           <p className="mt-2">
-            The exception is the basket: adding a honey jar or other product to your basket and
-            checking out is handled directly by Shopify, our e-commerce provider — see &quot;Third
-            parties we use&quot; below for what that means in practice.
+            A few things on this site still just open an email in your own email app, addressed to
+            us, rather than submitting anything to this site — the contact form, and the &quot;Apply
+            to become a supplier&quot; button. The site itself doesn&apos;t capture or store what you
+            type into either; we only receive whatever you choose to send. The same &quot;email
+            instead&quot; fallback also appears on an individual product page if that specific
+            product or subscription hasn&apos;t been fully set up for online checkout yet.
+          </p>
+          <p className="mt-2">
+            Separately, this site also has a product review form, a restock-notification signup, and
+            a newsletter signup (including a popup) — each described in its own section below,
+            since each collects different information for a different purpose.
           </p>
           <p className="mt-2">
             We use whatever information we do receive only to fulfil your order, respond to your
-            enquiry, or arrange a subscription. We don&apos;t sell your data, and we don&apos;t
-            share it with third parties for their own separate marketing — the one exception,
-            Shopify&apos;s own platform-wide data use, is explained under &quot;Third parties we
-            use&quot; below.
+            enquiry, arrange a subscription, or provide the specific feature you used (a review, a
+            restock alert, a newsletter signup, or an Experience booking). We don&apos;t sell your
+            data, and we don&apos;t share it with third parties for their own separate marketing —
+            the one exception, Shopify&apos;s own platform-wide data use, is explained under
+            &quot;Third parties we use&quot; below.
           </p>
         </section>
 
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Marketing emails</h2>
           <p className="mt-2">
-            If you tick &quot;Email me with news and offers&quot; at checkout, or sign up on our
-            order confirmation page, we&apos;ll email you when a new postcode honey arrives — and
-            nothing else. We only ever add you if you actively opt in; nobody is signed up
-            automatically just for placing an order.
+            If you tick &quot;Email me with news and offers&quot; at checkout, sign up on our order
+            confirmation page, or use the newsletter signup popup that can appear while browsing the
+            site, we&apos;ll email you when a new postcode honey arrives — and nothing else. We only
+            ever add you if you actively opt in; nobody is signed up automatically just for placing
+            an order, and the popup only ever appears once per browser (see &quot;Cookies and browser
+            storage&quot; below).
           </p>
           <p className="mt-2">
-            These emails are sent through Shopify Email, using the same Shopify account that
-            handles our basket and checkout (see &quot;Third parties we use&quot; below) — your
-            email address isn&apos;t passed to any separate marketing or advertising service.
-            Every marketing email includes an unsubscribe link, or you can email us at{' '}
+            However you sign up, it&apos;s the same mechanism behind the scenes: it adds your email
+            address as a Shopify customer with marketing consent switched on. These emails are then
+            sent through Shopify Email, using the same Shopify account that handles our basket and
+            checkout (see &quot;Third parties we use&quot; below) — your email address isn&apos;t
+            passed to any separate mailing-list or advertising service. Every marketing email
+            includes an unsubscribe link, or you can email us at{' '}
             <a
               href="mailto:gdpr@gertlushhoney.co.uk"
               className="text-comb-gold underline underline-offset-2"
@@ -120,9 +134,17 @@ export default function PrivacyPage() {
             <strong className="text-porcelain">Sanity</strong> is the content management system we
             use to publish and edit the honey, beekeeper and product information you see on this
             site. It also stores product reviews: if you submit one, your name, star rating,
-            review text and submission date are stored there. Reviews aren&apos;t shown until we
-            approve them — once approved, your name and review text are displayed publicly on that
-            product&apos;s page.
+            review text and submission date are stored there — we don&apos;t ask for or store an
+            email address as part of a review. Reviews aren&apos;t shown until we approve them —
+            once approved, your name and review text are displayed publicly on that product&apos;s
+            page.
+          </p>
+          <p className="mt-2">
+            If you book an Experience (e.g. a beekeeping visit), Sanity also keeps a record of that
+            booking against the relevant date/session and your Shopify order number, so we can
+            track how many places are left and flag it if two orders ever conflict over the same
+            place. That record holds order numbers and booking details, not your name, email or
+            address — those stay in Shopify, as part of the order itself.
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Vercel</strong> hosts this website and provides
@@ -135,11 +157,13 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Cookies and browser storage</h2>
           <p className="mt-2">
-            We don&apos;t use any advertising or tracking cookies. Two things are stored in your
+            We don&apos;t use any advertising or tracking cookies. A few things are stored in your
             browser: a small flag that remembers you&apos;ve seen the intro animation, for the
-            length of your browsing session; and, if you&apos;ve added something to your basket, a
-            cookie holding a reference to your Shopify cart (kept for up to 30 days so your basket
-            persists between visits). Neither identifies you personally or tracks you elsewhere.
+            length of your browsing session; a separate flag that remembers you&apos;ve seen the
+            newsletter signup popup, so it doesn&apos;t show again on that browser; and, if
+            you&apos;ve added something to your basket, a cookie holding a reference to your Shopify
+            cart (kept for up to 30 days so your basket persists between visits). None of these
+            identify you personally or track you elsewhere.
           </p>
           <p className="mt-2">
             We do use <strong className="text-porcelain">Vercel Web Analytics</strong> to see
@@ -206,8 +230,10 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">This will change</h2>
           <p className="mt-2">
-            As online ordering, accounts and analytics get added to the site, this notice will be
-            updated to reflect exactly what&apos;s collected and why.
+            This site doesn&apos;t have customer accounts — there&apos;s no login and no order
+            history stored on this site itself (your order history lives with Shopify, tied to
+            your order confirmation email). As features on this site change — including if that
+            changes — this notice will be updated to reflect exactly what&apos;s collected and why.
           </p>
         </section>
       </div>

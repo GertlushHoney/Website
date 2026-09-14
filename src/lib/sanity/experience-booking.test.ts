@@ -2,55 +2,101 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // incrementSessionPlacesBooked is the core fix for "REVIEW EXPERIENCE
 // OVERBOOKING" (2026-09-13) — a fresh read-check-write on every attempt,
-// guarded by Sanity's own optimistic-concurrency primitive (ifRevisionId),
-// so two customers racing for the same last place can never both succeed.
-// This mocks the write client directly so each scenario (capacity refused,
-// a genuine revision conflict that must retry, sustained contention that
-// must eventually give up loudly) can be driven precisely.
+// guarded by Sanity's own optimistic-concurrency primitive (ifRevisionId)
+// — extended in "Make Shopify order-paid processing fully idempotent"
+// (2026-09-14) so the *same* booking operation (by its deterministic
+// operationId) can never be counted twice, even across a redelivered
+// webhook or two near-simultaneous duplicate deliveries. This fake client
+// models both: a `markers` map simulating Sanity's real behaviour that a
+// `create()` with an existing `_id` fails atomically together with any
+// other mutation in the same transaction, and the existing `_rev`-based
+// conflict simulation for the session document itself.
 
 type FakeDoc = { _rev: string; placesTotal: number; placesBooked: number }
 
-function buildFakeClient(doc: FakeDoc, options: { failCommitsUntilRev?: string } = {}) {
+function conflictError(message: string) {
+  const error = new Error(message) as Error & { statusCode: number }
+  error.statusCode = 409
+  return error
+}
+
+function buildFakeClient(
+  doc: FakeDoc,
+  options: { failCommitsUntilRev?: string; existingMarkerIds?: Set<string> } = {}
+) {
+  const markers = options.existingMarkerIds ?? new Set<string>()
+
   const fetch = vi.fn(async () => ({
     _rev: doc._rev,
     session: { placesTotal: doc.placesTotal, placesBooked: doc.placesBooked },
   }))
 
-  const commit = vi.fn(async function (this: { rev: string }) {
-    if (options.failCommitsUntilRev && this.rev !== options.failCommitsUntilRev) {
-      const conflict = new Error('The document has been changed by another client') as Error & {
-        statusCode: number
-      }
-      conflict.statusCode = 409
-      throw conflict
-    }
-    doc.placesBooked += 1 // the amount doesn't matter for these tests; just marks a commit happened
-    doc._rev = `${doc._rev}-next`
-    return {}
+  const getDocument = vi.fn(async (id: string) => (markers.has(id) ? { _id: id } : null))
+
+  const createIfNotExists = vi.fn(async (newDoc: { _id: string }) => {
+    markers.add(newDoc._id)
+    return newDoc
   })
 
-  const patch = vi.fn((_docId: string) => {
-    let rev = ''
+  // A real Sanity transaction is atomic: if the `create()` conflicts
+  // (marker _id already exists) or the `patch()` conflicts (stale
+  // revision), the *whole* commit fails and neither mutation applies —
+  // modelled here by only mutating `doc`/`markers` once every queued
+  // mutation has been checked.
+  function transaction() {
+    let createDoc: { _id: string } | null = null
+    let patchDocId: string | null = null
+    let patchRev: string | null = null
+    let patchInc: Record<string, number> | null = null
+
     const builder = {
-      ifRevisionId(r: string) {
-        rev = r
+      create(newDoc: { _id: string }) {
+        createDoc = newDoc
         return builder
       },
-      inc(_fields: Record<string, number>) {
+      patch(docId: string, patchFn: (p: unknown) => unknown) {
+        patchDocId = docId
+        const patchBuilder = {
+          ifRevisionId(rev: string) {
+            patchRev = rev
+            return patchBuilder
+          },
+          inc(fields: Record<string, number>) {
+            patchInc = fields
+            return patchBuilder
+          },
+        }
+        patchFn(patchBuilder)
         return builder
       },
-      commit: () => commit.call({ rev }),
+      async commit() {
+        if (createDoc && markers.has(createDoc._id)) {
+          throw conflictError(`Document with the id "${createDoc._id}" already exists`)
+        }
+        if (options.failCommitsUntilRev && patchRev !== options.failCommitsUntilRev) {
+          throw conflictError('The document has been changed by another client')
+        }
+        if (createDoc) markers.add(createDoc._id)
+        if (patchDocId && patchInc) {
+          const amount = Object.values(patchInc)[0] ?? 0
+          doc.placesBooked += amount
+          doc._rev = `${doc._rev}-next`
+        }
+        return {}
+      },
     }
     return builder
-  })
+  }
 
-  return { fetch, patch, commit }
+  return { fetch, getDocument, createIfNotExists, transaction }
 }
 
 vi.mock('@/lib/sanity/write-client', () => ({
   isSanityWriteConfigured: vi.fn(() => true),
   getSanityWriteClient: vi.fn(),
 }))
+
+const META = { webhookId: 'webhook-1', orderId: 1, orderName: '#1001', lineItemId: '10' }
 
 describe('incrementSessionPlacesBooked', () => {
   beforeEach(() => {
@@ -64,10 +110,10 @@ describe('incrementSessionPlacesBooked', () => {
     vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
 
     const { incrementSessionPlacesBooked } = await import('./experience-booking')
-    const result = await incrementSessionPlacesBooked('doc-1', 'session-1', 2)
+    const result = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 2, META)
 
     expect(result).toEqual({ outcome: 'booked' })
-    expect(client.patch).toHaveBeenCalledTimes(1)
+    expect(client.getDocument).toHaveBeenCalledWith('op-1')
   })
 
   it('refuses without ever attempting a write when the request exceeds what is actually left (3 jars × 2 = 6, only 4 remain)', async () => {
@@ -77,10 +123,15 @@ describe('incrementSessionPlacesBooked', () => {
     vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
 
     const { incrementSessionPlacesBooked } = await import('./experience-booking')
-    const result = await incrementSessionPlacesBooked('doc-1', 'session-1', 6)
+    const result = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 6, META)
 
     expect(result).toEqual({ outcome: 'insufficient_capacity', placesRequested: 6, placesRemaining: 4 })
-    expect(client.patch).not.toHaveBeenCalled()
+    // A terminal outcome for this exact operationId is still recorded —
+    // so a redelivered webhook doesn't re-detect (and re-record) the
+    // identical conflict every time.
+    expect(client.createIfNotExists).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: 'op-1', outcome: 'insufficient-capacity' })
+    )
   })
 
   it('retries after a revision conflict and succeeds once it re-reads fresh data that still has room', async () => {
@@ -104,11 +155,10 @@ describe('incrementSessionPlacesBooked', () => {
     vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
 
     const { incrementSessionPlacesBooked } = await import('./experience-booking')
-    const result = await incrementSessionPlacesBooked('doc-1', 'session-1', 1)
+    const result = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 1, META)
 
     expect(result).toEqual({ outcome: 'booked' })
     expect(client.fetch).toHaveBeenCalledTimes(2)
-    expect(client.patch).toHaveBeenCalledTimes(2) // one rejected attempt, one that succeeded
   })
 
   it('throws (never silently gives up) once retries are exhausted under sustained conflict', async () => {
@@ -123,17 +173,91 @@ describe('incrementSessionPlacesBooked', () => {
     vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
 
     const { incrementSessionPlacesBooked } = await import('./experience-booking')
-    await expect(incrementSessionPlacesBooked('doc-1', 'session-1', 1)).rejects.toThrow(/exhausted/i)
+    await expect(incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 1, META)).rejects.toThrow(
+      /exhausted/i
+    )
   })
 
   it('propagates a genuine (non-conflict) error immediately, without retrying', async () => {
     const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
     const client = buildFakeClient({ _rev: 'rev-1', placesTotal: 10, placesBooked: 5 })
-    client.commit.mockRejectedValue(new Error('network error'))
+    // A self-contained builder (every method returns itself) so chaining
+    // still works, but commit always throws a genuine, non-conflict error
+    // — unlike the shared buildFakeClient builder, which only fails commit
+    // in the ways the other tests above need to simulate.
+    client.transaction = vi.fn(() => {
+      const builder = {
+        create: () => builder,
+        patch: () => builder,
+        commit: async () => {
+          throw new Error('network error')
+        },
+      }
+      return builder
+    })
     vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
 
     const { incrementSessionPlacesBooked } = await import('./experience-booking')
-    await expect(incrementSessionPlacesBooked('doc-1', 'session-1', 1)).rejects.toThrow('network error')
+    await expect(incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 1, META)).rejects.toThrow(
+      'network error'
+    )
     expect(client.fetch).toHaveBeenCalledTimes(1) // no retry for a non-conflict error
+  })
+
+  // The key correctness requirement for "Make Shopify order-paid
+  // processing fully idempotent": no booking side effect may run twice
+  // for the same logical operation.
+  describe('idempotency', () => {
+    it('skips immediately, with no read or write of the session at all, when this exact operation already completed', async () => {
+      const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+      const client = buildFakeClient(
+        { _rev: 'rev-1', placesTotal: 10, placesBooked: 8 },
+        { existingMarkerIds: new Set(['op-1']) }
+      )
+      vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
+
+      const { incrementSessionPlacesBooked } = await import('./experience-booking')
+      const result = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 2, META)
+
+      expect(result).toEqual({ outcome: 'alreadyCompleted' })
+      expect(client.fetch).not.toHaveBeenCalled()
+    })
+
+    it('applies the increment only once when the same operation is attempted twice in sequence (redelivered webhook)', async () => {
+      const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+      const client = buildFakeClient({ _rev: 'rev-1', placesTotal: 10, placesBooked: 8 })
+      vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
+
+      const { incrementSessionPlacesBooked } = await import('./experience-booking')
+      const first = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 2, META)
+      const second = await incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 2, META)
+
+      expect(first).toEqual({ outcome: 'booked' })
+      expect(second).toEqual({ outcome: 'alreadyCompleted' })
+    })
+
+    // Two copies of the same webhook arriving at almost the same time —
+    // both pass any "check first" gate before either has written a
+    // marker, so the real guarantee has to come from the atomic
+    // create-conflicts-on-existing-id behaviour of the transaction commit
+    // itself, not from ordering.
+    it('applies the increment only once when two concurrent deliveries race for the same operation', async () => {
+      const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+      const sharedDoc = { _rev: 'rev-1', placesTotal: 10, placesBooked: 8 }
+      const client = buildFakeClient(sharedDoc)
+      vi.mocked(getSanityWriteClient).mockReturnValue(client as never)
+
+      const { incrementSessionPlacesBooked } = await import('./experience-booking')
+      const [a, b] = await Promise.all([
+        incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 1, META),
+        incrementSessionPlacesBooked('op-1', 'doc-1', 'session-1', 1, META),
+      ])
+
+      const outcomes = [a.outcome, b.outcome].sort()
+      expect(outcomes).toEqual(['alreadyCompleted', 'booked'])
+      // Exactly one place booked — not two, no matter which request "won"
+      // the race to commit first.
+      expect(sharedDoc.placesBooked).toBe(9)
+    })
   })
 })

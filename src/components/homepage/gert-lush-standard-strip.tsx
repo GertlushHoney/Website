@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ShieldCheckIcon } from '@/components/icons/line-icons'
 import { GertLushStandardStamp } from '@/components/product/gert-lush-standard-stamp'
-import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
+import { isGertLushStandardLive, standardCopy } from '@/lib/gert-lush-standard'
 
 // Compact homepage version of the Gert Lush Standard — the doc this is
 // sourced from (Gert_Lush_Standard_Website_Copy_v1.0.docx) offers this as
@@ -21,18 +21,28 @@ import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
 // review" — a direct public contradiction. Both now read off the same
 // central flag as the per-product badge, so a visitor never sees the seal
 // treated as live in one place and admittedly unfinished in another.
+//
+// Reworked again 2026-09-15 ("Make the Gert Lush Standard draft/live state
+// fully consistent"): once live, this used to show the stamp *twice* —
+// mirrored on both sides of the text card, like a heraldic crest. Honey is
+// this site's actual product; the Standard supports that story, it isn't a
+// second hero image competing for the same attention. One stamp, placed
+// once, reads as a supporting mark; two identical stamps read as the main
+// event.
 export function GertLushStandardStrip() {
-  const eyebrow = isGertLushStandardLive
-    ? 'Beekeeper reviewed · Batch checked · Provenance recorded'
-    : 'Being introduced · beekeeper review · batch checks'
-  const body = isGertLushStandardLive
-    ? 'We review the people, process and provenance behind our honey, then check each batch again before it is packed by Gert Lush.'
-    : "We're introducing a formal standard for reviewing the people, process and provenance behind our honey, and checking each batch before it's packed by Gert Lush."
-  const cta = isGertLushStandardLive ? 'Read the Gert Lush Standard' : 'See how it will work'
+  const eyebrow = standardCopy(
+    'Being introduced · beekeeper review · batch checks',
+    'Beekeeper reviewed · Batch checked · Provenance recorded'
+  )
+  const body = standardCopy(
+    "We're introducing a formal standard for reviewing the people, process and provenance behind our honey, and checking each batch before it's packed by Gert Lush.",
+    'We review the people, process and provenance behind our honey, then check each batch again before it is packed by Gert Lush.'
+  )
+  const cta = standardCopy('See how it will work', 'Read the Gert Lush Standard')
 
   return (
     <section className="border-ink-line border-b px-6 py-16 lg:px-16">
-      <div className="mx-auto flex max-w-6xl items-center justify-center gap-20">
+      <div className="mx-auto flex max-w-5xl items-center justify-center gap-12">
         {isGertLushStandardLive && (
           <div className="hidden shrink-0 lg:block">
             <GertLushStandardStamp />
@@ -55,12 +65,6 @@ export function GertLushStandardStrip() {
             {cta}
           </Link>
         </div>
-
-        {isGertLushStandardLive && (
-          <div className="hidden shrink-0 lg:block">
-            <GertLushStandardStamp />
-          </div>
-        )}
       </div>
     </section>
   )

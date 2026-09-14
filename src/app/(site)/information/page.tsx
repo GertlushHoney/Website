@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getInformationCards } from '@/lib/sanity/information-cards'
+import { standardCopy } from '@/lib/gert-lush-standard'
 
 export const metadata: Metadata = {
   title: 'Information',
@@ -44,8 +45,14 @@ const CARDS = [
     href: '/gert-lush-standard',
     eyebrow: 'Trust and provenance',
     title: 'The Gert Lush Standard',
-    description:
-      'Good beekeeping. Proper provenance. Carefully handled honey — the standard every beekeeper and batch is reviewed against before it reaches you.',
+    // Present-tense only once the Standard is actually live — see
+    // "Make the Gert Lush Standard draft/live state fully consistent"
+    // (2026-09-15). This card previously claimed, unconditionally, that
+    // every beekeeper and batch "is reviewed" against the Standard.
+    description: standardCopy(
+      "Good beekeeping. Proper provenance. Carefully handled honey — the standard we're introducing for reviewing every beekeeper and batch before it reaches you.",
+      'Good beekeeping. Proper provenance. Carefully handled honey — the standard every beekeeper and batch is reviewed against before it reaches you.'
+    ),
     image: {
       src: '/images/source/honey-strain-dark.jpg',
       alt: 'Honey being strained through a fine mesh sieve',

@@ -98,8 +98,9 @@ const sections: FaqSection[] = [
         q: 'Will there be more postcode honeys?',
         a: (
           <>
-            That&apos;s the plan — Bee S3 is the first, not the last. Available postcode honeys
-            are shown on our live{' '}
+            It started with Bee S3 in Bristol. We&apos;re now adding exceptional local honey
+            postcode by postcode — Bee S4 followed, and more are on the way. Available postcode
+            honeys are shown on our live{' '}
             <Link href="/postcode-honey" className="text-comb-gold underline underline-offset-2">
               postcode map
             </Link>
@@ -108,7 +109,7 @@ const sections: FaqSection[] = [
           </>
         ),
         plainAnswer:
-          "That's the plan — Bee S3 is the first, not the last. Available postcode honeys are shown on our live postcode map. New areas are added as suitable beekeepers and batches are approved; any postcode without stock yet shows an honest waiting-list option instead.",
+          "It started with Bee S3 in Bristol. We're now adding exceptional local honey postcode by postcode — Bee S4 followed, and more are on the way. Available postcode honeys are shown on our live postcode map. New areas are added as suitable beekeepers and batches are approved; any postcode without stock yet shows an honest waiting-list option instead.",
       },
     ],
   },

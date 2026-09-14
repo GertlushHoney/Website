@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Weddings and Events',
   description:
-    'Wedding and event favours from Gert Lush Honey — mini honey jars and beeswax soap, in a size that works as a favour.',
+    'Wedding and event favours from Gert Lush Honey — mini, personalised honey jars in a size that works as a favour, with beeswax soap and other hive products as an optional add-on.',
   alternates: { canonical: '/weddings-events' },
 }
 
@@ -25,9 +25,10 @@ export default function WeddingsAndEventsPage() {
         Wedding favours, done properly.
       </h1>
       <p className="text-porcelain/70 mt-4 text-base">
-        Real honey and real soap, in a size that works as a favour — not mass-produced tat. We&apos;re
-        still setting this up properly, so nothing below is available for instant checkout yet, but
-        tell us what you need and we&apos;ll work out what&apos;s possible for your date.
+        Real honey, personalised for your date, in a size that works as a favour — not mass-produced
+        tat. We&apos;re still setting this up properly, so nothing below is available for instant
+        checkout yet, but tell us what you need and we&apos;ll work out what&apos;s possible for your
+        date.
       </p>
 
       <div className="mx-auto mt-10 grid max-w-lg grid-cols-2 gap-4">
@@ -51,13 +52,18 @@ export default function WeddingsAndEventsPage() {
         </div>
       </div>
 
+      {/* The primary reason this page exists — see "Fix remaining copy and
+          product-rating inconsistencies" audit, 2026-09-15. Soap used to
+          get an equal-weight h2 of its own right below this, reading as a
+          second product line rather than an add-on to the honey favour. */}
       <section className="mt-10">
-        <h2 className="text-porcelain text-xl font-bold tracking-tight">Mini honey jars</h2>
+        <h2 className="text-porcelain text-2xl font-bold tracking-tight">Honey Favours</h2>
         <p className="text-porcelain/70 mt-3 text-sm">
           Small hexagonal honey jars — 110ml or 55ml — filled with the same honey we sell full-size,
-          in a favour-friendly format. We haven&apos;t confirmed jar supply or pricing yet, so we
-          can&apos;t quote a price here, but let us know your guest count and preferred size and
-          we&apos;ll come back with real numbers.
+          personalised with your names and date and finished in a favour-friendly format. We
+          haven&apos;t confirmed jar supply or pricing yet, so we can&apos;t quote a price here, but
+          let us know your guest count and preferred size and we&apos;ll come back with real
+          numbers.
         </p>
         <div className="relative mt-5 aspect-[1448/1086] w-full overflow-hidden rounded-2xl">
           <Image
@@ -70,8 +76,13 @@ export default function WeddingsAndEventsPage() {
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-porcelain text-xl font-bold tracking-tight">Soap favours</h2>
+      <section className="border-ink-line bg-honeycomb-surface mt-10 rounded-2xl border p-6">
+        <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
+          Add something extra
+        </p>
+        <h2 className="text-porcelain mt-1 text-lg font-bold tracking-tight">
+          Soap, candles and other hive products
+        </h2>
         <p className="text-porcelain/70 mt-3 text-sm">
           A half-bar (minimum 30g) version of our honey and beeswax soap, in four scents:
           Lavender &amp; Rosemary, Lemongrass, Honey &amp; Oats (Unscented) and Orange &amp; Black
@@ -83,6 +94,15 @@ export default function WeddingsAndEventsPage() {
           once it&apos;s ready, but final packaging and label design aren&apos;t finished, so
           nothing&apos;s in stock yet.
         </p>
+        <p className="text-porcelain/70 mt-3 text-sm">
+          Our{' '}
+          <Link href="/shop/candles" className="text-comb-gold underline underline-offset-2">
+            beeswax candles
+          </Link>{' '}
+          can also be added to a favour or gift table, and we&apos;re happy to talk through gift
+          presentation and packaging for your event — mention it in your enquiry below and
+          we&apos;ll tell you what&apos;s realistic for your date.
+        </p>
       </section>
 
       <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-2xl border p-8">
@@ -90,11 +110,12 @@ export default function WeddingsAndEventsPage() {
           Tell us about your event
         </p>
         <p className="text-porcelain/70 mt-3 text-sm">
-          It helps to know your event date, rough quantity needed, which jar size or soap scents
-          you&apos;re interested in, and any personalisation ideas.
+          It helps to know your event date, rough quantity needed, your preferred honey jar size,
+          any personalisation ideas, and whether you&apos;d like soap, candles or anything else
+          added.
         </p>
         <a
-          href="mailto:sales@gertlushhoney.co.uk?subject=Wedding%20%26%20Events%20enquiry&body=Event%20date%3A%0AEstimated%20quantity%2Fguest%20count%3A%0AHoney%20jar%20size%20(110ml%2F55ml)%3A%0ASoap%20scents%20of%20interest%3A%0APersonalisation%20ideas%3A"
+          href="mailto:sales@gertlushhoney.co.uk?subject=Wedding%20%26%20Events%20enquiry&body=Event%20date%3A%0AEstimated%20quantity%2Fguest%20count%3A%0AHoney%20jar%20size%20(110ml%2F55ml)%3A%0APersonalisation%20ideas%3A%0AAny%20soap%2C%20candles%20or%20extras%20of%20interest%3A"
           className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
         >
           Enquire about wedding favours

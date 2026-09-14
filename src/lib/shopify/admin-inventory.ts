@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { shopifyAdminFetch, ShopifyAdminError, isShopifyAdminConfigured } from './admin-client'
 
 // Manual stock sync for hampers (see docs/technical-architecture.md,
@@ -91,10 +90,19 @@ async function getAvailableQuantity(inventoryItemId: string, locationId: string)
 // offers for "adjusted by hand because of a bundled sale it can't track
 // natively" — there's no more specific reason code for this.
 //
-// The mutation is marked @idempotent by Shopify's schema, which requires
-// a fresh key per call (a retried request with the same key is treated as
-// a duplicate and ignored rather than double-applied) — generated here,
-// not something callers need to think about.
+// The mutation is marked @idempotent by Shopify's schema: a retried call
+// with the *same* key is treated as a duplicate and ignored rather than
+// double-applied. `idempotencyKey` must therefore be deterministic — the
+// same logical operation (this exact honey, this exact hamper line item,
+// this exact webhook delivery) must always pass the same key, never a
+// fresh randomUUID() per call, or Shopify has no way to recognise a
+// retried deduction as the one it already applied. Callers pass the same
+// operation id used for this app's own Sanity-side dedup marker (see
+// webhook-operations.ts) — Shopify's own idempotent-key handling is what
+// actually closes the race for two near-simultaneous duplicate deliveries,
+// since it dedupes server-side regardless of how this app's own
+// check-then-act logic happens to interleave between two requests. See
+// "Make Shopify order-paid processing fully idempotent" (2026-09-14).
 //
 // Returns false (never throws) when there genuinely isn't enough stock to
 // cover a deduction — checked against changeFromQuantity, a read taken
@@ -111,7 +119,8 @@ async function getAvailableQuantity(inventoryItemId: string, locationId: string)
 export async function adjustInventory(
   inventoryItemId: string,
   locationId: string,
-  delta: number
+  delta: number,
+  idempotencyKey: string
 ): Promise<boolean> {
   const changeFromQuantity = await getAvailableQuantity(inventoryItemId, locationId)
 
@@ -135,7 +144,7 @@ export async function adjustInventory(
         name: 'available',
         changes: [{ inventoryItemId, locationId, delta, changeFromQuantity }],
       },
-      key: randomUUID(),
+      key: idempotencyKey,
     },
   })
   const errors = data.inventoryAdjustQuantities.userErrors
@@ -152,7 +161,14 @@ export async function adjustInventory(
 // enough stock left to cover it — callers (the webhook route) log the
 // outcome themselves rather than this throwing and failing the whole
 // webhook over one unmatched or under-stocked line.
-export async function deductHoneyStock(honeyName: string, jars: number): Promise<boolean> {
+//
+// `idempotencyKey` — see adjustInventory above; must be deterministic,
+// derived from the operation's real identity, never a random value.
+export async function deductHoneyStock(
+  honeyName: string,
+  jars: number,
+  idempotencyKey: string
+): Promise<boolean> {
   if (!isShopifyAdminConfigured() || jars <= 0) return false
 
   const [inventoryItemId, locationId] = await Promise.all([
@@ -161,5 +177,5 @@ export async function deductHoneyStock(honeyName: string, jars: number): Promise
   ])
   if (!inventoryItemId || !locationId) return false
 
-  return adjustInventory(inventoryItemId, locationId, -jars)
+  return adjustInventory(inventoryItemId, locationId, -jars, idempotencyKey)
 }

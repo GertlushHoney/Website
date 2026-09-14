@@ -26,3 +26,30 @@ export type GertLushStandardStatus = 'draft' | 'live'
 export const GERT_LUSH_STANDARD_STATUS = 'draft' as GertLushStandardStatus
 
 export const isGertLushStandardLive = GERT_LUSH_STANDARD_STATUS === 'live'
+
+// The one place that decides whether *this specific product* gets the
+// certification stamp — never just the global flag on its own. A product
+// can have `meetsGertLushStandard: true` in Sanity while the Standard is
+// still draft (an editor got ahead of themselves, or is preparing content
+// for launch day); it must not show a badge until both conditions hold.
+// Conversely, the Standard going live never retroactively marks any
+// product as compliant — see the module comment above. Centralised here so
+// every call site (currently the product page) makes this same conjunction
+// the same way, rather than each one repeating
+// `isGertLushStandardLive && product.meetsGertLushStandard` by hand.
+export function canShowGertLushStandardBadge(meetsGertLushStandard: boolean | null | undefined): boolean {
+  return isGertLushStandardLive && meetsGertLushStandard === true
+}
+
+// Every public claim about the Standard — its own page, the homepage
+// strip, the FAQ, the supplier page, the information hub — needs to shift
+// from future/conditional ("will require", "is designed to") to present
+// tense ("requires", "we check") the moment the Standard goes live, and
+// never before. `standardCopy` is the one place that decision is made, so
+// wording stays consistent instead of each page writing its own
+// `isGertLushStandardLive ? a : b` and risking one getting missed on the
+// day this flips. See "Make the Gert Lush Standard draft/live state fully
+// consistent" (2026-09-15).
+export function standardCopy<T>(whileDraft: T, onceLive: T): T {
+  return isGertLushStandardLive ? onceLive : whileDraft
+}

@@ -106,11 +106,21 @@ function HoneyCardGrid({ cards }: { cards: HoneyCard[] }) {
                 beekeeper/price keep all the room) — only pinned to the
                 corner from sm up, where a card is wide enough to spare it.
                 See "FIX MOBILE PRODUCT CARD LAYOUT" audit, 2026-09-13. */}
+            {/* Never a row of empty stars for a product with no reviews yet
+                — that reads as a real zero-star rating. See "Fix remaining
+                copy and product-rating inconsistencies" audit,
+                2026-09-15. */}
             <p className="mb-2 text-lg sm:absolute sm:top-6 sm:right-6 sm:mb-0 sm:text-2xl">
-              <Stars rating={card.averageReviewRating !== null ? Math.round(card.averageReviewRating) : 0} />
-              {card.averageReviewRating !== null && (
-                <span className="text-porcelain/60 ml-2 align-middle text-sm font-semibold">
-                  {card.averageReviewRating.toFixed(1)} ({card.reviewCount})
+              {card.averageReviewRating !== null ? (
+                <>
+                  <Stars rating={Math.round(card.averageReviewRating)} />
+                  <span className="text-porcelain/60 ml-2 align-middle text-sm font-semibold">
+                    {card.averageReviewRating.toFixed(1)} ({card.reviewCount})
+                  </span>
+                </>
+              ) : (
+                <span className="text-porcelain/50 align-middle text-sm font-normal">
+                  No reviews yet
                 </span>
               )}
             </p>

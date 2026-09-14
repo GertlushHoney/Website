@@ -66,7 +66,11 @@ function categorySubtitle(category: 'honey' | MerchCategory, count: number): str
     case 'lip-balm':
       return `${count} lip balm flavour${count === 1 ? '' : 's'}`
     case 'hamper':
-      return 'Explore hampers'
+      // Nudges the hamper tile toward honey rather than reading as an
+      // unrelated gift category — see "REFINE SHOP HIERARCHY" audit,
+      // 2026-09-15 (the commercial hierarchy in CLAUDE.md: hampers are
+      // built around honey, never given equal top billing with it).
+      return 'Start with your honey'
     case 'experiences':
       return 'View experiences'
   }
@@ -135,7 +139,8 @@ export default async function ShopPage() {
     <div className="mx-auto max-w-5xl px-6 py-16">
       <h1 className="text-porcelain text-3xl font-bold tracking-tight">Shop</h1>
       <p className="text-porcelain/60 mt-2 max-w-lg text-sm">
-        Small-batch honey, and more from Gert Lush as it becomes real.
+        Start with the honey, then discover gifts, products from the hive and experiences
+        inspired by the bees behind every jar.
       </p>
 
       <div className="mt-12">

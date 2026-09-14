@@ -15,7 +15,7 @@ import { getProductByHandle, isProductSoldOut } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { FREE_DELIVERY_THRESHOLD_GBP } from '@/lib/delivery'
-import { isGertLushStandardLive } from '@/lib/gert-lush-standard'
+import { canShowGertLushStandardBadge } from '@/lib/gert-lush-standard'
 import { JsonLd } from '@/components/seo/json-ld'
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
@@ -264,6 +264,7 @@ export default async function ShopProductPage({
   ].filter(Boolean) as { id: string; label: string; content: React.ReactNode }[]
 
   const isSoldOut = isProductSoldOut(shopifyProduct)
+  const showStandardBadge = canShowGertLushStandardBadge(product.meetsGertLushStandard)
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -320,8 +321,11 @@ export default async function ShopProductPage({
               out of 5 ({reviews.length} review{reviews.length === 1 ? '' : 's'})
             </p>
           ) : (
-            <p className="text-porcelain/50 text-center text-3xl">
-              <Stars rating={0} />
+            // Never a row of empty stars — that reads as a real zero-star
+            // rating, not "nobody's reviewed this yet". See "Fix remaining
+            // copy and product-rating inconsistencies" audit, 2026-09-15.
+            <p className="text-porcelain/50 text-center text-sm">
+              No reviews yet — be the first to review
             </p>
           )}
         </div>
@@ -335,14 +339,17 @@ export default async function ShopProductPage({
           {/* Gated on the central flag as well as the per-product field —
               the Standard isn't public yet, so no product can show the
               certification badge regardless of what's set in Sanity, until
-              GERT_LUSH_STANDARD_STATUS flips to 'live'. See "FINALISE THE
-              GERT LUSH STANDARD STATUS" audit, 2026-09-13. */}
-          {isGertLushStandardLive && product.meetsGertLushStandard && (
+              GERT_LUSH_STANDARD_STATUS flips to 'live'. See
+              canShowGertLushStandardBadge, the one place this conjunction
+              is decided. See "FINALISE THE GERT LUSH STANDARD STATUS"
+              audit, 2026-09-13, and "Make the Gert Lush Standard draft/live
+              state fully consistent" (2026-09-15). */}
+          {showStandardBadge && (
             <div className="mb-4 sm:absolute sm:top-0 sm:right-0 sm:mb-0">
               <GertLushStandardStamp />
             </div>
           )}
-          <div className={isGertLushStandardLive && product.meetsGertLushStandard ? 'sm:pr-40' : undefined}>
+          <div className={showStandardBadge ? 'sm:pr-40' : undefined}>
             <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
               Gert Lush Honey
             </p>

@@ -1,5 +1,10 @@
 # Technical architecture
 
+This document is kept current through the project's life — if it ever disagrees with
+`docs/requirements-matrix.md` or `docs/implementation-roadmap.md` (both largely frozen at an
+early planning phase), this one wins. See `CLAUDE.md` for a short current-state summary and the
+commercial-hierarchy principles that should inform product/copy decisions.
+
 ## Frontend architecture
 
 - Next.js 16 (App Router, Turbopack), React 19, TypeScript strict mode.
@@ -29,6 +34,8 @@ src/app/(site)/
   becoming-a-beekeeper/      supplier-facing beekeeper recruitment page
   become-a-supplier/         bulk-honey supplier enquiry page
   asian-hornets/             yellow-legged hornet awareness page
+  bee-friendly-garden/       pollinator-friendly gardening awareness page
+  weddings-events/           wedding/event honey favours (honey-led, soap/candles as an add-on)
   sustainability/            hive-sourcing/equipment page
   delivery/, faqs/, information/
   contact/                   real contact form (src/components/contact/contact-form.tsx)
@@ -261,14 +268,16 @@ wrong.
    `{ outcome: 'insufficient_capacity', placesRequested, placesRemaining }`, not thrown, since this
    is a genuine final state (retrying the identical webhook resolves the same way every time), not
    a transient problem.
-3. Otherwise, attempt `.patch(docId).ifRevisionId(rev).inc({ ...: by }).commit()`. Sanity rejects
-   this (HTTP 409) if the document has changed since step 1 — i.e. another booking committed
-   first — in which case this loops back to step 1 with a fresh read rather than blindly retrying
-   stale numbers. Bounded at 5 attempts; exhausting that under sustained contention throws, and
-   the webhook (which distinguishes data problems it must not retry from real transient failures
-   it should) treats a thrown error here as the latter — it responds with a non-2xx status so
-   Shopify redelivers the webhook later, rather than marking it processed and losing the booking
-   attempt for good.
+3. Otherwise, attempt a single Sanity **transaction** that creates this operation's dedup marker
+   (see "Per-operation webhook idempotency" below) and applies
+   `.patch(docId).ifRevisionId(rev).inc({ ...: by })` together, atomically. Sanity rejects the
+   whole transaction (HTTP 409) if either the marker's `_id` already exists or the document has
+   changed since step 1 — i.e. another booking committed first — in which case this loops back to
+   step 1 with a fresh read rather than blindly retrying stale numbers. Bounded at 5 attempts;
+   exhausting that under sustained contention throws, and the webhook (which distinguishes data
+   problems it must not retry from real transient failures it should) treats a thrown error here
+   as the latter — it responds with a non-2xx status so Shopify redelivers the webhook later,
+   rather than marking it processed and losing the booking attempt for good.
 
 Two customers racing for the same last place can therefore never both succeed: whichever request's
 write lands first wins normally; the second one's `ifRevisionId` is rejected, forcing a re-read
@@ -296,6 +305,74 @@ mean reserving a place *before* payment — either giving each session real Shop
 (a structural change: one variant/inventory item per bookable date, decremented at checkout instead
 of after) or a short-lived hold created at "Add to basket" and released if checkout doesn't
 complete — genuinely bigger changes than this fix, not attempted here without being asked for.
+
+## Per-operation webhook idempotency (2026-09-14)
+
+**The problem.** Webhook-level dedup (`processedWebhookEvent`, keyed by Shopify's
+`X-Shopify-Webhook-Id`) stops an *exact* duplicate delivery from repeating work, but does nothing
+for a *partial* failure: an order containing both a hamper and an Experience, where the hamper's
+honey deduction succeeds and the Experience booking then throws, gets a non-2xx response (correct
+— Shopify should retry) and is never marked processed (also correct — the booking still needs to
+happen). But when Shopify redelivers that same webhook, the old code re-ran the loop from
+scratch — including the hamper deduction that had already genuinely succeeded, silently
+double-deducting real stock.
+
+**The fix — a deterministic operation id per side effect, not per delivery.**
+`src/lib/sanity/webhook-operations.ts` (`buildOperationId`) derives one id from the webhook
+delivery id, an operation type, the Shopify line item id, and the specific honey/session
+affected — e.g. `webhookOp.webhook-123.hamper.4001.bee-s3` or
+`webhookOp.webhook-123.experience.4002.session-key`. Never a random UUID: the same logical
+operation, retried any number of times, always recomputes the same id, which is what makes "has
+this exact operation already run" answerable by a single deterministic lookup instead of guesswork.
+
+Before each side effect: generate the id, check whether a `webhookOperation` document already
+exists at it, skip if so (logged as a duplicate), otherwise perform the side effect and only then
+record the marker — never before, so a request that dies mid-operation leaves no record and a
+retry is free to actually attempt the work.
+
+**Concurrency — why a plain check-then-act isn't enough, and what closes the gap per operation
+type.** Two near-simultaneous duplicate deliveries can both pass a "does the marker exist?" check
+before either has written one. This app closes that gap differently for its two operation types,
+using whichever mechanism is actually strongest for each:
+
+- **Hamper deduction** (`src/lib/shopify/admin-inventory.ts`) — the same deterministic operation
+  id is passed as Shopify's own `@idempotent` mutation key on `inventoryAdjustQuantities` (this
+  used to be a fresh `randomUUID()` per call, which defeated Shopify's own dedup entirely — a
+  retried call could never be recognised as a repeat of one Shopify had already applied). Shopify
+  itself refuses to double-apply two mutations submitted with the same key, regardless of how this
+  app's own local check happens to interleave between two concurrent requests. The Sanity marker
+  is a fast skip-and-log layer on top of that — Shopify's idempotent key is what actually
+  guarantees no double deduction.
+- **Experience booking** (`src/lib/sanity/experience-booking.ts`) — there's no equivalent native
+  idempotency key for a Sanity `.patch()`, so this uses Sanity's own atomicity instead: the
+  marker's `create()` and the booking's `.patch().ifRevisionId().inc()` are submitted as **one
+  transaction**. Sanity's `create()` fails outright if the target `_id` already exists, and a
+  transaction is all-or-nothing — so if two duplicate deliveries race for the same operation id,
+  only one transaction can ever commit both halves together; the loser's `create` is rejected and
+  its increment never applies, with no window where one half succeeds without the other.
+
+**Distinguishing "duplicate operation" from "someone else's booking won a race."** Both surface as
+a Sanity 409 from the same transaction commit, but need opposite handling: a duplicate (this exact
+operation already ran) should skip with no retry of the read loop; a genuine revision conflict (a
+*different* booking changed the document) should re-read and try again, exactly as before this
+change. `isAlreadyExistsConflict` (`webhook-operations.ts`) tells them apart by error wording — a
+heuristic, since Sanity's client doesn't expose a distinctly-typed "already exists" error. An error
+that matches neither pattern falls through as a genuine transient failure (the existing, safe
+default: propagate, respond non-2xx, let Shopify retry) — it can under-detect a duplicate and cause
+one harmless extra retry, but can never mistake a real failure for a duplicate and silently drop
+real work.
+
+**Terminal data outcomes are also recorded per-operation.** "Insufficient stock" and "insufficient
+capacity" are genuine final states — retrying resolves them identically every time — so both are
+recorded under the same operation id (`outcome: 'insufficient-stock'` /
+`'insufficient-capacity'`) the first time they're detected. A later retry of that exact operation
+then finds the marker and reports `alreadyCompleted` instead of re-detecting (and, for a booking
+conflict, re-recording) the identical outcome a second time.
+
+**Logging.** Every log line names the webhook id, order name, and (once resolved) the specific
+operation id, distinguishing three outcomes: a completed operation, a skipped duplicate, and a
+retryable failure. Never the raw order/line-item payload or any token/secret — same discipline as
+the existing `errorMessage()` helper, which logs only an error's own `.message`.
 
 ## Form submission architecture
 
@@ -368,10 +445,52 @@ product page's "Tasting profile" tab only renders once at least one field is rea
 **The Gert Lush Standard** (`/gert-lush-standard`, source: `Gert_Lush_Standard_Website_Copy_v1.0.docx`,
 carried across near-verbatim as the user's own prepared copy) — six numbered supplier/batch
 promises, a "what does the mark mean" section, and an explicit "not a government or third-party
-certification" disclaimer. `honeyProduct.meetsGertLushStandard` (boolean, defaults `false`) gates
-`GertLushStandardBadge` on a product page — never assumed true for an active product, switched on
-per-product only after the user confirmed in conversation it's genuinely true today (done for Bee
-S3, 2026-08-27).
+certification" disclaimer.
+
+Two independent gates control what's shown, both required together, never either alone
+(`canShowGertLushStandardBadge` in `src/lib/gert-lush-standard.ts` is the one place this
+conjunction is decided):
+
+1. **The global flag** (`GERT_LUSH_STANDARD_STATUS`, currently `'draft'`) — whether the Standard
+   itself is publicly live yet, i.e. whether the real supplier-review/batch-check procedures
+   described on the page are genuinely happening in practice. While `draft`, every page
+   mentioning the Standard uses future/conditional copy (`standardCopy(draftText, liveText)` is
+   the shared helper — every Standard-adjacent page should use it, not its own ternary) and no
+   product shows the certification badge, regardless of the per-product field below.
+2. **The per-product field** (`honeyProduct.meetsGertLushStandard`, boolean, defaults `false`) —
+   switched on per-product only after the user confirms in conversation it's genuinely true for
+   that specific product/batch today. Flipping the global flag to `live` never retroactively
+   marks any product compliant; each product's own flag still has to be set by hand in Studio.
+
+See "Make the Gert Lush Standard draft/live state fully consistent" (2026-09-15) for the fuller
+design writeup and the homepage-strip stamp-count fix (one stamp, not two, once live).
+
+**Per-jar vs shared batch codes** — confirmed 2026-08-27 that real jars are numbered individually
+(001, 002, 003…), not sharing one code. A single fixed `batchCode` field would only be accurate for
+jar #1 and wrong for every other jar sold, so it's split into two: `batchCode` (only for a
+genuinely shared run-level code, unused today) and `traceabilityFormat` (describes the per-jar
+pattern without asserting one specific number, e.g. Bee S3's real `"GL-BS3-XXX"` — the actual
+per-jar number is printed on that jar's own physical label, never claimed on the website).
+
+## Hamper stock sync
+
+A hamper (`merchProduct` with `category: 'hamper'`) is its own Shopify product with inventory
+tracking turned off — it's always "in stock" by design, since its real limit is the honey it's
+made from, not a count Shopify tracks natively. Shopify's own Bundles app can't model this either,
+since a customer chooses which honey (or a "surprise" pick) goes in each jar at checkout time, not
+a fixed composition. The workaround: the `orders/paid` webhook
+(`src/app/api/webhooks/shopify/order-paid/route.ts`) reads which honey was chosen (a line-item
+cart attribute, set by `PurchaseOptions` — "Choose your own" names it explicitly, "Surprise
+selection" is resolved server-side against live stock) and deducts the real jar count from that
+honey's Shopify inventory via the Admin API (`src/lib/shopify/admin-inventory.ts`).
+
+Stock sufficiency is checked in two places, not just one: client-side before checkout
+(`purchase-options.tsx`'s `hasSurpriseStockShortfall`/`hasHoneyStockShortfall`) and again
+server-side in the webhook and in `adjustInventory`'s own fresh-read `changeFromQuantity` check —
+the client-side check is a UX convenience, never the actual guarantee against overselling. Every
+individual deduction is idempotent per honey-per-line-item (see "Per-operation webhook
+idempotency" above) and uses a deterministic Shopify `@idempotent` mutation key, not a random one
+— a redelivered webhook can never double-deduct the same hamper's honey.
 
 **Per-jar vs shared batch codes** — confirmed 2026-08-27 that real jars are numbered individually
 (001, 002, 003…), not sharing one code. A single fixed `batchCode` field would only be accurate for

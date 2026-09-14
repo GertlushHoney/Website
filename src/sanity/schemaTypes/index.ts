@@ -8,6 +8,7 @@ import { newsletterPopup } from './newsletterPopup'
 import { processedWebhookEvent } from './processedWebhookEvent'
 import { productReview } from './productReview'
 import { shopTile } from './shopTile'
+import { webhookOperation } from './webhookOperation'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -20,5 +21,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     processedWebhookEvent,
     productReview,
     shopTile,
+    webhookOperation,
   ],
 }

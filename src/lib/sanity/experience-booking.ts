@@ -1,6 +1,7 @@
 import { groq } from 'next-sanity'
 import { sanityFetch } from './client'
 import { getSanityWriteClient, isSanityWriteConfigured } from './write-client'
+import { isAlreadyExistsConflict } from './webhook-operations'
 import type { ExperienceSession } from './merch'
 
 type ExperienceMatch = {
@@ -41,6 +42,12 @@ const MAX_RETRIES = 5
 export type BookingResult =
   | { outcome: 'booked' }
   | { outcome: 'insufficient_capacity'; placesRequested: number; placesRemaining: number }
+  // This exact operation (by its deterministic id) already ran — either a
+  // previous delivery genuinely completed it, or a near-simultaneous
+  // duplicate delivery won the atomic create race a moment before this
+  // call. Either way, nothing here mutates anything; the caller should
+  // treat it exactly like "skip, already done."
+  | { outcome: 'alreadyCompleted' }
 
 // A Sanity mutation guarded by `ifRevisionId` fails with a 409 when the
 // document has changed since the revision was read — that, and only
@@ -69,34 +76,67 @@ function isRevisionConflict(error: unknown): boolean {
 // silently pushing placesBooked past placesTotal with no record that
 // anything had gone wrong.
 //
-// This now does a fresh read-check-write on every attempt, guarded by
-// Sanity's own optimistic-concurrency primitive (`ifRevisionId`):
+// Extended for "Make Shopify order-paid processing fully idempotent"
+// (2026-09-14) to also be safe against the *same* booking being attempted
+// twice — a redelivered webhook after a partial failure, or two
+// near-simultaneous duplicate deliveries. `operationId` is a deterministic
+// id (see webhook-operations.ts) derived from the webhook delivery, the
+// line item, and this session — never a random UUID, so the exact same
+// logical operation always recomputes the exact same id.
+//
+// Per attempt:
+//   0. (First attempt only, conceptually.) If a webhookOperation document
+//      already exists at `operationId`, this exact operation already ran
+//      — return `alreadyCompleted` without touching the session doc at
+//      all. This is the common case: a webhook retried after a *different*
+//      line item failed, where this booking already genuinely succeeded
+//      last time.
 //   1. Read the document's current `_rev` and this session's real
 //      placesTotal/placesBooked right now — never trust a value read
 //      before this call, since another booking may have landed since.
 //   2. If `by` doesn't fit in what's actually left, refuse immediately —
-//      this is a genuine "sold out" outcome, not a retry candidate,
-//      because retrying the identical request resolves the same way
-//      every time. The caller is responsible for treating this as a real
-//      conflict needing human attention (the customer already paid).
-//   3. Otherwise, attempt the increment conditioned on that exact
-//      revision. Sanity rejects the write (409) if the document changed
-//      between steps 1 and 3 — i.e. another booking won the race — in
-//      which case this loops back to step 1 with fresh data rather than
-//      blindly retrying the same stale numbers.
+//      a genuine "sold out" outcome, not a retry candidate (retrying the
+//      identical request resolves the same way every time). Recorded via
+//      the same operationId so a later retry of this exact operation
+//      finds the marker at step 0 and skips instead of re-detecting (and
+//      the caller re-recording) the identical conflict.
+//   3. Otherwise, attempt to *atomically* create the operation marker and
+//      apply the increment in one Sanity transaction, the increment still
+//      conditioned on the exact revision read in step 1. This is the
+//      concurrency-safety fix proper: Sanity rejects a `create()` against
+//      an `_id` that already exists, so if two near-simultaneous duplicate
+//      deliveries both reach this step for the *same* operationId, only
+//      one transaction can ever win — the loser's create is rejected
+//      atomically together with its increment, never one without the
+//      other. A plain "check the marker, then separately increment, then
+//      separately write the marker" would leave a window where both
+//      requests pass the check before either writes anything; one atomic
+//      transaction has no such window.
+//   4. If the transaction's create was rejected because the operationId
+//      already exists, another delivery (or this same one, retried)
+//      already completed this exact operation a moment ago — return
+//      `alreadyCompleted`, no increment applied. If instead the *patch*
+//      was rejected because the document's revision changed since step 1
+//      — a genuinely different booking (a different operationId) won a
+//      race for the same session — loop back to step 1 with fresh data.
 //
 // Two people racing for the same last place therefore can never both
-// succeed: the second one's write is rejected by Sanity itself, forcing
-// a re-read that now correctly sees zero places left.
+// succeed, and the same logical booking can never be counted twice no
+// matter how many times it's attempted.
 export async function incrementSessionPlacesBooked(
+  operationId: string,
   docId: string,
   sessionKey: string,
-  by: number
+  by: number,
+  meta: { webhookId: string; orderId: number; orderName: string; lineItemId: string }
 ): Promise<BookingResult> {
   if (!isSanityWriteConfigured()) {
     throw new Error('incrementSessionPlacesBooked: Sanity write access is not configured')
   }
   const client = getSanityWriteClient()
+
+  const existingMarker = await client.getDocument(operationId)
+  if (existingMarker) return { outcome: 'alreadyCompleted' }
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const doc = await client.fetch<{
@@ -117,17 +157,37 @@ export async function incrementSessionPlacesBooked(
 
     const placesRemaining = Math.max(0, doc.session.placesTotal - doc.session.placesBooked)
     if (by > placesRemaining) {
+      await client.createIfNotExists({
+        _id: operationId,
+        _type: 'webhookOperation',
+        operationId,
+        operationType: 'experience-booking',
+        outcome: 'insufficient-capacity',
+        detail: `${by} place(s) requested, ${placesRemaining} remaining`,
+        ...meta,
+        completedAt: new Date().toISOString(),
+      })
       return { outcome: 'insufficient_capacity', placesRequested: by, placesRemaining }
     }
 
     try {
       await client
-        .patch(docId)
-        .ifRevisionId(doc._rev)
-        .inc({ [`sessions[_key=="${sessionKey}"].placesBooked`]: by })
+        .transaction()
+        .create({
+          _id: operationId,
+          _type: 'webhookOperation',
+          operationId,
+          operationType: 'experience-booking',
+          outcome: 'completed',
+          detail: `${by} place(s), session ${sessionKey}`,
+          ...meta,
+          completedAt: new Date().toISOString(),
+        })
+        .patch(docId, (p) => p.ifRevisionId(doc._rev).inc({ [`sessions[_key=="${sessionKey}"].placesBooked`]: by }))
         .commit()
       return { outcome: 'booked' }
     } catch (error) {
+      if (isAlreadyExistsConflict(error)) return { outcome: 'alreadyCompleted' }
       if (!isRevisionConflict(error)) throw error
       // Someone else's booking committed first — loop back and re-read.
     }

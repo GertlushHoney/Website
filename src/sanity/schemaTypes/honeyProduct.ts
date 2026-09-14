@@ -159,7 +159,7 @@ export const honeyProduct = defineType({
       name: 'meetsGertLushStandard',
       title: 'Meets the Gert Lush Standard',
       description:
-        'Only switch this on once this beekeeper has genuinely passed supplier review and this batch has genuinely passed batch acceptance — see /gert-lush-standard. This turns on a real trust claim shown to customers, not a default for every product.',
+        "Only switch this on once this beekeeper has genuinely passed supplier review and this batch has genuinely passed batch acceptance — see /gert-lush-standard. This turns on a real trust claim shown to customers, not a default for every product. Note: switching this on alone doesn't show a badge while the Standard itself is still draft (src/lib/gert-lush-standard.ts) — both have to be true.",
       type: 'boolean',
       initialValue: false,
     }),

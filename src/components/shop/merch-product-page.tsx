@@ -107,8 +107,11 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
               out of 5 ({reviews.length} review{reviews.length === 1 ? '' : 's'})
             </p>
           ) : (
-            <p className="text-porcelain/50 text-center text-3xl">
-              <Stars rating={0} />
+            // Never a row of empty stars — that reads as a real zero-star
+            // rating, not "nobody's reviewed this yet". See "Fix remaining
+            // copy and product-rating inconsistencies" audit, 2026-09-15.
+            <p className="text-porcelain/50 text-center text-sm">
+              No reviews yet — be the first to review
             </p>
           )}
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
+import { standardCopy } from '@/lib/gert-lush-standard'
 
 export const metadata: Metadata = {
   title: 'Become a Supplier',
@@ -49,7 +50,10 @@ export default function BecomeASupplierPage() {
           <li>Being able to substantiate where your honey actually comes from</li>
         </ul>
         <p className="text-porcelain/70 mt-3 text-sm">
-          This is the same review every beekeeper we work with goes through — see{' '}
+          {standardCopy(
+            "This is the same review we're introducing for every beekeeper we work with — see",
+            'This is the same review every beekeeper we work with goes through — see'
+          )}{' '}
           <Link
             href="/gert-lush-standard"
             className="text-comb-gold underline underline-offset-2"

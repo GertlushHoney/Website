@@ -16,6 +16,11 @@ import {
   recordBookingConflict,
 } from '@/lib/sanity/experience-booking'
 import { isWebhookAlreadyProcessed, markWebhookProcessed } from '@/lib/sanity/processed-webhooks'
+import {
+  buildOperationId,
+  isOperationCompleted,
+  markOperationCompleted,
+} from '@/lib/sanity/webhook-operations'
 
 // Hamper stock sync (see docs/technical-architecture.md). A hamper is its
 // own Shopify product with inventory tracking turned off (it's always
@@ -45,6 +50,12 @@ const HONEY_CHOICE_PROPERTY_NAME = 'Honey selection'
 const SESSION_DATE_PROPERTY_NAME = 'Session date'
 
 type ShopifyOrderLineItem = {
+  // Shopify's own line item id — stable across retries of the same
+  // delivery (it's the same order data every time), and the piece that
+  // makes a per-operation id actually specific to *this* line, not just
+  // this order. See "Make Shopify order-paid processing fully idempotent"
+  // (2026-09-14).
+  id: number
   title: string
   quantity: number
   variant_title: string | null
@@ -182,8 +193,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, duplicate: true })
   }
 
-  // Two different kinds of failure can happen per line item, and they must
-  // be told apart:
+  // Every individual side effect below (one honey deduction for one
+  // hamper line, one booking increment for one experience line) is now
+  // independently idempotent, keyed by a deterministic operation id (see
+  // buildOperationId / webhook-operations.ts) — not just this whole
+  // webhook delivery. This is the fix for "Make Shopify order-paid
+  // processing fully idempotent" (2026-09-14): previously, a delivery that
+  // got partway through (e.g. a hamper deduction succeeded, then an
+  // experience booking threw) and was retried would redo *every* line,
+  // including the one that already genuinely succeeded. Now a retry
+  // recomputes the same operation ids, finds the ones already marked
+  // complete, skips them, and only actually attempts the ones that never
+  // finished last time.
+  //
+  // Two different kinds of failure can happen per operation, and they must
+  // still be told apart:
   //  - A *data* problem (no matching experience session, an unresolvable
   //    honey choice) is logged and skipped — retrying the identical
   //    webhook would fail identically every time, so it can't block the
@@ -193,13 +217,10 @@ export async function POST(request: NextRequest) {
   //    might well succeed if attempted again. hadTransientFailure records
   //    that at least one occurred; the whole delivery is answered with a
   //    non-2xx below so Shopify retries it, and is deliberately NOT marked
-  //    processed, so the retry can actually attempt the work again rather
-  //    than silently losing the stock/booking update for good. (A retry
-  //    does mean any *other* line item that already succeeded this pass
-  //    gets attempted again too — accepted here since the alternative,
-  //    permanently dropping a real stock/booking update, is worse; per-line
-  //    idempotency would close that gap but is a larger change than this
-  //    fix calls for.)
+  //    processed, so the retry can actually attempt the work again. A
+  //    retry now only re-attempts the operations that actually failed —
+  //    every operation that already completed is skipped via its own
+  //    marker, closing the gap the previous per-line-item-only guard left.
   let hadTransientFailure = false
 
   for (const line of order.line_items ?? []) {
@@ -210,16 +231,28 @@ export async function POST(request: NextRequest) {
         const match = await findExperienceSessionByDate(sessionDate)
         if (!match) {
           console.error(
-            `order-paid webhook: order ${order.name} — no experience session found for date "${sessionDate}" (from "${line.title}")`
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — no experience session found for date "${sessionDate}" (from "${line.title}")`
           )
           continue
         }
+        const operationId = buildOperationId([
+          webhookId,
+          'experience',
+          line.id,
+          match.session._key,
+        ])
         const result = await incrementSessionPlacesBooked(
+          operationId,
           match.docId,
           match.session._key,
-          line.quantity
+          line.quantity,
+          { webhookId, orderId: order.id, orderName: order.name, lineItemId: String(line.id) }
         )
-        if (result.outcome === 'insufficient_capacity') {
+        if (result.outcome === 'alreadyCompleted') {
+          console.log(
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — operation ${operationId} skipped (duplicate, already completed)`
+          )
+        } else if (result.outcome === 'insufficient_capacity') {
           // A genuine overbooking conflict, not a transient problem: the
           // customer has already paid (Shopify confirmed this order) but
           // there's no place left — someone else's booking won the same
@@ -227,9 +260,13 @@ export async function POST(request: NextRequest) {
           // time, so this must not set hadTransientFailure; instead it's
           // logged loudly and recorded durably for a human to refund or
           // otherwise accommodate. See docs/technical-architecture.md,
-          // "Experience booking concurrency".
+          // "Experience booking concurrency". incrementSessionPlacesBooked
+          // itself records this outcome under `operationId`, so a later
+          // retry of this exact operation resolves to `alreadyCompleted`
+          // above instead of re-detecting (and this recording again) the
+          // identical conflict.
           console.error(
-            `OVERBOOKING CONFLICT — order-paid webhook: order ${order.name} — requested ${line.quantity} place(s) for "${line.title}" on ${sessionDate}, only ${result.placesRemaining} actually available. Customer has already paid — needs manual follow-up.`
+            `OVERBOOKING CONFLICT — order-paid webhook: order ${order.name} (webhook ${webhookId}, operation ${operationId}) — requested ${line.quantity} place(s) for "${line.title}" on ${sessionDate}, only ${result.placesRemaining} actually available. Customer has already paid — needs manual follow-up.`
           )
           await recordBookingConflict({
             orderId: order.id,
@@ -239,11 +276,15 @@ export async function POST(request: NextRequest) {
             placesRequested: line.quantity,
             placesRemaining: result.placesRemaining,
           })
+        } else {
+          console.log(
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — operation ${operationId} completed (booked ${line.quantity} place(s) for "${line.title}")`
+          )
         }
       } catch (error) {
         hadTransientFailure = true
         console.error(
-          `order-paid webhook: order ${order.name} — transient failure recording experience booking for "${line.title}": ${errorMessage(error)}`
+          `order-paid webhook: order ${order.name} (webhook ${webhookId}) — retryable failure recording experience booking for "${line.title}": ${errorMessage(error)}`
         )
       }
       continue
@@ -252,29 +293,70 @@ export async function POST(request: NextRequest) {
     const jarsPerHamper = parseHamperJarCount(line.title)
     if (jarsPerHamper === null) continue
 
+    // Resolving the tally itself can throw — "Surprise selection" fetches
+    // live honey stock from Sanity/Shopify (pickSurpriseHoney) to pick a
+    // candidate, a real network call independent of any single honey's
+    // own deduction below. A failure here must be treated as retryable,
+    // same as a failure deducting stock, not silently swallowed.
+    let tally: HoneyTally[]
     try {
-      const tally = await resolveHoneyTally(line, jarsPerHamper)
-      if (tally.length === 0) {
-        console.error(
-          `order-paid webhook: order ${order.name} — couldn't resolve a honey selection for "${line.title}" (variant "${line.variant_title}")`
+      tally = await resolveHoneyTally(line, jarsPerHamper)
+    } catch (error) {
+      hadTransientFailure = true
+      console.error(
+        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — retryable failure resolving honey selection for "${line.title}": ${errorMessage(error)}`
+      )
+      continue
+    }
+    if (tally.length === 0) {
+      console.error(
+        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — couldn't resolve a honey selection for "${line.title}" (variant "${line.variant_title}")`
+      )
+      continue
+    }
+
+    for (const { honeyName, jars } of tally) {
+      const totalJars = jars * line.quantity
+      const operationId = buildOperationId([webhookId, 'hamper', line.id, honeyName])
+
+      if (await isOperationCompleted(operationId)) {
+        console.log(
+          `order-paid webhook: order ${order.name} (webhook ${webhookId}) — operation ${operationId} skipped (duplicate, already completed)`
         )
         continue
       }
 
-      for (const { honeyName, jars } of tally) {
-        const totalJars = jars * line.quantity
-        const adjusted = await deductHoneyStock(honeyName, totalJars)
-        if (!adjusted) {
+      try {
+        // Shopify's own idempotent mutation key (see admin-inventory.ts)
+        // is what actually closes the race for two near-simultaneous
+        // duplicate deliveries — this Sanity marker is the fast
+        // skip-and-log layer on top of that, checked before ever calling
+        // Shopify.
+        const adjusted = await deductHoneyStock(honeyName, totalJars, operationId)
+        await markOperationCompleted(operationId, {
+          operationType: 'hamper-deduction',
+          webhookId,
+          orderId: order.id,
+          orderName: order.name,
+          lineItemId: String(line.id),
+          outcome: adjusted ? 'completed' : 'insufficient-stock',
+          detail: `${totalJars} jar(s) of ${honeyName} from "${line.title}"`,
+        })
+        if (adjusted) {
+          console.log(
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — operation ${operationId} completed (deducted ${totalJars} jar(s) of ${honeyName})`
+          )
+        } else {
           console.error(
-            `order-paid webhook: order ${order.name} — couldn't adjust stock for "${honeyName}" (${totalJars} jars from "${line.title}")`
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}, operation ${operationId}) — couldn't adjust stock for "${honeyName}" (${totalJars} jars from "${line.title}")`
           )
         }
+      } catch (error) {
+        hadTransientFailure = true
+        console.error(
+          `order-paid webhook: order ${order.name} (webhook ${webhookId}) — retryable failure on operation ${operationId} ("${honeyName}", ${totalJars} jars from "${line.title}"): ${errorMessage(error)}`
+        )
       }
-    } catch (error) {
-      hadTransientFailure = true
-      console.error(
-        `order-paid webhook: order ${order.name} — transient failure processing "${line.title}": ${errorMessage(error)}`
-      )
     }
   }
 

@@ -3,26 +3,24 @@
 Nothing in this list can be done on your behalf — account creation and payment details must go
 through you directly, in your own browser. This is what unblocks each roadmap phase.
 
-## 1. GitHub (unblocks: safe collaboration, PR review, Vercel deploys)
+## 1. GitHub (unblocks: safe collaboration, PR review, Vercel deploys) — DONE
 
-1. Create a free GitHub account if you don't have one.
-2. Create a new **private** repository, e.g. `gert-lush-honey`.
-3. Tell me the repo URL — I'll push this codebase to it (you'll need to approve that push).
+*(Corrected 2026-09-15 — this was still phrased as a pending ask; the repo has been created and
+pushed to for weeks, with regular commits since.)* The codebase is pushed to a private GitHub
+repo (`origin/master`). Keep committing and pushing as work lands, per the project's normal
+git workflow.
 
-## 2. Vercel (unblocks: a live preview URL)
+## 2. Vercel (unblocks: a live preview URL) — DONE
 
-1. Create a Vercel account (can sign up with the GitHub account above — free tier is fine to
-   start).
-2. Import the GitHub repo as a new Vercel project.
-3. That alone gives you a live `*.vercel.app` preview URL of exactly what exists today — the
-   foundation shell, nothing more yet.
+*(Corrected 2026-09-15 — this described only "the foundation shell, nothing more yet"; the
+project is long past that.)* The GitHub repo is imported as a Vercel project and deploying the
+real, current site — not a foundation shell — on every push.
 
-## 3. Domain (unblocks: your real URL, e.g. gertlushhoney.co.uk)
+## 3. Domain (unblocks: your real URL, e.g. gertlushhoney.co.uk) — DONE
 
-1. Register the domain through any UK registrar (123-reg, Namecheap, Google Domains successor,
-   etc.) — this is a purchase, so it's one you make yourself.
-2. Once registered, tell me the domain name and I'll give you the exact DNS records to point it
-   at Vercel.
+*(Corrected 2026-09-15.)* gertlushhoney.co.uk is registered and pointed at the live Vercel
+deployment. The site is reachable there now, still sitting behind the temporary site-wide
+password gate (item 12 below) ahead of public launch.
 
 ## 4. Shopify (unblocks: Phase 3 — real products, basket, checkout) — DONE 2026-08-09
 
@@ -45,8 +43,13 @@ below for reference/future products, corrected after actually going through this
 4. The Headless channel shows the token as a plain 32-character hex string with **no prefix
    shown** (unlike the old `shpss_...`-prefixed tokens) — don't be thrown by that; it's still the
    right value. A `shpat_...`-prefixed value anywhere in this flow is an **Admin API** token,
-   never the right one for `SHOPIFY_STOREFRONT_ACCESS_TOKEN` — this build never uses Admin API
-   access at all.
+   never the right one for `SHOPIFY_STOREFRONT_ACCESS_TOKEN`. *(Corrected 2026-09-15 — this
+   step used to go on to say "this build never uses Admin API access at all," which is no
+   longer true and contradicted item 10 below even at the time: a separate, narrow, server-only
+   Admin API integration exists for hamper stock deduction and restock/newsletter customer
+   tagging, via its own separate `SHOPIFY_ADMIN_CLIENT_ID`/`SHOPIFY_ADMIN_CLIENT_SECRET`
+   credentials — never the Storefront token, and never reachable from the browser. See item 10
+   and `docs/technical-architecture.md`, "Security boundaries.")*
 5. Copy the storefront's token and the store domain (`your-store.myshopify.com`) into
    `.env.local` as `SHOPIFY_STOREFRONT_ACCESS_TOKEN` and `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN`.
 6. **Turn off the storefront password** before expecting real customers to reach checkout:
@@ -255,6 +258,14 @@ off.
 
 ## What's already unblocked, needing nothing from you
 
-The current codebase (Phase 0) required none of the above — it's designed to run and be tested
-entirely on mocked/placeholder data. Everything above is only needed as we move into Phases
-2 onward.
+*(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required
+none of the above... designed to run entirely on mocked/placeholder data," which described an
+early state the project has long since moved past.)* Most items above are marked **DONE** and
+are in active use with real credentials — real Shopify store, real Sanity project, real domain,
+real email. What genuinely still needs action from you: item 6 (food-business registration),
+item 7 (legal content review — the Privacy Notice's factual claims were brought up to date
+2026-09-14, but it has **not** been legally reviewed or approved), item 11's ongoing review
+habit (approving submitted reviews in Sanity Studio), and item 14 (company registration/VAT).
+The codebase still degrades gracefully to mocked/static content if a credential is ever missing
+or misconfigured — that fallback behaviour is a resilience feature now, not the project's
+actual day-to-day state.

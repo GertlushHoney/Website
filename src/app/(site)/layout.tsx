@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { Analytics } from '@vercel/analytics/next'
 import { Manrope, Fraunces } from 'next/font/google'
 import { SiteHeader } from '@/components/layout/site-header'
@@ -80,6 +81,9 @@ const organizationJsonLd = {
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const initialCart = await getCart()
   const newsletterPopup = await getNewsletterPopup()
+  // Same nonce middleware.ts put on the Content-Security-Policy header —
+  // see json-ld.tsx for why this is required, not optional.
+  const nonce = (await headers()).get('x-nonce') ?? undefined
 
   return (
     <html
@@ -90,6 +94,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
       <body className="bg-ink text-porcelain flex min-h-full flex-col font-sans">
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <CartProvider initialCart={initialCart}>

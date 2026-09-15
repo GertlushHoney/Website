@@ -639,6 +639,49 @@ require either Vercel's custom-events API or a different tool, and — unlike pa
 - All external input (forms) validated server-side manually (see "Form submission architecture"
   — no Zod, despite an earlier plan to use it) regardless of client-side validation.
 
+## Security header policy (2026-09-15)
+
+`src/middleware.ts` sets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+`Referrer-Policy: strict-origin-when-cross-origin`, a `Permissions-Policy` disabling every browser
+feature this site doesn't use, and `Strict-Transport-Security` (only over an already-HTTPS
+connection) on every response, gate or no gate.
+
+**Content-Security-Policy is scoped, not universal.** The public site gets a real, tested policy:
+`script-src 'self' 'nonce-<per-request>'`, `style-src 'self' 'unsafe-inline'` (inline `style="..."`
+attributes are used throughout the shop carousel/tile components — CSP has no practical
+nonce/hash mechanism for style *attributes*, so this is the standard, deliberate trade-off; a much
+lower-severity relaxation than allowing it for scripts), `img-src` allowing `cdn.sanity.io` and
+`cdn.shopify.com` alongside `'self'` (the browser only ever requests same-origin `/_next/image`
+for `<Image>`, but these are kept as a safety margin against a future `unoptimized` image),
+`frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. **`/studio`
+and `/tools` (and their APIs) deliberately get no CSP at all** — Sanity Studio is a large
+third-party admin SPA with real-time collaboration, direct asset uploads, and its own styling
+engine, and getting its CSP requirements wrong would silently break the client's actual
+content-editing tool. Both paths already sit behind their own Basic Auth gate (see below), which
+is the real defence for this internal-only, never-customer-facing surface.
+
+The nonce is generated once per request and forwarded to the page render via an `x-nonce` request
+header, so `JsonLd` (`src/components/seo/json-ld.tsx`) and the homepage's inline Organization
+`<script>` can read the exact value Next.js also reads off the response header to nonce its own
+framework scripts — without this, every JSON-LD block would be silently stripped in production.
+
+Two things only apply in `NODE_ENV === 'development'`, confirmed by testing rather than assumed:
+`'unsafe-eval'` in `script-src` (React's Fast Refresh/dev-mode component-stack reconstruction
+genuinely calls `eval()`; React's own error text confirms production never does), and
+`https://va.vercel-scripts.com` (`@vercel/analytics`'s `<Analytics/>` component only requests this
+site's own `/_vercel/insights/script.js` in production — under `next dev` it unconditionally loads
+a real external debug script instead, confirmed by reading its source). Neither ships.
+
+`upgrade-insecure-requests` is likewise only sent over an already-HTTPS connection, for a reason
+found by actually testing against real WebKit (Playwright's `mobile-safari` project), not by
+inspection: sending it unconditionally broke every JS/CSS chunk load under Safari's engine against
+the plain-HTTP local dev server — Safari takes "upgrade to https" literally even for `localhost`,
+where nothing listens on 443, so every subresource failed with an SSL error and the page never
+hydrated. Chromium treats `localhost` as a secure context and never hit this. See
+`src/middleware.test.ts` for the full test coverage (headers present on every route, the nonce
+forwarded matching the one enforced, the `/studio`/`/tools` CSP exemption, and both dev-only
+relaxations).
+
 ## Pre-launch and permanent access control
 
 Two independent HTTP Basic Auth gates in `src/middleware.ts`, checked by request path:

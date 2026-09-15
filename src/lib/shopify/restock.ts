@@ -1,6 +1,11 @@
 'use server'
 
-import { shopifyAdminFetch, isShopifyAdminConfigured, ShopifyAdminError } from './admin-client'
+import {
+  shopifyAdminFetch,
+  isShopifyAdminConfigured,
+  ShopifyAdminError,
+  quoteShopifySearchValue,
+} from './admin-client'
 import { getClientIp, isRateLimited } from '@/lib/rate-limit'
 import { getActiveProductNameByShopifyHandle } from '@/lib/sanity/active-product-lookup'
 
@@ -52,7 +57,7 @@ async function findCustomerIdByEmail(email: string): Promise<string | null> {
         }
       }
     `,
-    variables: { query: `email:${email}` },
+    variables: { query: `email:${quoteShopifySearchValue(email)}` },
   })
   return data.customers.edges[0]?.node.id ?? null
 }

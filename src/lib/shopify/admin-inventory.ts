@@ -1,4 +1,9 @@
-import { shopifyAdminFetch, ShopifyAdminError, isShopifyAdminConfigured } from './admin-client'
+import {
+  shopifyAdminFetch,
+  ShopifyAdminError,
+  isShopifyAdminConfigured,
+  quoteShopifySearchValue,
+} from './admin-client'
 
 // Manual stock sync for hampers (see docs/technical-architecture.md,
 // "Hamper stock sync"). A hamper is its own standalone Shopify product, so
@@ -40,7 +45,7 @@ export async function getInventoryItemId(honeyName: string): Promise<string | nu
         }
       }
     `,
-    variables: { query: `title:'${honeyName.replace(/'/g, "\\'")}'` },
+    variables: { query: `title:${quoteShopifySearchValue(honeyName)}` },
   })
   return data.products.edges[0]?.node.variants.edges[0]?.node.inventoryItem.id ?? null
 }

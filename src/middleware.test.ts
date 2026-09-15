@@ -106,6 +106,38 @@ describe('security headers (every route)', () => {
     expect(response.status).not.toBe(401)
     expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
   })
+
+  // The comparison itself moved to a hand-rolled constant-time check
+  // ("ETHICAL HACKER REVIEW" audit, 2026-09-15) since Edge Runtime has no
+  // crypto.timingSafeEqual — these confirm it still behaves like a plain
+  // equality check functionally, covering the length-mismatch branch too
+  // (a wrong-length guess taking a different code path is exactly the
+  // kind of thing that used to leak timing information).
+  test('rejects a wrong password, a wrong username, and a malformed (no colon) credential', async () => {
+    process.env.SITE_PASSWORD_USER = 'user'
+    process.env.SITE_PASSWORD = 'pass'
+    const middleware = await loadMiddleware()
+
+    const wrongPassword = middleware(
+      request('/shop', { headers: { authorization: `Basic ${btoa('user:wrong')}` } })
+    )
+    expect(wrongPassword.status).toBe(401)
+
+    const wrongUsername = middleware(
+      request('/shop', { headers: { authorization: `Basic ${btoa('nope:pass')}` } })
+    )
+    expect(wrongUsername.status).toBe(401)
+
+    const noColon = middleware(
+      request('/shop', { headers: { authorization: `Basic ${btoa('justoneword')}` } })
+    )
+    expect(noColon.status).toBe(401)
+
+    const rightCredentials = middleware(
+      request('/shop', { headers: { authorization: `Basic ${btoa('user:pass')}` } })
+    )
+    expect(rightCredentials.status).not.toBe(401)
+  })
 })
 
 describe('Content-Security-Policy on the public site', () => {

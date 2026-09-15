@@ -345,7 +345,27 @@ export async function POST(request: NextRequest) {
       continue
     }
 
-    for (const { honeyName, jars } of tally) {
+    // The server's own proof that each honey actually named is a real,
+    // active Gert Lush honey — never trust the "Honey selection" cart
+    // property's text for a privileged operation (deducting real Shopify
+    // inventory) just because it happens to parse. "Surprise selection"
+    // already only ever names a honey pickSurpriseHoney chose from real
+    // active stock, so this is a no-op for that path; it's the "Choose
+    // your own" path — raw customer-supplied checkout text, no different
+    // in kind from the "Session date" cart property that turned out to
+    // be exploitable for experience bookings — where this actually
+    // matters. See "TIE HAMPER STOCK DEDUCTION TO A REAL HONEY" audit,
+    // 2026-09-15.
+    const activeHoneyNames = new Set((await getHoneyProducts()).map((honey) => honey.name))
+    const validatedTally = tally.filter(({ honeyName }) => {
+      if (activeHoneyNames.has(honeyName)) return true
+      console.error(
+        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — "${line.title}" named a honey selection ("${honeyName}") that isn't a real, active honey product — skipping this entry rather than deducting an unverified product's stock`
+      )
+      return false
+    })
+
+    for (const { honeyName, jars } of validatedTally) {
       const totalJars = jars * line.quantity
       const operationId = buildOperationId([webhookId, 'hamper', line.id, honeyName])
 

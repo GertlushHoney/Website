@@ -9,6 +9,10 @@ vi.mock('@/lib/shopify/admin-client', () => ({
   shopifyAdminFetch: vi.fn(),
   isShopifyAdminConfigured: vi.fn(() => true),
   ShopifyAdminError: class ShopifyAdminError extends Error {},
+  // Real implementation, not a stub — this is a pure string transform
+  // admin-inventory.ts actually relies on to build its search query, not
+  // something worth mocking away from its real behaviour.
+  quoteShopifySearchValue: (value: string) => `'${value.replace(/'/g, "\\'")}'`,
 }))
 
 function availableQuantityResponse(quantity: number) {

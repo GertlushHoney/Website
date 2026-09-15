@@ -67,8 +67,19 @@ async function commonMocks() {
   const { isOperationCompleted, markOperationCompleted } = await import(
     '@/lib/sanity/webhook-operations'
   )
+  const { getHoneyProducts } = await import('@/lib/sanity/products')
   vi.mocked(isWebhookAlreadyProcessed).mockResolvedValue(false)
   vi.mocked(isOperationCompleted).mockResolvedValue(false)
+  // Default active-honey list for "TIE HAMPER STOCK DEDUCTION TO A REAL
+  // HONEY" (2026-09-15) — every hamper test below names 'Bee S3', the
+  // same fixture honey used throughout this project's own real
+  // test/audit scripts, so this covers them without each one needing to
+  // set it individually. Tests that care about a *different* active-honey
+  // list (surprise-selection stock validation, or the "not a real honey"
+  // rejection case) override this with their own mockResolvedValue.
+  vi.mocked(getHoneyProducts).mockResolvedValue([
+    { name: 'Bee S3', shopifyHandle: 'bee-s3' },
+  ] as Awaited<ReturnType<typeof getHoneyProducts>>)
   return { isWebhookAlreadyProcessed, markWebhookProcessed, isOperationCompleted, markOperationCompleted }
 }
 
@@ -171,6 +182,47 @@ describe('order-paid webhook retry behaviour', () => {
     expect(response.status).toBeGreaterThanOrEqual(500)
     expect(response.status).toBeLessThan(600)
     expect(markWebhookProcessed).not.toHaveBeenCalled()
+  })
+
+  // Core of "TIE HAMPER STOCK DEDUCTION TO A REAL HONEY" (2026-09-15): the
+  // "Honey selection" cart property is customer-supplied checkout text — a
+  // customer (or a script skipping the storefront entirely) could name any
+  // string, not just a real honey. It must never reach deductHoneyStock
+  // unless it's a real, currently-active honeyProduct.
+  it('never deducts stock for a "Honey selection" that is not a real, active honey product', async () => {
+    const { markWebhookProcessed } = await commonMocks()
+    const { parseHamperJarCount, parseHoneySelection } = await import('@/lib/hamper')
+    const { deductHoneyStock } = await import('@/lib/shopify/admin-inventory')
+    vi.mocked(parseHamperJarCount).mockReturnValue(3)
+    vi.mocked(parseHoneySelection).mockReturnValue([
+      { honeyName: 'Definitely Not A Real Honey', jars: 3 },
+    ])
+
+    const { POST } = await import('./route')
+    const order = {
+      id: 101,
+      name: '#1101',
+      line_items: [
+        {
+          id: 1002,
+          title: 'Gift Hamper (3 jars)',
+          quantity: 1,
+          variant_title: 'Choose your own',
+          properties: [{ name: 'Honey selection', value: 'Definitely Not A Real Honey x3' }],
+        },
+      ],
+    }
+    const response = await POST(signedRequest(order))
+    const body = await response.json()
+
+    // A data problem, not a transient one — retrying wouldn't change
+    // anything, so this must still 2xx/mark processed, exactly like the
+    // "no experience session found" and "no honey selection resolved"
+    // cases.
+    expect(response.status).toBe(200)
+    expect(body).toEqual({ ok: true })
+    expect(deductHoneyStock).not.toHaveBeenCalled()
+    expect(markWebhookProcessed).toHaveBeenCalledTimes(1)
   })
 
   it('still returns 2xx and marks processed when a line item fails for a non-transient (data) reason', async () => {

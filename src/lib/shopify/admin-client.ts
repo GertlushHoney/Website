@@ -27,6 +27,22 @@ export function isShopifyAdminConfigured(): boolean {
 
 export class ShopifyAdminError extends Error {}
 
+// Shopify's Admin API `query:` argument (customers(query: ...),
+// products(query: ...)) is a small search DSL, not a plain equality
+// filter — bare terms, AND/OR, and field:value pairs are all parsed out
+// of it. Building one by interpolating a value that ultimately traces
+// back to customer input (an email address on a form, a "Honey
+// selection" cart property) without quoting it turns that DSL into an
+// injection point: a value like `x@y.com OR tag:vip` would search for
+// *any* customer matching either term, not literally that email — see
+// "ETHICAL HACKER REVIEW" audit, 2026-09-15. Wrapping in single quotes
+// (escaping any literal quote in the value first) tells Shopify to treat
+// the whole thing as one literal phrase for the field, the same fix
+// already used for the honey-title lookup this was found alongside.
+export function quoteShopifySearchValue(value: string): string {
+  return `'${value.replace(/'/g, "\\'")}'`
+}
+
 // Module-level cache: reused across requests within the same warm
 // server instance. If a cold start or a different instance handles the
 // next request, it just fetches a fresh token — an occasional extra

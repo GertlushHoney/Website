@@ -31,11 +31,31 @@ const STUDIO_GATED_PREFIXES = [
   '/api/sync-shipping-weights',
 ]
 
+// A best-effort constant-time string comparison for Edge Runtime, which
+// doesn't have Node's crypto.timingSafeEqual (a Node-only API — the
+// webhook route, a real Node.js route rather than Edge middleware, uses
+// the genuine one for its HMAC check). Every call examines the same
+// fixed number of character positions regardless of where the two
+// strings first differ, so how quickly this returns doesn't leak how
+// many leading characters of a guessed password were already correct.
+// Real-world exploitability of a network timing side-channel is already
+// low, but there's no reason this gate should be weaker than the
+// webhook signature check sitting right next to it in this same
+// codebase. See "ETHICAL HACKER REVIEW" audit, 2026-09-15.
+function timingSafeEqualString(a: string, b: string): boolean {
+  const length = Math.max(a.length, b.length, 32)
+  let mismatch = a.length === b.length ? 0 : 1
+  for (let i = 0; i < length; i++) {
+    mismatch |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0)
+  }
+  return mismatch === 0
+}
+
 function isAuthorized(request: NextRequest, username: string, password: string): boolean {
   const auth = request.headers.get('authorization')
   if (!auth?.startsWith('Basic ')) return false
   const [user, pass] = atob(auth.slice(6)).split(':')
-  return user === username && pass === password
+  return timingSafeEqualString(user ?? '', username) && timingSafeEqualString(pass ?? '', password)
 }
 
 function authRequired(realm: string) {

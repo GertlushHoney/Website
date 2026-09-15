@@ -509,6 +509,15 @@ individual deduction is idempotent per honey-per-line-item (see "Per-operation w
 idempotency" above) and uses a deterministic Shopify `@idempotent` mutation key, not a random one
 — a redelivered webhook can never double-deduct the same hamper's honey.
 
+**The "Honey selection" cart property is validated against real, active stock before it's ever
+trusted (2026-09-15).** The webhook used to pass whatever `parseHoneySelection` parsed out of the
+"Choose your own" cart property straight into `deductHoneyStock` — real checkout text, but still
+customer-supplied, no different in kind from the "Session date" property that turned out to be
+exploitable for experience bookings (see below). It now cross-checks every named honey against
+`getHoneyProducts()` (the same real, active list `pickSurpriseHoney` already draws from) before
+ever deducting anything, and skips (logs, doesn't retry) any name that isn't a real active honey.
+See `route.test.ts`, "never deducts stock for a ... that is not a real, active honey product".
+
 **Per-jar vs shared batch codes** — confirmed 2026-08-27 that real jars are numbered individually
 (001, 002, 003…), not sharing one code. A single fixed `batchCode` field would only be accurate for
 jar #1 and wrong for every other jar sold, so it's split into two: `batchCode` (only for a
@@ -674,19 +683,58 @@ Deliberately not done: Renovate or any other third-party dependency bot — Depe
 GitHub and needs no separate account/app installation, matching the general preference in this
 project for not adding a new external account where an existing tool already covers the need.
 
+## Ethical hacker review (2026-09-15)
+
+A deliberate adversarial pass over the live app, not just a code-reading exercise — probed the
+real deployed site's response headers, checked the actual npm audit output, and read Vercel's own
+documentation rather than assuming, in addition to reviewing the code. Three real findings, fixed;
+one suspected issue, investigated and found not to apply here.
+
+**Fixed:**
+
+1. **Hamper honey selection wasn't verified against real stock before deduction** — see "Hamper
+   stock sync" above. The same class of bug as the experience-booking date issue: a
+   customer-settable checkout property trusted for a privileged operation with no cross-check.
+2. **Shopify Admin search-query injection** — `getInventoryItemId` (honey title lookup) and
+   `findCustomerIdByEmail` (restock alert lookup) both built a Shopify Admin `query:` search-DSL
+   string by interpolating a value with little or no escaping. `findCustomerIdByEmail` had none at
+   all: an email like `x@y.com OR tag:vip` would search for *any* customer matching either term,
+   not literally that address, and could tag an unintended customer's record. Both now go through
+   one shared `quoteShopifySearchValue` (`src/lib/shopify/admin-client.ts`) that quotes the whole
+   value as a literal phrase, escaping any embedded quote — closing the DSL-injection path at its
+   one source rather than patching each call site differently.
+3. **The site-wide/Studio Basic Auth check used a plain `===` string comparison** — a timing
+   side-channel, in principle, inconsistent with the webhook route sitting right next to it in
+   this codebase, which correctly uses Node's `crypto.timingSafeEqual` for its HMAC check.
+   Middleware runs in Edge Runtime, which doesn't have that Node API, so `src/middleware.ts` now
+   has its own fixed-iteration constant-time string comparison instead.
+
+**Investigated, found not exploitable here:** rate limiting's per-IP axis (`getClientIp()` in
+`src/lib/rate-limit.ts`) trusts the `x-forwarded-for` header — which would be a real bypass (an
+attacker sending their own X-Forwarded-For to reset which "IP" they appear as) on many hosting
+setups. Checked Vercel's own documentation directly rather than assuming: on Vercel, `x-forwarded-
+for` is overwritten at the edge and external/client-supplied values are **not forwarded** — this is
+an explicit anti-spoofing measure, not an assumption this codebase is making on its own. Confirmed
+live against the real production deployment (no Cloudflare or other proxy in front — `Server:
+Vercel` directly on the response). Would need revisiting if a proxy is ever added in front of
+Vercel (ever CDN'd through Cloudflare, for instance) — Vercel's own docs flag exactly that case.
+
 ## Security boundaries
 
 - `SHOPIFY_STOREFRONT_ACCESS_TOKEN`, `SANITY_API_READ_TOKEN`, `SANITY_API_WRITE_TOKEN`,
   `SITE_PASSWORD`/`SITE_PASSWORD_USER`, and `STUDIO_PASSWORD`/`STUDIO_PASSWORD_USER` are all
   server-only env vars (no `NEXT_PUBLIC_` prefix) — never sent to the client.
-- The Storefront API token is scoped to storefront read/cart-write only. The Shopify Admin API
-  is used for exactly one thing (2026-08-12): tagging a customer with which sold-out product
-  they want a restock alert for (`src/lib/shopify/admin-client.ts`,
-  `src/lib/shopify/restock.ts`), scoped to `read_customers`/`write_customers` only — separate
-  credentials (`SHOPIFY_ADMIN_CLIENT_ID`/`SHOPIFY_ADMIN_CLIENT_SECRET`, exchanged server-side for
-  a short-lived token via OAuth client_credentials, never a long-lived static token), server-only,
-  never referenced from any client-reachable code path. Nothing else in this codebase touches the
-  Admin API.
+- The Storefront API token is scoped to storefront read/cart-write only. The Shopify Admin API is
+  used narrowly and only server-side: tagging a customer with which sold-out product they want a
+  restock alert for (`src/lib/shopify/restock.ts`, 2026-08-12), deducting a honey's real stock when
+  a hamper containing it sells (`src/lib/shopify/admin-inventory.ts`, 2026-09-04 — see "Hamper
+  stock sync" above), and pushing a product's shipping weight (`src/lib/shopify/admin-shipping.ts`).
+  *(Corrected 2026-09-15 — this line used to say "exactly one thing," stale since the hamper-stock
+  workaround was added.)* All three share one client (`src/lib/shopify/admin-client.ts`), scoped to
+  `read_products`/`read_inventory`/`write_inventory`/`read_customers`/`write_customers` only —
+  separate credentials (`SHOPIFY_ADMIN_CLIENT_ID`/`SHOPIFY_ADMIN_CLIENT_SECRET`, exchanged
+  server-side for a short-lived token via OAuth client_credentials, never a long-lived static
+  token), server-only, never referenced from any client-reachable code path.
 - `SANITY_API_WRITE_TOKEN` (2026-08-16) is kept separate from the read-only `SANITY_API_READ_TOKEN`
   for the same reason — narrow, purpose-specific credentials rather than one token doing
   everything. It has Editor (create) permission and is used only by

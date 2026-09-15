@@ -12,6 +12,8 @@ vi.mock('@/lib/shopify/admin-client', () => ({
   isShopifyAdminConfigured: vi.fn(() => true),
   shopifyAdminFetch: vi.fn(),
   ShopifyAdminError: class ShopifyAdminError extends Error {},
+  // Real implementation, not a stub — see admin-inventory.test.ts.
+  quoteShopifySearchValue: (value: string) => `'${value.replace(/'/g, "\\'")}'`,
 }))
 vi.mock('@/lib/rate-limit', () => ({
   getClientIp: vi.fn(async () => '203.0.113.1'),
@@ -108,6 +110,34 @@ describe('subscribeToRestockAlert', () => {
 
     expect(result).toEqual({ ok: true })
     expect(getActiveProductNameByShopifyHandle).toHaveBeenCalledWith('bee-s3')
+  })
+
+  // Core of "ETHICAL HACKER REVIEW" (2026-09-15): Shopify's Admin `query:`
+  // argument is a small search DSL (bare terms, AND/OR, field:value
+  // pairs), not a plain equality filter — building it by interpolating an
+  // email address with no quoting/escaping would let a value like
+  // `x@y.com OR tag:vip` broaden the customer search to match *any* term,
+  // not literally that email, and then have a restock tag added to
+  // whichever unintended customer it happened to match.
+  it('quotes and escapes the email before it ever reaches the Shopify search query', async () => {
+    const { shopifyAdminFetch } = await import('@/lib/shopify/admin-client')
+    vi.mocked(shopifyAdminFetch).mockResolvedValueOnce(findCustomerResponse(null))
+    vi.mocked(shopifyAdminFetch).mockResolvedValueOnce({
+      customerCreate: { customer: { id: 'gid://new' }, userErrors: [] },
+    })
+    const { subscribeToRestockAlert } = await import('./restock')
+
+    const maliciousEmail = "attacker@evil.com' OR tag:vip"
+    await subscribeToRestockAlert(maliciousEmail, 'bee-s3')
+
+    // The very first Shopify call is the customer-lookup search — its
+    // query must be the whole malicious string treated as one quoted
+    // literal, any embedded quote escaped, never left able to close the
+    // quote and inject a bare OR/field term of its own.
+    const [firstCall] = vi.mocked(shopifyAdminFetch).mock.calls
+    expect(firstCall![0].variables).toEqual({
+      query: "email:'attacker@evil.com\\' OR tag:vip'",
+    })
   })
 
   it('still tags an existing customer once past every check', async () => {

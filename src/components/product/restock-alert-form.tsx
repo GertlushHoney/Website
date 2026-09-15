@@ -23,7 +23,7 @@ export function RestockAlertForm({
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const result = await subscribeToRestockAlert(email, productHandle, productName)
+      const result = await subscribeToRestockAlert(email, productHandle)
       if (result.ok) {
         setStatus('success')
       } else {

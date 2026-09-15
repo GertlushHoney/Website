@@ -15,7 +15,11 @@ export const productReview = defineType({
       title: 'Product slug',
       description: 'Matches the product\'s own slug — /shop/[slug].',
       type: 'string',
-      validation: (rule) => rule.required(),
+      // Real enforcement (and the check that this actually names a real,
+      // active product) is server-side in submit-review.ts — this is
+      // Studio-side defence in depth only, since schema validation here
+      // doesn't run against a direct API write.
+      validation: (rule) => rule.required().max(200),
     }),
     defineField({
       name: 'productName',
@@ -28,7 +32,7 @@ export const productReview = defineType({
       name: 'reviewerName',
       title: 'Reviewer name',
       type: 'string',
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().max(100),
     }),
     defineField({
       name: 'rating',

@@ -146,7 +146,7 @@ of N:
   with both traffic *and* catalogue size.
 
 Deliberately **not** cached or batched: anything touching Experience `placesBooked`/session
-availability (`findExperienceSessionByDate`, `getUpcomingExperienceSessions`,
+availability (`findExperienceSession`, `getUpcomingExperienceSessions`,
 `incrementSessionPlacesBooked`) — caching real-time capacity would reintroduce exactly the
 overbooking race "Experience booking concurrency" (below) was written to close. The postcode map
 page was reviewed too and needed no change: it already does one `getHoneyProducts()` call and
@@ -263,7 +263,7 @@ wrong.
 
 1. Read the document's current `_rev` and the specific session's real `placesTotal`/`placesBooked`
    fresh, right now — never reuse a value read earlier in the request (e.g. from
-   `findExperienceSessionByDate`, called moments before by the webhook to locate the session).
+   `findExperienceSession`, called moments before by the webhook to locate the session).
 2. If the requested quantity doesn't fit in what's actually left, refuse immediately — returned as
    `{ outcome: 'insufficient_capacity', placesRequested, placesRemaining }`, not thrown, since this
    is a genuine final state (retrying the identical webhook resolves the same way every time), not
@@ -305,6 +305,23 @@ mean reserving a place *before* payment — either giving each session real Shop
 (a structural change: one variant/inventory item per bookable date, decremented at checkout instead
 of after) or a short-lived hold created at "Add to basket" and released if checkout doesn't
 complete — genuinely bigger changes than this fix, not attempted here without being asked for.
+
+**Identifying which session a booking belongs to — tied to the paid product, not just a date
+(2026-09-15).** `findExperienceSession` (`src/lib/sanity/experience-booking.ts`) is what the
+`order-paid` webhook calls to turn a line item's "Session date" cart property into a specific
+Sanity document/session to credit. Matching by date alone used to be explicitly accepted as an
+interim shortcut — fine with exactly one active Experience, but genuinely ambiguous the moment a
+second one exists with an overlapping date, and worse: cart line-item properties are
+customer-settable, so nothing stopped someone attaching experience B's session date onto a line
+item for experience A (or any unrelated product) and getting booked against a session they never
+actually paid for. The fix confirms the match against the Shopify **product** the line item was
+actually paid for (`line.product_id` from the webhook payload — Shopify's own record of what was
+purchased, not something a cart-attribute change can alter afterwards), resolved to a GID and
+compared against each date-matching candidate's real Shopify product (via `getProductByHandle` on
+its `shopifyHandle`, the Storefront API, no new Admin API dependency). A date match against the
+wrong product is rejected outright, never silently honoured. See `src/lib/sanity/
+experience-booking.test.ts` for the exact exploit scenario (a date match on a product that wasn't
+paid for) and the two-experiences-same-date disambiguation case, both under test.
 
 ## Per-operation webhook idempotency (2026-09-14)
 
@@ -618,6 +635,44 @@ require either Vercel's custom-events API or a different tool, and — unlike pa
   deployments) → production.
 - Secrets live in Vercel project environment variables, never committed. `.env.example`
   documents required names with no values.
+
+## Dependency monitoring (2026-09-15)
+
+Set up after finding the Next.js 16.3.0 critical RCE and the sharp 0.35.3 libheif advisory by
+hand, checking versions manually against published advisories — the whole point of this section
+is that this project should never again depend on someone happening to notice. Three layers, each
+catching something the others don't:
+
+1. **GitHub Dependabot alerts** — real-time, the moment an advisory is published, regardless of
+   any schedule below. This is a **repository setting** (Settings → Code security → Dependabot
+   alerts + Dependabot security updates), not a file in this repo — nothing here can flip it on
+   from the outside. **Still needs enabling by whoever owns the GitHub repo** — see
+   `docs/launch-checklist.md`.
+2. **`.github/dependabot.yml`** — weekly (Monday), grouped minor/patch version-update PRs for npm
+   dependencies, plus the GitHub Actions versions in the workflows below (a stale pinned action
+   can carry its own vulnerabilities too). A major version bump gets its own ungrouped PR, since
+   those are the ones actually worth a real look before merging.
+3. **`.github/workflows/ci.yml`** — typecheck, lint, unit tests, and a real production build on
+   every push/PR (including Dependabot's own PRs — "security update testing" means the bump
+   actually has to pass the real suite, not just have a higher version number), plus `npm audit`:
+   a full report always visible in the run's summary regardless of severity, and a hard, blocking
+   failure on anything **critical**. Confirmed `next build` succeeds with zero credentials
+   configured, so this needs no secrets provisioned in GitHub Actions at all. Playwright's e2e
+   suite is deliberately **not** run here — it exercises the real, live Shopify/Sanity backends by
+   design (no mocked network layer), which would mean putting real production credentials into
+   GitHub Actions secrets; left for whoever holds those accounts to decide, not wired up unasked.
+4. **`.github/workflows/dependency-audit.yml`** — a separate scheduled run (Monday 08:00 UTC, plus
+   manual `workflow_dispatch`) so dependency review happens on a fixed cadence even in a quiet
+   week with no PRs at all. Same full-report-always-visible / fail-only-on-critical shape as the
+   CI workflow, for the same reason: the 14 moderate + 4 high pre-existing findings this project
+   can't immediately fix (mostly Sanity build-tooling, not this app's own code — check with
+   `npm audit` for the current list) would otherwise make every run permanently red, which is how
+   a real new critical finding stops being noticed. A failed scheduled run is itself the alert —
+   GitHub emails repo watchers automatically, no extra notification wiring needed.
+
+Deliberately not done: Renovate or any other third-party dependency bot — Dependabot is native to
+GitHub and needs no separate account/app installation, matching the general preference in this
+project for not adding a new external account where an existing tool already covers the need.
 
 ## Security boundaries
 

@@ -33,7 +33,7 @@ vi.mock('@/lib/shopify/admin-inventory', () => ({
   deductHoneyStock: vi.fn(),
 }))
 vi.mock('@/lib/sanity/experience-booking', () => ({
-  findExperienceSessionByDate: vi.fn(),
+  findExperienceSession: vi.fn(),
   incrementSessionPlacesBooked: vi.fn(),
   recordBookingConflict: vi.fn(),
 }))
@@ -301,6 +301,7 @@ describe('experience booking concurrency', () => {
       line_items: [
         {
           id: 3001,
+          product_id: 555,
           title: 'Meet the Bees Experience',
           quantity,
           variant_title: null,
@@ -312,9 +313,9 @@ describe('experience booking concurrency', () => {
 
   it('books successfully and marks the webhook processed', async () => {
     const { markWebhookProcessed } = await commonMocks()
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked, recordBookingConflict } =
+    const { findExperienceSession, incrementSessionPlacesBooked, recordBookingConflict } =
       await import('@/lib/sanity/experience-booking')
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 8 },
     })
@@ -326,6 +327,11 @@ describe('experience booking concurrency', () => {
 
     expect(response.status).toBe(200)
     expect(body).toEqual({ ok: true })
+    // Core of "TIE EXPERIENCE BOOKINGS TO THE PAID PRODUCT" (2026-09-15):
+    // the route must resolve the line's real product_id (555) into the
+    // same GID shape findExperienceSession expects, not just pass the
+    // date through on its own.
+    expect(findExperienceSession).toHaveBeenCalledWith('gid://shopify/Product/555', '2026-10-04')
     expect(incrementSessionPlacesBooked).toHaveBeenCalledWith(
       expect.any(String),
       'experience-doc',
@@ -337,11 +343,43 @@ describe('experience booking concurrency', () => {
     expect(markWebhookProcessed).toHaveBeenCalledTimes(1)
   })
 
+  it('skips a "Session date" line with no product_id at all, rather than assuming it is safe to book', async () => {
+    const { markWebhookProcessed } = await commonMocks()
+    const { findExperienceSession, incrementSessionPlacesBooked } = await import(
+      '@/lib/sanity/experience-booking'
+    )
+
+    const orderWithoutProductId = {
+      id: 301,
+      name: '#1301',
+      line_items: [
+        {
+          id: 3002,
+          product_id: null,
+          title: 'Meet the Bees Experience',
+          quantity: 1,
+          variant_title: null,
+          properties: [{ name: 'Session date', value: '2026-10-04' }],
+        },
+      ],
+    }
+
+    const { POST } = await import('./route')
+    const response = await POST(signedRequest(orderWithoutProductId))
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual({ ok: true })
+    expect(findExperienceSession).not.toHaveBeenCalled()
+    expect(incrementSessionPlacesBooked).not.toHaveBeenCalled()
+    expect(markWebhookProcessed).toHaveBeenCalledTimes(1)
+  })
+
   it('records a durable conflict and still marks processed — a paid overbooking is not retryable', async () => {
     const { markWebhookProcessed } = await commonMocks()
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked, recordBookingConflict } =
+    const { findExperienceSession, incrementSessionPlacesBooked, recordBookingConflict } =
       await import('@/lib/sanity/experience-booking')
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 10 },
     })
@@ -375,9 +413,9 @@ describe('experience booking concurrency', () => {
 
   it('treats a thrown error (e.g. retries exhausted under contention) as transient and does not mark processed', async () => {
     const { markWebhookProcessed } = await commonMocks()
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked, recordBookingConflict } =
+    const { findExperienceSession, incrementSessionPlacesBooked, recordBookingConflict } =
       await import('@/lib/sanity/experience-booking')
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 8 },
     })
@@ -396,9 +434,9 @@ describe('experience booking concurrency', () => {
 
   it('skips a booking already completed by an earlier attempt of this exact operation, without recording a duplicate conflict', async () => {
     const { markWebhookProcessed } = await commonMocks()
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked, recordBookingConflict } =
+    const { findExperienceSession, incrementSessionPlacesBooked, recordBookingConflict } =
       await import('@/lib/sanity/experience-booking')
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 8 },
     })
@@ -441,6 +479,7 @@ describe('per-operation idempotency across a partial-failure retry', () => {
         },
         {
           id: 4002,
+          product_id: 555,
           title: 'Meet the Bees Experience',
           quantity: 1,
           variant_title: null,
@@ -454,13 +493,13 @@ describe('per-operation idempotency across a partial-failure retry', () => {
     const { markWebhookProcessed, isOperationCompleted, markOperationCompleted } = await commonMocks()
     const { parseHamperJarCount, parseHoneySelection } = await import('@/lib/hamper')
     const { deductHoneyStock } = await import('@/lib/shopify/admin-inventory')
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked } = await import(
+    const { findExperienceSession, incrementSessionPlacesBooked } = await import(
       '@/lib/sanity/experience-booking'
     )
     vi.mocked(parseHamperJarCount).mockReturnValue(3)
     vi.mocked(parseHoneySelection).mockReturnValue([{ honeyName: 'Bee S3', jars: 3 }])
     vi.mocked(deductHoneyStock).mockResolvedValue(true)
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 8 },
     })
@@ -505,12 +544,12 @@ describe('per-operation idempotency across a partial-failure retry', () => {
     const { markWebhookProcessed, isOperationCompleted } = await commonMocks()
     const { parseHamperJarCount, parseHoneySelection } = await import('@/lib/hamper')
     const { deductHoneyStock } = await import('@/lib/shopify/admin-inventory')
-    const { findExperienceSessionByDate, incrementSessionPlacesBooked } = await import(
+    const { findExperienceSession, incrementSessionPlacesBooked } = await import(
       '@/lib/sanity/experience-booking'
     )
     vi.mocked(parseHamperJarCount).mockReturnValue(3)
     vi.mocked(parseHoneySelection).mockReturnValue([{ honeyName: 'Bee S3', jars: 3 }])
-    vi.mocked(findExperienceSessionByDate).mockResolvedValue({
+    vi.mocked(findExperienceSession).mockResolvedValue({
       docId: 'experience-doc',
       session: { _key: 'session-key', date: '2026-10-04', placesTotal: 10, placesBooked: 8 },
     })

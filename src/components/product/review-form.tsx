@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { submitReview } from '@/lib/sanity/submit-review'
 
-export function ReviewForm({ productSlug, productName }: { productSlug: string; productName: string }) {
+export function ReviewForm({ productSlug }: { productSlug: string }) {
   const [reviewerName, setReviewerName] = useState('')
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -19,7 +19,6 @@ export function ReviewForm({ productSlug, productName }: { productSlug: string; 
     startTransition(async () => {
       const result = await submitReview({
         productSlug,
-        productName,
         reviewerName,
         rating,
         body,

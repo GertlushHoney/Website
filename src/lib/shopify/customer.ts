@@ -2,8 +2,20 @@
 
 import { shopifyFetch, isShopifyConfigured, ShopifyError } from './client'
 import { CUSTOMER_CREATE_MUTATION } from './queries'
+import { getClientIp, isRateLimited } from '@/lib/rate-limit'
 
 export type NewsletterSignupResult = { ok: true } | { ok: false; error: string }
+
+// See "ADD PUBLIC FORM RATE LIMITING" audit, 2026-09-15 — a script calling
+// this action directly can otherwise fire unlimited customerCreate
+// attempts at Shopify, regardless of what the newsletter popup/inline
+// form actually renders. Two axes: one IP retrying with rotating emails,
+// and one email retried across rotating IPs/proxies, each caught
+// independently.
+const NEWSLETTER_IP_WINDOW_MS = 10 * 60 * 1000
+const NEWSLETTER_IP_MAX = 5
+const NEWSLETTER_EMAIL_WINDOW_MS = 60 * 60 * 1000
+const NEWSLETTER_EMAIL_MAX = 3
 
 // Shopify's Storefront API customerCreate mutation always requires a
 // password, even though we only want an email-marketing subscriber, not a
@@ -30,6 +42,24 @@ export async function subscribeToNewsletter(email: string): Promise<NewsletterSi
   }
   if (!isShopifyConfigured()) {
     return { ok: false, error: "Sign-up isn't available right now." }
+  }
+  if (
+    await isRateLimited([
+      {
+        action: 'newsletter-ip',
+        identifier: await getClientIp(),
+        windowMs: NEWSLETTER_IP_WINDOW_MS,
+        max: NEWSLETTER_IP_MAX,
+      },
+      {
+        action: 'newsletter-email',
+        identifier: trimmed.toLowerCase(),
+        windowMs: NEWSLETTER_EMAIL_WINDOW_MS,
+        max: NEWSLETTER_EMAIL_MAX,
+      },
+    ])
+  ) {
+    return { ok: false, error: 'Too many attempts — please try again later.' }
   }
 
   try {

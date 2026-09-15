@@ -95,6 +95,12 @@ vi.mock('@/lib/sanity/write-client', () => ({
   isSanityWriteConfigured: vi.fn(() => true),
   getSanityWriteClient: vi.fn(),
 }))
+vi.mock('@/lib/sanity/client', () => ({
+  sanityFetch: vi.fn(),
+}))
+vi.mock('@/lib/shopify/product', () => ({
+  getProductByHandle: vi.fn(),
+}))
 
 const META = { webhookId: 'webhook-1', orderId: 1, orderName: '#1001', lineItemId: '10' }
 
@@ -259,5 +265,116 @@ describe('incrementSessionPlacesBooked', () => {
       // the race to commit first.
       expect(sharedDoc.placesBooked).toBe(9)
     })
+  })
+})
+
+// Core fix for "TIE EXPERIENCE BOOKINGS TO THE PAID PRODUCT" (2026-09-15):
+// a "Session date" cart property is customer-settable, so matching by
+// date alone would let someone attach experience B's session date onto a
+// line item for experience A (or any other product) and get credited
+// against a session they never actually paid for. findExperienceSession
+// must confirm the resolved candidate's own Shopify product actually
+// matches what was paid for, never fall back to a date-only match.
+describe('findExperienceSession', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  function sessionOn(date: string) {
+    return { _key: `session-${date}`, date, placesTotal: 10, placesBooked: 0 }
+  }
+
+  it('returns null when no experience has a session on that date at all', async () => {
+    const { sanityFetch } = await import('@/lib/sanity/client')
+    vi.mocked(sanityFetch).mockResolvedValue([])
+
+    const { findExperienceSession } = await import('./experience-booking')
+    const result = await findExperienceSession('gid://shopify/Product/1', '2026-11-01')
+
+    expect(result).toBeNull()
+  })
+
+  it('matches when exactly one experience has that date and its real Shopify product is what was paid for', async () => {
+    const { sanityFetch } = await import('@/lib/sanity/client')
+    const { getProductByHandle } = await import('@/lib/shopify/product')
+    vi.mocked(sanityFetch).mockResolvedValue([
+      { _id: 'experience-a', shopifyHandle: 'bee-day-experience', sessions: [sessionOn('2026-11-01')] },
+    ])
+    vi.mocked(getProductByHandle).mockResolvedValue({
+      productId: 'gid://shopify/Product/1',
+    } as never)
+
+    const { findExperienceSession } = await import('./experience-booking')
+    const result = await findExperienceSession('gid://shopify/Product/1', '2026-11-01')
+
+    expect(result).toEqual({ docId: 'experience-a', session: sessionOn('2026-11-01') })
+  })
+
+  // The actual exploit this closes: a customer pays for experience A (or
+  // any unrelated product) but attaches experience B's session date as a
+  // cart line-item property. A date match exists (experience B genuinely
+  // has a session that day), but it must never be honoured, because the
+  // product actually paid for doesn't match.
+  it('rejects a date match against a product that was not actually paid for', async () => {
+    const { sanityFetch } = await import('@/lib/sanity/client')
+    const { getProductByHandle } = await import('@/lib/shopify/product')
+    vi.mocked(sanityFetch).mockResolvedValue([
+      { _id: 'experience-b', shopifyHandle: 'meet-the-bees', sessions: [sessionOn('2026-11-01')] },
+    ])
+    // The paid line item's product resolves to a different Shopify id
+    // than experience B's.
+    vi.mocked(getProductByHandle).mockResolvedValue({
+      productId: 'gid://shopify/Product/999-not-what-was-paid-for',
+    } as never)
+
+    const { findExperienceSession } = await import('./experience-booking')
+    const result = await findExperienceSession('gid://shopify/Product/1', '2026-11-01')
+
+    expect(result).toBeNull()
+  })
+
+  // The literal scenario the previous date-only matching couldn't handle:
+  // two active experiences sharing a session date. Must resolve to the
+  // one the customer actually paid for, not whichever Sanity happens to
+  // return first.
+  it('disambiguates two experiences sharing the same session date by which was actually paid for', async () => {
+    const { sanityFetch } = await import('@/lib/sanity/client')
+    const { getProductByHandle } = await import('@/lib/shopify/product')
+    vi.mocked(sanityFetch).mockResolvedValue([
+      { _id: 'experience-a', shopifyHandle: 'bee-day-experience', sessions: [sessionOn('2026-11-01')] },
+      { _id: 'experience-b', shopifyHandle: 'meet-the-bees', sessions: [sessionOn('2026-11-01')] },
+    ])
+    vi.mocked(getProductByHandle).mockImplementation(async (handle: string) =>
+      ({
+        'bee-day-experience': { productId: 'gid://shopify/Product/1' },
+        'meet-the-bees': { productId: 'gid://shopify/Product/2' },
+      })[handle] as never
+    )
+
+    const { findExperienceSession } = await import('./experience-booking')
+
+    expect(await findExperienceSession('gid://shopify/Product/2', '2026-11-01')).toEqual({
+      docId: 'experience-b',
+      session: sessionOn('2026-11-01'),
+    })
+    expect(await findExperienceSession('gid://shopify/Product/1', '2026-11-01')).toEqual({
+      docId: 'experience-a',
+      session: sessionOn('2026-11-01'),
+    })
+  })
+
+  it('returns null (never a false match) if the Shopify lookup itself comes back empty', async () => {
+    const { sanityFetch } = await import('@/lib/sanity/client')
+    const { getProductByHandle } = await import('@/lib/shopify/product')
+    vi.mocked(sanityFetch).mockResolvedValue([
+      { _id: 'experience-a', shopifyHandle: 'bee-day-experience', sessions: [sessionOn('2026-11-01')] },
+    ])
+    vi.mocked(getProductByHandle).mockResolvedValue(null)
+
+    const { findExperienceSession } = await import('./experience-booking')
+    const result = await findExperienceSession('gid://shopify/Product/1', '2026-11-01')
+
+    expect(result).toBeNull()
   })
 })

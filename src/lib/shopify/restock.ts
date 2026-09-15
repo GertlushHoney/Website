@@ -1,8 +1,25 @@
 'use server'
 
 import { shopifyAdminFetch, isShopifyAdminConfigured, ShopifyAdminError } from './admin-client'
+import { getClientIp, isRateLimited } from '@/lib/rate-limit'
+import { getActiveProductNameByShopifyHandle } from '@/lib/sanity/active-product-lookup'
 
 export type RestockAlertResult = { ok: true } | { ok: false; error: string }
+
+// A real Shopify handle is short and never comes close to this — hitting
+// it only ever means someone is sending something that isn't a handle.
+const PRODUCT_HANDLE_MAX_LENGTH = 200
+
+// See "ADD PUBLIC FORM RATE LIMITING" audit, 2026-09-15 — each call here
+// is a real Shopify Admin API customer lookup plus a create-or-tag
+// mutation, so unlimited direct calls are both API load and admin-side
+// noise (a flood of tagged customers to sift through). The IP cap is
+// higher than the newsletter form's — a genuine customer might reasonably
+// sign up for restock alerts on several different products in one visit.
+const RESTOCK_IP_WINDOW_MS = 10 * 60 * 1000
+const RESTOCK_IP_MAX = 10
+const RESTOCK_EMAIL_WINDOW_MS = 60 * 60 * 1000
+const RESTOCK_EMAIL_MAX = 5
 
 // Tags the Shopify customer with restock:<product-handle> so a store owner
 // can find everyone waiting for a specific product when it comes back — the
@@ -42,18 +59,51 @@ async function findCustomerIdByEmail(email: string): Promise<string | null> {
 
 export async function subscribeToRestockAlert(
   email: string,
-  productHandle: string,
-  productName: string
+  productHandle: string
 ): Promise<RestockAlertResult> {
   const trimmed = email.trim()
+  const handle = productHandle.trim()
   if (!trimmed || !trimmed.includes('@')) {
     return { ok: false, error: 'Enter a valid email address.' }
+  }
+  if (!handle || handle.length > PRODUCT_HANDLE_MAX_LENGTH) {
+    return { ok: false, error: "Couldn't find that product." }
   }
   if (!isShopifyAdminConfigured()) {
     return { ok: false, error: "Restock alerts aren't available right now." }
   }
+  if (
+    await isRateLimited([
+      {
+        action: 'restock-ip',
+        identifier: await getClientIp(),
+        windowMs: RESTOCK_IP_WINDOW_MS,
+        max: RESTOCK_IP_MAX,
+      },
+      {
+        action: 'restock-email',
+        identifier: trimmed.toLowerCase(),
+        windowMs: RESTOCK_EMAIL_WINDOW_MS,
+        max: RESTOCK_EMAIL_MAX,
+      },
+    ])
+  ) {
+    return { ok: false, error: 'Too many attempts — please try again later.' }
+  }
 
-  const tag = restockTag(productHandle)
+  // The server's own proof this handle belongs to a real, active Gert
+  // Lush product — never trust productName (or that productHandle even
+  // refers to anything real) from the client. See "SECURE RESTOCK ALERT
+  // SUBMISSION" audit, 2026-09-15: a client that called this Server
+  // Action directly, bypassing RestockAlertForm entirely, could otherwise
+  // tag a customer with restock:<anything>, regardless of whether Gert
+  // Lush sells it.
+  const productName = await getActiveProductNameByShopifyHandle(handle)
+  if (!productName) {
+    return { ok: false, error: "Couldn't find that product." }
+  }
+
+  const tag = restockTag(handle)
 
   try {
     const existingId = await findCustomerIdByEmail(trimmed)

@@ -30,6 +30,29 @@ export function averageRating(reviews: ProductReview[]): number | null {
   return reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
 }
 
+// The server's own proof that a review's productSlug refers to a real,
+// active Gert Lush product — a honeyProduct or merchProduct sharing the
+// /shop/[slug] URL space (same "try honey first, then merch" order as
+// /shop/[slug]/page.tsx), never the client's say-so. Used by
+// submit-review.ts so a review can't be attributed to a fictional or
+// retired product; also the trusted source for productReview.productName,
+// which is a point-in-time snapshot, not something the client should be
+// trusted to supply. Returns null if no active product matches either
+// type, which submitReview treats as a hard rejection.
+export async function getActiveProductName(slug: string): Promise<string | null> {
+  const honeyName = await sanityFetch<string>(
+    groq`*[_type == "honeyProduct" && slug.current == $slug && active == true][0].name`,
+    { slug }
+  )
+  if (honeyName) return honeyName
+
+  const merchName = await sanityFetch<string>(
+    groq`*[_type == "merchProduct" && slug.current == $slug && active == true][0].name`,
+    { slug }
+  )
+  return merchName ?? null
+}
+
 // Fetches approved reviews for every slug in one Sanity query instead of
 // one query per product — a category listing page (honey or merch) used
 // to call getApprovedReviews once per product via Promise.all, which is

@@ -60,7 +60,7 @@ export async function ReviewsSection({
         </ul>
       )}
 
-      <ReviewForm productSlug={productSlug} productName={productName} />
+      <ReviewForm productSlug={productSlug} />
     </div>
   )
 }

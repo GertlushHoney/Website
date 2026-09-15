@@ -1,0 +1,69 @@
+name: CI
+
+# Runs on every push to master and every PR (including Dependabot's own
+# version-bump PRs) — this is the "security update testing" half of
+# dependency monitoring: a dependency bump is only actually safe once the
+# real test suite and a real production build have run against it, not
+# just because the version number changed. See "ADD AUTOMATED DEPENDENCY
+# MONITORING" audit, 2026-09-15, and docs/technical-architecture.md.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      # Confirmed (2026-09-15) that `next build` succeeds with zero
+      # Shopify/Sanity credentials configured — the codebase's own
+      # "degrade gracefully rather than crash" pattern (see README,
+      # "Getting started") means CI never needs real secrets just to
+      # prove the app still builds. Playwright's e2e suite deliberately
+      # is NOT run here: it exercises the real, live Shopify/Sanity
+      # backends (no mocked network layer, by design — see
+      # docs/technical-architecture.md), which would require provisioning
+      # real production credentials as GitHub Actions secrets. That's a
+      # deliberate choice for whoever holds those accounts to make, not
+      # something to wire up unasked.
+      - name: Production build
+        run: npm run build
+
+      # Non-blocking, full-severity report — every finding is visible in
+      # the run's own log/summary regardless of severity, so moderate/high
+      # issues (e.g. the pre-existing Sanity build-tooling ones this
+      # project can't immediately fix) don't get lost, but they also don't
+      # turn every PR red over something already known and out of this
+      # project's hands.
+      - name: Dependency audit (full report)
+        if: always()
+        run: |
+          echo "## npm audit — full report" >> "$GITHUB_STEP_SUMMARY"
+          npm audit || true
+          npm audit >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+
+      # Blocking, critical-only — the actual gate. A critical, unpatched
+      # vulnerability (the Next.js RCE this project shipped with until the
+      # 2026-09-15 upgrade is exactly the shape of thing this exists to
+      # catch) must fail CI outright, not just get logged somewhere a
+      # human has to go looking for.
+      - name: Dependency audit (blocking — critical only)
+        run: npm audit --audit-level=critical

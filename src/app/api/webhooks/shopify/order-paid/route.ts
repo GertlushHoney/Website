@@ -11,7 +11,7 @@ import {
   type HoneyTally,
 } from '@/lib/hamper'
 import {
-  findExperienceSessionByDate,
+  findExperienceSession,
   incrementSessionPlacesBooked,
   recordBookingConflict,
 } from '@/lib/sanity/experience-booking'
@@ -46,8 +46,18 @@ const HONEY_CHOICE_PROPERTY_NAME = 'Honey selection'
 // under — its value is the raw ISO date, not a display-formatted string,
 // so it matches Sanity's session.date exactly. Detected generically (not
 // tied to a specific product name) so a second Experience works without
-// any webhook changes.
+// any webhook changes. On its own this is NOT enough to identify which
+// experience/session to credit — see the product_id check below and
+// findExperienceSession's own comment.
 const SESSION_DATE_PROPERTY_NAME = 'Session date'
+
+// Turns a webhook's plain numeric product_id into the same GID shape
+// Shopify's Storefront API (and this codebase's ShopifyProduct.productId)
+// uses, so the two are directly comparable without a second lookup just
+// to convert formats.
+function shopifyProductGid(productId: number): string {
+  return `gid://shopify/Product/${productId}`
+}
 
 type ShopifyOrderLineItem = {
   // Shopify's own line item id — stable across retries of the same
@@ -56,6 +66,16 @@ type ShopifyOrderLineItem = {
   // this order. See "Make Shopify order-paid processing fully idempotent"
   // (2026-09-14).
   id: number
+  // The Shopify product actually paid for on this line — Shopify's own
+  // record of what was purchased, set when the order was placed and never
+  // something a cart-attribute/property change can alter after the fact.
+  // Used to confirm an experience booking's session date against the
+  // product that was genuinely bought, not just a customer-settable
+  // property value. See "TIE EXPERIENCE BOOKINGS TO THE PAID PRODUCT"
+  // audit, 2026-09-15. Shopify sets this to null only for a line with no
+  // real product behind it (a manually-added custom line) — never the
+  // case for a real Experience purchase, but handled defensively below.
+  product_id: number | null
   title: string
   quantity: number
   variant_title: string | null
@@ -228,10 +248,20 @@ export async function POST(request: NextRequest) {
 
     if (sessionDate) {
       try {
-        const match = await findExperienceSessionByDate(sessionDate)
+        // No product_id at all means this line isn't tied to a real
+        // Shopify product — never something a genuine Experience purchase
+        // produces, but treated as an unresolvable data problem rather
+        // than assumed-safe, exactly like a date with no matching session.
+        if (line.product_id == null) {
+          console.error(
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — experience line "${line.title}" has a "${SESSION_DATE_PROPERTY_NAME}" property but no product_id, can't confirm what was actually paid for`
+          )
+          continue
+        }
+        const match = await findExperienceSession(shopifyProductGid(line.product_id), sessionDate)
         if (!match) {
           console.error(
-            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — no experience session found for date "${sessionDate}" (from "${line.title}")`
+            `order-paid webhook: order ${order.name} (webhook ${webhookId}) — no experience session found for date "${sessionDate}" on the actual paid product (from "${line.title}", product_id ${line.product_id})`
           )
           continue
         }

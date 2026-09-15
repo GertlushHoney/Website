@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # npm dependencies — the actual point of this file. Weekly matches what
+  # was asked for ("weekly dependency review"), not daily: this is a small
+  # team, not a project that needs to react same-day to a routine minor
+  # bump. A genuinely critical advisory doesn't wait for this schedule
+  # anyway — GitHub's own Dependabot alerts (a separate repo setting, see
+  # docs/technical-architecture.md, "Dependency monitoring") fire as soon
+  # as an advisory is published, regardless of this cadence.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      # Routine patch/minor bumps arrive as one grouped PR instead of a
+      # dozen separate ones for every leaf dependency — a major bump (more
+      # likely to need a real look, not just a merge) still gets its own
+      # PR rather than being folded in.
+      routine-updates:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # Keeps the workflow files below on current, non-deprecated action
+  # versions — a stale pinned action can carry its own vulnerabilities,
+  # the same reasoning as any other dependency.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday

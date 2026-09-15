@@ -256,6 +256,17 @@ kept enabled rather than disabled, since disabling it also stops abandoned-check
 Shop app campaigns — the Privacy Notice was updated to disclose it honestly instead of turning it
 off.
 
+## 17. Enable Dependabot alerts on the GitHub repo (unblocks: real-time vulnerability notification)
+
+The one piece of "ADD AUTOMATED DEPENDENCY MONITORING" (2026-09-15) that genuinely can't be done
+from inside this codebase — it's a per-repository setting, not a file. On github.com: the repo →
+**Settings → Code security** → turn on **Dependabot alerts** and **Dependabot security updates**.
+Everything else (weekly version-update PRs, `npm audit` in CI, a separate scheduled weekly audit)
+is already committed and working without this — see `docs/technical-architecture.md`, "Dependency
+monitoring" — but without this toggle, a newly-published advisory for something already pinned in
+the lockfile (exactly the shape of the Next.js RCE this project shipped with until 2026-09-15)
+won't generate a real-time GitHub alert; it'll only surface at the next scheduled Monday run.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required
@@ -265,7 +276,9 @@ are in active use with real credentials — real Shopify store, real Sanity proj
 real email. What genuinely still needs action from you: item 6 (food-business registration),
 item 7 (legal content review — the Privacy Notice's factual claims were brought up to date
 2026-09-14, but it has **not** been legally reviewed or approved), item 11's ongoing review
-habit (approving submitted reviews in Sanity Studio), and item 14 (company registration/VAT).
+habit (approving submitted reviews in Sanity Studio), item 14 (company registration/VAT), and
+item 17 (turning on GitHub's Dependabot alerts — a repo setting, not something committed code
+can enable on its own).
 The codebase still degrades gracefully to mocked/static content if a credential is ever missing
 or misconfigured — that fallback behaviour is a resilience feature now, not the project's
 actual day-to-day state.

@@ -2,6 +2,7 @@ import { groq } from 'next-sanity'
 import { sanityFetch } from './client'
 import { getSanityWriteClient, isSanityWriteConfigured } from './write-client'
 import { isAlreadyExistsConflict } from './webhook-operations'
+import { getProductByHandle } from '@/lib/shopify/product'
 import type { ExperienceSession } from './merch'
 
 type ExperienceMatch = {
@@ -9,26 +10,55 @@ type ExperienceMatch = {
   session: ExperienceSession
 }
 
-// Finds which Experience has a session on the given date — used by the
-// order-paid webhook to know which Sanity document/session to credit a
-// booking to. Matches by date alone: fine while there's a single active
-// experience (the only one wanted right now), but would need the
-// Shopify product handle disambiguated too if a second experience with
-// overlapping dates is ever added.
-export async function findExperienceSessionByDate(
+type ExperienceCandidate = {
+  _id: string
+  shopifyHandle: string
+  sessions: ExperienceSession[]
+}
+
+// Finds which Experience session an order line item's "Session date" cart
+// property actually belongs to — and, critically, confirms that against
+// the Shopify product the customer actually *paid* for
+// (`paidShopifyProductId`, a GID like the one Sanity's own
+// merchProduct.shopifyHandle resolves to via getProductByHandle), not the
+// date property alone. See "TIE EXPERIENCE BOOKINGS TO THE PAID PRODUCT"
+// audit, 2026-09-15: matching by date alone was fine with only one active
+// experience (the previous state of this codebase, and its own comment
+// said so), but a second experience with an overlapping date would make
+// it genuinely ambiguous — and worse, cart line-item properties are
+// customer-settable, so nothing stopped someone attaching a "Session
+// date" property matching experience B's session onto a line item for
+// experience A (or any other product entirely) and getting credited
+// against the wrong session, without ever paying for it. The Shopify
+// product id on a paid order line is not something cart-attribute
+// manipulation can forge — it reflects what Shopify actually charged for.
+//
+// Filters candidates by date first (cheap, no network call), then
+// resolves each candidate's real Shopify product id and only returns the
+// one that actually matches what was paid for — never falls back to a
+// date-only match if no candidate's product id matches.
+export async function findExperienceSession(
+  paidShopifyProductId: string,
   dateISO: string
 ): Promise<ExperienceMatch | null> {
-  const result = await sanityFetch<{ _id: string; sessions: ExperienceSession[] }[]>(
+  const candidates = await sanityFetch<ExperienceCandidate[]>(
     groq`*[_type == "merchProduct" && category == "experiences" && active == true && count(sessions[date == $date]) > 0] {
       _id,
-      sessions[date == $date]
+      shopifyHandle,
+      "sessions": sessions[date == $date]
     }`,
     { date: dateISO }
   )
-  const match = result?.[0]
-  const session = match?.sessions?.[0]
-  if (!match || !session) return null
-  return { docId: match._id, session }
+
+  for (const candidate of candidates ?? []) {
+    const session = candidate.sessions[0]
+    if (!session) continue
+    const shopifyProduct = await getProductByHandle(candidate.shopifyHandle)
+    if (shopifyProduct?.productId === paidShopifyProductId) {
+      return { docId: candidate._id, session }
+    }
+  }
+  return null
 }
 
 // Bounded — under real contention (two people booking the last place at

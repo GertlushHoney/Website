@@ -7,6 +7,7 @@ import { merchProduct } from './merchProduct'
 import { newsletterPopup } from './newsletterPopup'
 import { processedWebhookEvent } from './processedWebhookEvent'
 import { productReview } from './productReview'
+import { rateLimitBucket } from './rateLimitBucket'
 import { shopTile } from './shopTile'
 import { webhookOperation } from './webhookOperation'
 
@@ -20,6 +21,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     newsletterPopup,
     processedWebhookEvent,
     productReview,
+    rateLimitBucket,
     shopTile,
     webhookOperation,
   ],

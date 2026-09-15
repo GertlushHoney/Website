@@ -1,0 +1,63 @@
+name: Weekly dependency audit
+
+# The "weekly dependency review" and "automatic vulnerability alerts"
+# half of dependency monitoring — separate from ci.yml, which only runs
+# against a push/PR and so would stay silent for weeks at a time if
+# nobody happened to touch package.json. This runs on a fixed schedule
+# regardless of activity, and a failed scheduled run is itself the alert:
+# GitHub emails the run's own history to repo watchers automatically,
+# with no extra notification wiring needed. See "ADD AUTOMATED DEPENDENCY
+# MONITORING" audit, 2026-09-15, and docs/technical-architecture.md.
+#
+# This is deliberately a second, independent layer on top of GitHub's own
+# Dependabot alerts (real-time, the moment an advisory publishes — see the
+# repo's Settings -> Code security page, a toggle this workflow file
+# can't flip on its own) and Dependabot's weekly version-update PRs
+# (dependabot.yml) — three overlapping checks with three different
+# triggers (an advisory being published / a new package version existing
+# / this schedule firing), not three ways of doing the same thing.
+on:
+  schedule:
+    # Monday morning UK time, matching the weekly cadence asked for.
+    # Cron is always UTC — Monday 08:00 UTC is BST/GMT-appropriate for a
+    # UK-run business either way, within an hour.
+    - cron: "0 8 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Full audit report (always visible, never blocks on its own)
+        if: always()
+        run: |
+          echo "## npm audit — $(date -u +%Y-%m-%d)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npm audit >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Outdated packages (informational)
+        if: always()
+        run: |
+          echo "## npm outdated — $(date -u +%Y-%m-%d)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          npm outdated >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # The actual gate. Critical only, same threshold as ci.yml and for
+      # the same reason: pre-existing moderate/high findings this project
+      # can't immediately fix (see the full report above) shouldn't make
+      # this run permanently red and easy to start ignoring — a NEW
+      # critical advisory should be the thing that reliably makes this
+      # fail and sends the notification.
+      - name: Fail on any critical vulnerability
+        run: npm audit --audit-level=critical

@@ -267,6 +267,32 @@ monitoring" — but without this toggle, a newly-published advisory for somethin
 the lockfile (exactly the shape of the Next.js RCE this project shipped with until 2026-09-15)
 won't generate a real-time GitHub alert; it'll only surface at the next scheduled Monday run.
 
+## 18. Add real product handles to the review-nudge link (unblocks: a per-product "leave a review" prompt)
+
+`/thank-you` already shows a generic "Enjoyed your order? We'd love a review" prompt with no setup
+needed — this step makes it name the actual product ("Leave a review for Bee S3"), linking straight
+to that product's real page. Extends the **same** link added in point 9 above (Settings →
+Notifications → Order confirmation → Edit code) — don't add a second link, just append one more
+query param to the existing one:
+
+```html
+{% capture product_handles %}{% for line_item in line_items %}{{ line_item.product.handle }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
+<a href="https://YOUR-DOMAIN/thank-you?order={{ name | url_encode }}&email={{ email | url_encode }}&products={{ product_handles | url_encode }}">
+  Want to know when new postcode honey arrives? Sign up here.
+</a>
+```
+
+`products` is a comma-separated list of the real Shopify handles from that order's line items —
+`/thank-you` resolves each one against Sanity itself (never trusts the URL blindly) and only shows
+a "leave a review" button for the ones that actually match a real, active product; anything that
+doesn't resolve (or the whole param being absent) falls back to the generic prompt, so this is
+optional polish on top of point 9, same as the newsletter link was.
+
+**Note:** a Shopify product's `handle` and this site's own `/shop/{slug}` URL aren't always the
+same string — Bee S3 is a confirmed example (`shopifyHandle: "bees3-honey"`, but `/shop/bee-s3`).
+That's exactly why the resolution happens server-side against Sanity's own `shopifyHandle` field
+rather than assuming the Shopify handle can be used as the URL directly.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required
@@ -278,7 +304,8 @@ item 7 (legal content review — the Privacy Notice's factual claims were brough
 2026-09-14, but it has **not** been legally reviewed or approved), item 11's ongoing review
 habit (approving submitted reviews in Sanity Studio), item 14 (company registration/VAT), and
 item 17 (turning on GitHub's Dependabot alerts — a repo setting, not something committed code
-can enable on its own).
+can enable on its own). Item 18 is optional, not blocking anything — the generic review prompt
+already works with zero setup; it's only there for whoever wants the sharper per-product version.
 The codebase still degrades gracefully to mocked/static content if a credential is ever missing
 or misconfigured — that fallback behaviour is a resilience feature now, not the project's
 actual day-to-day state.

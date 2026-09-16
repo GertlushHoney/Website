@@ -26,3 +26,35 @@ export async function getActiveProductNameByShopifyHandle(
   )
   return merchName ?? null
 }
+
+export type ReviewableProduct = { name: string; slug: string }
+
+// A real order is never anywhere near this many distinct products —
+// caps an arbitrarily long list from a hand-crafted /thank-you URL
+// (see route usage) rather than trusting the query param's length.
+const MAX_REVIEW_NUDGE_HANDLES = 5
+
+// Resolves the handful of Shopify handles from an order-confirmation
+// email link into real, active, reviewable products — used by the
+// post-checkout "leave a review" nudge on /thank-you. Same trust
+// boundary as getActiveProductNameByShopifyHandle above (never assume a
+// URL query param names a real product), batched into one query per
+// document type instead of one round trip per handle.
+export async function getActiveProductsByShopifyHandles(
+  shopifyHandles: string[]
+): Promise<ReviewableProduct[]> {
+  const handles = [...new Set(shopifyHandles)].filter(Boolean).slice(0, MAX_REVIEW_NUDGE_HANDLES)
+  if (handles.length === 0) return []
+
+  const [honeyMatches, merchMatches] = await Promise.all([
+    sanityFetch<ReviewableProduct[]>(
+      groq`*[_type == "honeyProduct" && shopifyHandle in $handles && active == true]{ name, "slug": slug.current }`,
+      { handles }
+    ),
+    sanityFetch<ReviewableProduct[]>(
+      groq`*[_type == "merchProduct" && shopifyHandle in $handles && active == true]{ name, "slug": slug.current }`,
+      { handles }
+    ),
+  ])
+  return [...(honeyMatches ?? []), ...(merchMatches ?? [])]
+}

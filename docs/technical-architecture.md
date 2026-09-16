@@ -39,7 +39,8 @@ src/app/(site)/
   sustainability/            hive-sourcing/equipment page
   delivery/, faqs/, information/
   contact/                   real contact form (src/components/contact/contact-form.tsx)
-  thank-you/                 post-checkout newsletter signup, pre-filled from order confirmation
+  thank-you/                 post-checkout newsletter signup + review nudge, pre-filled from order
+                              confirmation (see "Form submission architecture" below)
   legal/                     privacy, cookies, terms, refund-policy, accessibility
   studio/[[...tool]]/        embedded Sanity Studio (behind its own permanent password gate —
                               see "Pre-launch and permanent access control" below)
@@ -418,6 +419,23 @@ never-actually-built plan that assumed Zod and a CRM provider):
 No CRM/email-marketing provider has been added — Shopify Email (via the Shopify account already
 in use) is what actually sends the newsletter and marketing emails; no separate service like
 Klaviyo was ever needed or added.
+
+**Post-checkout nudges on `/thank-you` (newsletter link 2026-08-12, review nudge 2026-09-16).**
+Checkout happens entirely on Shopify's own domain, and Shopify no longer allows redirecting off
+its own Thank You page — so `/thank-you` is reached via a link placed in the order confirmation
+email's Liquid template instead (`docs/launch-checklist.md` items 9 and 18 have the exact snippet),
+never an automatic redirect. Every query param it reads is optional, since the page must still work
+for someone landing there directly or before the email template is set up:
+
+- `order`, `email` — pre-fill the order number and the newsletter form's email field.
+- `products` — a comma-separated list of the real Shopify handles from that order's line items.
+  `getActiveProductsByShopifyHandles` (`src/lib/sanity/active-product-lookup.ts`) resolves each one
+  against Sanity's own `shopifyHandle` field server-side — the same "never trust the URL, verify
+  against real active product data" pattern as the review/restock trust fixes — and only a handle
+  that resolves gets a "leave a review for X" button, linking to that product's real `/shop/{slug}`
+  (its own `slug`, not assumed to equal the Shopify handle — confirmed different for Bee S3). No
+  match at all (or the param missing) falls back to a generic "leave us a review" prompt linking to
+  `/shop`, so the nudge is never blank.
 
 **Email routing (changed 2026-08-22):** every mailto address across the site moved from a single
 personal Outlook address to role-based addresses on the real `gertlushhoney.co.uk` domain, split

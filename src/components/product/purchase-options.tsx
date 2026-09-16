@@ -189,6 +189,13 @@ export function PurchaseOptions({
     needsHoneyChoice && honeyTally.length > 0
       ? [{ key: HONEY_CHOICE_ATTRIBUTE_KEY, value: formatHoneySelection(honeyTally) }]
       : []
+  // An Experience is a booking, not a physical item — nothing ships, so
+  // every "delivery" mention below (the weight-based pricing line, and
+  // the mailto fallback's "plus delivery" clause) is suppressed for it.
+  // Keyed on the prop being passed at all, not on there currently being a
+  // session to pick — an Experience is still an Experience even in the
+  // rare case it has zero sessions live right now.
+  const isExperience = experienceSessions !== undefined
   const needsSessionChoice = Boolean(experienceSessions && experienceSessions.length > 0)
   const activeSession = needsSessionChoice
     ? experienceSessions!.find((s) => s.key === selectedSessionKey)
@@ -250,9 +257,12 @@ export function PurchaseOptions({
   const subject = isSubscription
     ? `${productLabel} monthly subscription`
     : `${productLabel} order (x${quantity})`
+  const deliveryClause = isExperience
+    ? ''
+    : ` plus delivery (calculated on the actual parcel weight — free over £${FREE_DELIVERY_THRESHOLD_GBP})`
   const body = isSubscription
-    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel} plus delivery (calculated on the actual parcel weight — free over £${FREE_DELIVERY_THRESHOLD_GBP}). I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
-    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix}${sessionSuffix} (${formatGBP(subtotal)} plus delivery, calculated on the actual parcel weight — free over £${FREE_DELIVERY_THRESHOLD_GBP}).`
+    ? `I'd like to subscribe to one ${unitLabel} of ${productLabel}${honeyChoiceSuffix} a month, at ${formatGBP(subscriptionUnitPrice)}/${unitLabel}${deliveryClause}. I understand I can cancel any time with at least ${CANCELLATION_NOTICE_DAYS} days' notice before my next monthly charge.`
+    : `I'd like to order ${quantity} ${unitLabel}${quantity > 1 ? 's' : ''} of ${productLabel}${honeyChoiceSuffix}${sessionSuffix} (${formatGBP(subtotal)}${deliveryClause}).`
   const mailtoHref = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   const beekeeperButton = beekeeper && (
@@ -527,9 +537,11 @@ export function PurchaseOptions({
           </dd>
         </div>
       </dl>
-      <p className="text-porcelain/50 mt-2 text-xs">
-        Delivery calculated at checkout by weight &middot; free over £{FREE_DELIVERY_THRESHOLD_GBP}
-      </p>
+      {!isExperience && (
+        <p className="text-porcelain/50 mt-2 text-xs">
+          Delivery calculated at checkout by weight &middot; free over £{FREE_DELIVERY_THRESHOLD_GBP}
+        </p>
+      )}
       {isSubscription && (
         <p className="text-porcelain/50 mt-1 text-xs">
           No minimum term &middot; cancel any time, with at least {CANCELLATION_NOTICE_DAYS} days&apos;

@@ -109,3 +109,39 @@ describe('PurchaseOptions — surprise hamper stock validation', () => {
     expect(screen.getByText('Which honey?')).toBeInTheDocument()
   })
 })
+
+// An Experience is a booking, not a physical item — nothing ships, so
+// delivery pricing/copy makes no sense on it. See "no delivery charge on
+// experiences" fix, 2026-09-16.
+describe('PurchaseOptions — no delivery messaging on Experiences', () => {
+  it('hides the delivery line for an Experience', () => {
+    render(
+      <PurchaseOptions
+        productName="Bee Day Experience"
+        productHandle="experience-bramble-farm"
+        unitPrice={45}
+        unitLabel="place"
+        variantId="variant-experience"
+        stockCount={10}
+        experienceSessions={[{ key: 'session-1', date: '2027-04-24', placesRemaining: 5 }]}
+      />
+    )
+
+    expect(screen.queryByText(/Delivery calculated at checkout/i)).not.toBeInTheDocument()
+  })
+
+  it('still shows the delivery line for a physical product (honey)', () => {
+    render(
+      <PurchaseOptions
+        productName="Bee S3"
+        productHandle="bee-s3"
+        unitPrice={8}
+        unitLabel="jar"
+        variantId="variant-honey"
+        stockCount={10}
+      />
+    )
+
+    expect(screen.getByText(/Delivery calculated at checkout/i)).toBeInTheDocument()
+  })
+})

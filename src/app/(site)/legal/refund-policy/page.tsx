@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { DraftNotice } from '@/components/legal/draft-notice'
 
 export const metadata: Metadata = {
   title: 'Refund Policy',
@@ -18,11 +17,7 @@ export default function RefundPolicyPage() {
         Cancellations, returns and refunds.
       </h1>
 
-      <div className="mt-8">
-        <DraftNotice />
-      </div>
-
-      <div className="text-porcelain/80 space-y-6 text-base">
+      <div className="text-porcelain/80 mt-8 space-y-6 text-base">
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Who we are</h2>
           <p className="mt-2">

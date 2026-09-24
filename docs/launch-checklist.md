@@ -73,16 +73,26 @@ Per the Food Standards Agency, a food business must register with the local auth
 least 28 days before trading**. This is unrelated to the website build but is a real launch
 blocker per the project pack (source S11) — flagging it now so it isn't discovered late.
 
-## 7. Legal content review
+## 7. Legal content review — DONE 2026-09-24 (Privacy, Cookies, Terms, Refund Policy)
 
-Privacy notice, cookie policy, terms, refund policy, and food-information wording all need review
-by someone qualified to confirm they meet UK requirements (Honey (England) Regulations 2015, UK
-GDPR, Consumer Contracts Regulations 2013, etc.). I can draft first passes once real business
-details exist, but cannot substitute for that review. The Refund Policy (`/legal/refund-policy`,
-added 2026-08-22) explicitly flags one open legal question itself: whether honey qualifies for any
-of the Consumer Contracts Regulations' exemptions to the 14-day cancellation right — needs a
-definite answer from whoever does this review, not just the current honest "hasn't been confirmed"
-hedge.
+Confirmed by the user 2026-09-24: a qualified reviewer has looked at the Privacy Notice, Cookie
+Policy, Terms and Conditions, and Refund Policy and is happy with them. The "Draft — not yet
+legally reviewed" banner has been removed from those four pages (`src/components/legal/
+draft-notice.tsx` is no longer imported by any of them).
+
+**Still open:** the Refund Policy's own specific hedge — "exactly which of [the Consumer
+Contracts Regulations exemptions], if any, apply to a food product like honey hasn't been
+confirmed by a qualified adviser yet" — hasn't been updated with the reviewer's actual
+conclusion, since that's a specific legal answer (does honey qualify for an exemption or not?)
+this build was never told and can't infer from "they're happy with it" alone. Needs the definite
+answer to replace that sentence.
+
+Food-information wording (Honey (England) Regulations 2015 — net quantity, ingredients, storage,
+batch, best-before, infant-honey warning on each product page) was **not** mentioned as part of
+this review and should be treated as still needing it, distinct from the four legal *pages* above.
+
+The Delivery page and the Accessibility Statement (`/delivery`, `/legal/accessibility`) still
+carry the draft banner — not confirmed as reviewed, so left as they were.
 
 ## 8. `/tools` protection — DONE 2026-08-19
 
@@ -300,12 +310,13 @@ none of the above... designed to run entirely on mocked/placeholder data," which
 early state the project has long since moved past.)* Most items above are marked **DONE** and
 are in active use with real credentials — real Shopify store, real Sanity project, real domain,
 real email. What genuinely still needs action from you: item 6 (food-business registration),
-item 7 (legal content review — the Privacy Notice's factual claims were brought up to date
-2026-09-14, but it has **not** been legally reviewed or approved), item 11's ongoing review
-habit (approving submitted reviews in Sanity Studio), item 14 (company registration/VAT), and
-item 17 (turning on GitHub's Dependabot alerts — a repo setting, not something committed code
-can enable on its own). Item 18 is optional, not blocking anything — the generic review prompt
-already works with zero setup; it's only there for whoever wants the sharper per-product version.
+item 7's one remaining open point (the Refund Policy's own honey-exemption hedge needs the
+reviewer's actual answer, and food-information wording on product pages wasn't part of this
+review), item 11's ongoing review habit (approving submitted reviews in Sanity Studio), item 14
+(company registration/VAT), and item 17 (turning on GitHub's Dependabot alerts — a repo setting,
+not something committed code can enable on its own). Item 18 is optional, not blocking anything
+— the generic review prompt already works with zero setup; it's only there for whoever wants the
+sharper per-product version.
 The codebase still degrades gracefully to mocked/static content if a credential is ever missing
 or misconfigured — that fallback behaviour is a resilience feature now, not the project's
 actual day-to-day state.

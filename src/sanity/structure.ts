@@ -15,6 +15,12 @@ const MERCH_CATEGORIES: { title: string; value: string }[] = [
   { title: 'Experiences', value: 'experiences' },
 ]
 
+// Auto-generated internal bookkeeping — never edited by hand, never shown
+// as content on the site, and (unlike experienceBookingConflict) never
+// need a human to act on them. Tucked away here instead of sitting
+// alongside the real content types.
+const OPERATIONAL_LOG_TYPES = ['processedWebhookEvent', 'webhookOperation', 'rateLimitBucket']
+
 export const structure: StructureResolver = (S) =>
   S.list()
     .title('Content')
@@ -37,5 +43,19 @@ export const structure: StructureResolver = (S) =>
               )
             )
         ),
-      ...S.documentTypeListItems().filter((item) => item.getId() !== 'merchProduct'),
+      ...S.documentTypeListItems().filter(
+        (item) => item.getId() !== 'merchProduct' && !OPERATIONAL_LOG_TYPES.includes(item.getId() ?? '')
+      ),
+      S.divider(),
+      S.listItem()
+        .title('Operational Logs')
+        .child(
+          S.list()
+            .title('Operational Logs')
+            .items(
+              S.documentTypeListItems().filter((item) =>
+                OPERATIONAL_LOG_TYPES.includes(item.getId() ?? '')
+              )
+            )
+        ),
     ])

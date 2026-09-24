@@ -51,15 +51,14 @@ export default async function ExperiencesPage() {
 
         <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-xl border p-5 text-center">
           <p className="text-porcelain/70 text-sm">
-            Can&apos;t see a date that suits?{' '}
-            <a
-              href="mailto:sales@gertlushhoney.co.uk?subject=Bee%20Day%20Experience%20-%20other%20dates&body=I'd like to know about other dates for the Bee Day Experience."
-              className="text-comb-gold underline underline-offset-2"
-            >
-              Get in touch
-            </a>{' '}
-            and we&apos;ll see what we can do.
+            Can&apos;t see a date that suits? Get in touch and we&apos;ll see what we can do.
           </p>
+          <a
+            href="mailto:sales@gertlushhoney.co.uk?subject=Bee%20Day%20Experience%20-%20other%20dates&body=I'd like to know about other dates for the Bee Day Experience."
+            className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber mt-4 inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+          >
+            Get in touch
+          </a>
         </div>
       </div>
     )

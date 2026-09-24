@@ -5,6 +5,7 @@ import { structureTool } from 'sanity/structure'
 import { visionTool } from '@sanity/vision'
 import { apiVersion, dataset, projectId } from '@/sanity/env'
 import { schema } from '@/sanity/schemaTypes'
+import { structure } from '@/sanity/structure'
 
 export default defineConfig({
   name: 'gert-lush-honey',
@@ -13,5 +14,5 @@ export default defineConfig({
   projectId: projectId || '',
   dataset,
   schema,
-  plugins: [structureTool(), visionTool({ defaultApiVersion: apiVersion })],
+  plugins: [structureTool({ structure }), visionTool({ defaultApiVersion: apiVersion })],
 })

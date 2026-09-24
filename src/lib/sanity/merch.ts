@@ -117,6 +117,7 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
 export type UpcomingExperienceSession = {
   productSlug: string
   productName: string
+  heroImage: SanityImageSource | null
   key: string
   date: string
   placesRemaining: number
@@ -124,11 +125,17 @@ export type UpcomingExperienceSession = {
 
 export async function getUpcomingExperienceSessions(): Promise<UpcomingExperienceSession[]> {
   const products = await sanityFetch<
-    { name: string; slug: string; sessions: ExperienceSession[] | null }[]
+    {
+      name: string
+      slug: string
+      heroImage: SanityImageSource | null
+      sessions: ExperienceSession[] | null
+    }[]
   >(
     groq`*[_type == "merchProduct" && category == "experiences" && active == true] {
       name,
       "slug": slug.current,
+      heroImage,
       sessions[]{ _key, date, placesTotal, placesBooked }
     }`
   )
@@ -143,6 +150,7 @@ export async function getUpcomingExperienceSessions(): Promise<UpcomingExperienc
         .map((session) => ({
           productSlug: product.slug,
           productName: product.name,
+          heroImage: product.heroImage,
           key: session._key,
           date: session.date,
           placesRemaining: Math.max(0, session.placesTotal - session.placesBooked),

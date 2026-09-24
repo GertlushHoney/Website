@@ -1,4 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
+import { urlForImage } from '@/lib/sanity/image'
 import type { UpcomingExperienceSession } from '@/lib/sanity/merch'
 
 const DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -30,25 +32,37 @@ export function ExperienceCalendar({ sessions }: { sessions: UpcomingExperienceS
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         {sessions.map((session) => {
           const date = new Date(`${session.date}T00:00:00`)
+          const imageUrl = urlForImage(session.heroImage ?? undefined)?.width(500).height(375).url() ?? null
           return (
             <Link
               key={session.key}
               href={`/shop/${session.productSlug}`}
-              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group flex items-center gap-5 overflow-hidden rounded-2xl border p-6 transition focus-visible:outline focus-visible:outline-offset-4"
+              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group overflow-hidden rounded-2xl border transition focus-visible:outline focus-visible:outline-offset-4"
             >
-              <div className="border-honey-amber/50 bg-ink-surface group-hover:border-comb-gold flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border-2 text-center transition">
-                <span className="text-honey-amber text-xs font-semibold tracking-widest">
-                  {DAY_LABELS[date.getDay()]}
-                </span>
-                <span className="font-display text-comb-gold text-3xl leading-none font-bold">
-                  {date.getDate()}
-                </span>
-                <span className="text-porcelain/70 mt-1 text-[10px] font-semibold tracking-widest">
-                  {MONTH_LABELS[date.getMonth()]} {date.getFullYear()}
-                </span>
+              <div className="from-ink-surface to-ink relative aspect-[4/3] bg-gradient-to-b">
+                {imageUrl && (
+                  <Image
+                    src={imageUrl}
+                    alt={session.productName}
+                    fill
+                    sizes="(min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition group-hover:scale-105"
+                  />
+                )}
+                <div className="border-honey-amber/50 bg-ink/80 group-hover:border-comb-gold absolute top-4 left-4 flex h-16 w-16 flex-col items-center justify-center rounded-lg border-2 text-center backdrop-blur-sm transition">
+                  <span className="text-honey-amber text-[10px] font-semibold tracking-widest">
+                    {DAY_LABELS[date.getDay()]}
+                  </span>
+                  <span className="font-display text-comb-gold text-2xl leading-none font-bold">
+                    {date.getDate()}
+                  </span>
+                  <span className="text-porcelain/70 text-[9px] font-semibold tracking-widest">
+                    {MONTH_LABELS[date.getMonth()]}
+                  </span>
+                </div>
               </div>
 
-              <div>
+              <div className="p-6">
                 <p className="text-porcelain text-base font-semibold">{session.productName}</p>
                 <p className="text-porcelain/60 mt-1 text-sm">
                   {session.placesRemaining > 0

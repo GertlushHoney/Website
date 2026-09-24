@@ -75,10 +75,10 @@ const CARDS = [
     title: 'Make your garden more bee friendly',
     description:
       'Practical, research-backed ways to help bees — plant colour and shape, flowering all season, and building a bee hotel for solitary bees.',
-    // No photo yet — none of our real garden/planting shots exist, and this
-    // page doesn't use stock or generated images. A Sanity override can add
-    // one later once a real photo is available.
-    image: null,
+    image: {
+      src: '/images/source/bee-friendly-garden.jpg',
+      alt: 'A bee-friendly cottage garden path bordered with lavender, echinacea and calendula, bumblebees working the flowers',
+    },
   },
   {
     href: '/faqs',

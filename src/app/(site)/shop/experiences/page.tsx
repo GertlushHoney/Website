@@ -50,7 +50,7 @@ export default async function ExperiencesPage() {
         )}
 
         <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-xl border p-5 text-center">
-          <p className="text-porcelain/70 text-sm">
+          <p className="text-porcelain/70 text-base">
             Can&apos;t see a date that suits? Get in touch and we&apos;ll see what we can do.
           </p>
           <a

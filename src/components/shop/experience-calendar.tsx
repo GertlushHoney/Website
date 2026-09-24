@@ -6,14 +6,10 @@ const MONTH_LABELS = [
   'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
 ]
 
-// Regular-hexagon clip-path (point at top-centre/bottom-centre, flat
-// vertical sides) — echoes the hexagon mark on the real jar label rather
-// than a plain calendar grid, which would be mostly empty at this handful
-// of dates a year.
-const HEXAGON_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-
-// Every upcoming date across every active Experience, one per hexagon —
-// clicking a date goes straight to that date's own experience page rather
+// Tile grid, one per upcoming date across every active Experience — matches
+// the card convention used on the other shop category pages (see
+// MerchCategoryListing) rather than the hexagon calendar this replaced.
+// Clicking a date goes straight to that date's own experience page rather
 // than a category grid, since each date belongs to a specific bookable
 // product.
 export function ExperienceCalendar({ sessions }: { sessions: UpcomingExperienceSession[] }) {
@@ -31,39 +27,37 @@ export function ExperienceCalendar({ sessions }: { sessions: UpcomingExperienceS
         {summary}
       </p>
 
-      <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-12">
-        {sessions.map((session, index) => {
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        {sessions.map((session) => {
           const date = new Date(`${session.date}T00:00:00`)
           return (
             <Link
               key={session.key}
               href={`/shop/${session.productSlug}`}
-              className={`group flex w-[140px] flex-col items-center gap-3 ${
-                index % 2 === 1 ? 'sm:mt-10' : ''
-              }`}
+              className="border-ink-line bg-honeycomb-surface hover:border-honey-amber focus-visible:outline-honey-amber group flex items-center gap-5 overflow-hidden rounded-2xl border p-6 transition focus-visible:outline focus-visible:outline-offset-4"
             >
-              <div
-                style={{ clipPath: HEXAGON_CLIP }}
-                className="border-honey-amber/50 bg-honeycomb-surface group-hover:border-comb-gold group-focus-visible:border-comb-gold flex h-[160px] w-[140px] flex-col items-center justify-center border-2 text-center transition group-hover:scale-105"
-              >
+              <div className="border-honey-amber/50 bg-ink-surface group-hover:border-comb-gold flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border-2 text-center transition">
                 <span className="text-honey-amber text-xs font-semibold tracking-widest">
                   {DAY_LABELS[date.getDay()]}
                 </span>
-                <span className="font-display text-comb-gold text-4xl leading-none font-bold">
+                <span className="font-display text-comb-gold text-3xl leading-none font-bold">
                   {date.getDate()}
                 </span>
-                <span className="text-porcelain/70 mt-1 text-xs font-semibold tracking-widest">
+                <span className="text-porcelain/70 mt-1 text-[10px] font-semibold tracking-widest">
                   {MONTH_LABELS[date.getMonth()]} {date.getFullYear()}
                 </span>
               </div>
 
-              <div className="text-center">
-                <p className="text-porcelain text-sm font-semibold">{session.productName}</p>
-                <p className="text-porcelain/60 text-xs">
+              <div>
+                <p className="text-porcelain text-base font-semibold">{session.productName}</p>
+                <p className="text-porcelain/60 mt-1 text-sm">
                   {session.placesRemaining > 0
                     ? `${session.placesRemaining} place${session.placesRemaining === 1 ? '' : 's'} left`
                     : 'Fully booked'}
                 </p>
+                <span className="text-comb-gold mt-2 inline-block text-sm font-semibold">
+                  View details &rarr;
+                </span>
               </div>
             </Link>
           )

@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/shop/experiences' },
 }
 
-// Unlike the other merch categories, Experiences isn't a tile grid of
-// products — it's a calendar of bookable dates (people think in terms of
-// "when", not "which product"), each date linking through to its own
-// experience page. Falls back to the honest "register interest" card below
-// until at least one active Experience with a date exists — moved here
-// from the old /gifts page (removed 2026-08-10, folded into this category
-// tile plus the Stockists page for corporate/event gifting).
+// Unlike the other merch categories, Experiences isn't a grid of products —
+// it's a grid of bookable dates (people think in terms of "when", not
+// "which product"), each date linking through to its own experience page.
+// Falls back to the honest "register interest" card below until at least
+// one active Experience with a date exists — moved here from the old
+// /gifts page (removed 2026-08-10, folded into this category tile plus the
+// Stockists page for corporate/event gifting).
 export default async function ExperiencesPage() {
   const [products, sessions] = await Promise.all([
     getMerchProductsByCategory('experiences'),
@@ -48,6 +48,19 @@ export default async function ExperiencesPage() {
             No dates are currently scheduled — check back soon.
           </p>
         )}
+
+        <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-xl border p-5 text-center">
+          <p className="text-porcelain/70 text-sm">
+            Can&apos;t see a date that suits?{' '}
+            <a
+              href="mailto:sales@gertlushhoney.co.uk?subject=Bee%20Day%20Experience%20-%20other%20dates&body=I'd like to know about other dates for the Bee Day Experience."
+              className="text-comb-gold underline underline-offset-2"
+            >
+              Get in touch
+            </a>{' '}
+            and we&apos;ll see what we can do.
+          </p>
+        </div>
       </div>
     )
   }

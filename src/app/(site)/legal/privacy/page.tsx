@@ -116,8 +116,16 @@ export default function PrivacyPage() {
             Royal Mail&apos;s Click &amp; Drop service to create postage labels, and it receives the
             details of your order from Shopify — your name, delivery address, and the email address
             and phone number you gave at checkout — so we can post your parcel and so Royal Mail
-            can send you tracking updates. Royal Mail handles that information under its own
-            privacy notice.
+            can send you tracking updates. Royal Mail handles that information under its own{' '}
+            <a
+              href="https://www.royalmail.com/gdpr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              privacy notice
+            </a>
+            .
           </p>
           <p className="mt-2">
             If you opt in to marketing emails (see &quot;Marketing emails&quot; above), Shopify

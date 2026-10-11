@@ -112,6 +112,14 @@ export default function PrivacyPage() {
             for how it handles data.
           </p>
           <p className="mt-2">
+            <strong className="text-porcelain">Royal Mail</strong> delivers our parcels. We use
+            Royal Mail&apos;s Click &amp; Drop service to create postage labels, and it receives the
+            details of your order from Shopify — your name, delivery address, and the email address
+            and phone number you gave at checkout — so we can post your parcel and so Royal Mail
+            can send you tracking updates. Royal Mail handles that information under its own
+            privacy notice.
+          </p>
+          <p className="mt-2">
             If you opt in to marketing emails (see &quot;Marketing emails&quot; above), Shopify
             also stores your email address as a subscriber and sends those emails on our behalf
             through Shopify Email — this is separate from, and only happens in addition to, its

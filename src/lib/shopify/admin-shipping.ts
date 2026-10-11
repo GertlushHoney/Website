@@ -58,7 +58,7 @@ export async function syncShippingWeight(
     inventoryItemUpdate: { userErrors: { field: string[] | null; message: string }[] }
   }>({
     query: `
-      mutation SetShippingWeight($id: ID!, $input: InventoryItemUpdateInput!) {
+      mutation SetShippingWeight($id: ID!, $input: InventoryItemInput!) {
         inventoryItemUpdate(id: $id, input: $input) {
           userErrors { field message }
         }

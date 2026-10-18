@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { sanityFetch } from './client'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
+import { galleryProjection, type GalleryPhoto } from './image'
 
 export type HoneySeason = {
   year: string
@@ -37,6 +38,8 @@ export type HoneyProductSummary = {
 }
 
 export type HoneyProductFull = HoneyProductSummary & {
+  // Optional extra photos after heroImage — [] when none are added.
+  gallery: GalleryPhoto[]
   originStory: PortableTextBlock[]
   seasons: HoneySeason[]
   tastingProfile: TastingProfile
@@ -135,6 +138,7 @@ export async function getHoneyProductBySlug(slug: string): Promise<HoneyProductF
     groq`*[_type == "honeyProduct" && slug.current == $slug][0] {
       ${summaryFields},
       originStory,
+      ${galleryProjection},
       "seasons": coalesce(seasons, []),
       tastingProfile,
       "meetsGertLushStandard": meetsGertLushStandard == true,

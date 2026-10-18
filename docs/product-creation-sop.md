@@ -90,7 +90,12 @@ the frame edge; re-crop with more headroom and re-run, don't just push `--end` u
 
 1. Sanity Studio → `/studio` → the relevant document type (Honey Product or Merch Product) →
    Create.
-2. Upload the **feathered** image (from Step 2) as `heroImage`, not the raw original.
+2. Upload the **feathered** image (from Step 2) as `heroImage` (shown in Studio as **Main photo**),
+   not the raw original. The main photo is the one used on shop tiles, search and SEO.
+   - Optional: add extra photos under **More photos** (`gallery`) — they appear after the main
+     photo on the product page, with arrows, thumbnails and swipe on phones. Drag to reorder, and
+     give each a short description for screen readers. To promote one to the main photo, swap it
+     into the Main photo field. A product with no extra photos looks exactly as it always has.
 3. Fill in every required field. Field-by-field notes:
 
 **Honey Product** (`src/sanity/schemaTypes/honeyProduct.ts`):

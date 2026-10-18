@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { galleryField } from './fields/gallery'
 
 // The generic postcode-honey product template. Adding a new real product
 // should only ever require: this document (map link + beekeeper link +
@@ -57,11 +58,13 @@ export const honeyProduct = defineType({
     }),
     defineField({
       name: 'heroImage',
-      title: 'Hero / jar image',
+      title: 'Main photo',
+      description: 'The jar photo used on shop tiles, search and as the first photo on the product page.',
       type: 'image',
       options: { hotspot: true },
       validation: (rule) => rule.required(),
     }),
+    galleryField,
     defineField({
       name: 'weight',
       title: 'Weight / size',

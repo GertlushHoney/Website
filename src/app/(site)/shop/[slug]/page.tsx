@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { PortableText } from 'next-sanity'
 import { ProductTabs } from '@/components/product/product-tabs'
+import { ProductGallery } from '@/components/product/product-gallery'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { ReviewsSection, Stars } from '@/components/product/reviews-section'
 import { GertLushStandardStamp } from '@/components/product/gert-lush-standard-stamp'
@@ -10,7 +11,7 @@ import { MerchProductPage } from '@/components/shop/merch-product-page'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { getHoneyProductBySlug } from '@/lib/sanity/products'
 import { getMerchProductBySlug } from '@/lib/sanity/merch'
-import { urlForImage } from '@/lib/sanity/image'
+import { buildProductGallery, urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle, isProductSoldOut } from '@/lib/shopify/product'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
@@ -60,6 +61,11 @@ export default async function ShopProductPage({
     getApprovedReviews(product.slug),
   ])
   const heroImageUrl = urlForImage(product.heroImage ?? undefined)?.width(1200).height(1200).url()
+  const gallerySlides = buildProductGallery(
+    { image: product.heroImage, alt: `A jar of ${product.name} honey, ${product.tagline}` },
+    product.gallery,
+    product.name
+  )
   const areaName = getAreaNameForCode(product.postcodeCode)
   const averageReviewRating = averageRating(reviews)
 
@@ -290,25 +296,12 @@ export default async function ShopProductPage({
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">
         <div className="flex flex-col gap-4 self-start">
-          <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
-            <div
-              className="absolute inset-0 rounded-2xl"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 50% 45%, rgba(217,150,20,0.16), transparent 60%)',
-              }}
-            />
-            {heroImageUrl && (
-              <Image
-                src={heroImageUrl}
-                alt={`A jar of ${product.name} honey, ${product.tagline}`}
-                fill
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
-              />
-            )}
-          </div>
+          <ProductGallery
+            slides={gallerySlides}
+            productName={product.name}
+            imageClassName="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+            glow
+          />
 
           {averageReviewRating !== null ? (
             <p className="text-porcelain/70 flex items-center justify-center gap-2 text-sm">

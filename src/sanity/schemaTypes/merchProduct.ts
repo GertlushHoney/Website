@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { galleryField } from './fields/gallery'
 
 // For non-honey shop items (candles, soap, hampers, lip balm) — standalone
 // products with no postcode/beekeeper link, unlike `honeyProduct`. Each
@@ -58,11 +59,13 @@ export const merchProduct = defineType({
     }),
     defineField({
       name: 'heroImage',
-      title: 'Product image',
+      title: 'Main photo',
+      description: 'Used on shop tiles, search and as the first photo on the product page.',
       type: 'image',
       options: { hotspot: true },
       validation: (rule) => rule.required(),
     }),
+    galleryField,
     defineField({
       name: 'description',
       title: 'Description',

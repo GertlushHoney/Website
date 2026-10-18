@@ -1,10 +1,10 @@
-import Image from 'next/image'
 import { PortableText } from 'next-sanity'
+import { ProductGallery } from '@/components/product/product-gallery'
 import { PurchaseOptions } from '@/components/product/purchase-options'
 import { ReviewsSection, Stars } from '@/components/product/reviews-section'
 import { getApprovedReviews, averageRating } from '@/lib/sanity/reviews'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
-import { urlForImage } from '@/lib/sanity/image'
+import { buildProductGallery, urlForImage } from '@/lib/sanity/image'
 import { getProductByHandle, isProductSoldOut } from '@/lib/shopify/product'
 import { MERCH_CATEGORY_LABELS, type MerchProduct } from '@/lib/sanity/merch'
 import { getHoneyProducts } from '@/lib/sanity/products'
@@ -25,6 +25,11 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
     getApprovedReviews(product.slug),
   ])
   const imageUrl = urlForImage(product.heroImage ?? undefined)?.width(1000).height(1000).url()
+  const gallerySlides = buildProductGallery(
+    { image: product.heroImage, alt: product.name },
+    product.gallery,
+    product.name
+  )
   const averageReviewRating = averageRating(reviews)
 
   // Live stock per honey, for the per-jar picker's "out of stock" gating —
@@ -83,18 +88,11 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
 
       <div className="mt-8 grid gap-12 lg:grid-cols-2">
         <div className="flex flex-col gap-4 self-start">
-          <div className="from-ink-surface to-ink relative min-h-[420px] rounded-2xl bg-gradient-to-b">
-            {imageUrl && (
-              <Image
-                src={imageUrl}
-                alt={product.name}
-                fill
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
-              />
-            )}
-          </div>
+          <ProductGallery
+            slides={gallerySlides}
+            productName={product.name}
+            imageClassName="object-contain p-10 drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+          />
 
           {averageReviewRating !== null ? (
             <p className="text-porcelain/70 flex items-center justify-center gap-2 text-sm">

@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { sanityFetch } from './client'
 import type { PortableTextBlock } from '@portabletext/types'
 import type { SanityImageSource } from '@sanity/image-url'
+import { galleryProjection, type GalleryPhoto } from './image'
 
 export type MerchCategory = 'candles' | 'hamper' | 'soap' | 'lip-balm' | 'experiences'
 
@@ -47,6 +48,8 @@ export type MerchProduct = MerchProductSummary & {
   // Optional — the real beekeeper running an Experience. Null for
   // everything else, and for an experience with none set yet.
   beekeeper: { name: string; slug: string } | null
+  // Optional extra photos after heroImage — [] when none are added.
+  gallery: GalleryPhoto[]
 }
 
 const summaryFields = groq`
@@ -103,6 +106,7 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
     groq`*[_type == "merchProduct" && slug.current == $slug && active == true][0] {
       ${summaryFields},
       description,
+      ${galleryProjection},
       sessions[]{ _key, date, placesTotal, placesBooked },
       beekeeper -> { name, "slug": slug.current }
     }`,

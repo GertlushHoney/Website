@@ -112,7 +112,7 @@ the frame edge; re-crop with more headroom and re-run, don't just push `--end` u
 | `weight` | e.g. "12oz / 280ml" |
 | `originStory` | Portable text — the "Where it's from" tab content. |
 | `subscriptionPrice` | **Leave empty** unless a real Shopify Selling Plan already exists for this product (Step 1.5) — setting a price here without a real plan just shows a subscription option that falls back to mailto, which is fine, but don't set it thinking it creates the plan. It doesn't; the plan is a Shopify-side thing. |
-| `deliveryPrice` | Defaults to 4.99, override only if genuinely different. |
+| `shippingWeightGrams` | The packed parcel weight in grams. Delivery is calculated at checkout by weight (free over the threshold) — there is no per-product delivery price any more; the old `deliveryPrice` field was retired 2026-09-06. |
 | `seasons` | Optional. Fine to leave empty — the data layer already handles a product with no seasons set (`coalesce(seasons, [])` in `src/lib/sanity/products.ts`). |
 | `active` | **Defaults to `true`.** Turn off if you're not ready to publish yet. |
 
@@ -127,7 +127,7 @@ the frame edge; re-crop with more headroom and re-run, don't just push `--end` u
 | `shopifyHandle` | The exact handle from Step 1. |
 | `heroImage` | The feathered image from Step 2. |
 | `description` | Portable text, shown on the product page. |
-| `deliveryPrice` | Defaults to 4.99. |
+| `shippingWeightGrams` | The packed parcel weight in grams — see the Honey Product row above. |
 | `active` | **Defaults to `false`** for merch products — turn it on explicitly once it's genuinely ready to sell. Until then it just won't appear anywhere, which is the point. |
 
 ## Step 4 — Verify it live

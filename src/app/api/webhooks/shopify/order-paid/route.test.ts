@@ -23,6 +23,16 @@ vi.mock('@/lib/sanity/webhook-operations', async (importOriginal) => {
   }
 })
 
+// webhook-operations (kept real above) imports write-client, which pulls in
+// the whole next-sanity barrel just for createClient. Nothing here reaches a
+// real client — the two functions that would are mocked — and loading
+// next-sanity inside the first test cost several seconds on a cold
+// full-suite run, enough to hit the 5s timeout. Stubbed so it never loads.
+vi.mock('@/lib/sanity/write-client', () => ({
+  isSanityWriteConfigured: vi.fn(() => false),
+  getSanityWriteClient: vi.fn(),
+}))
+
 vi.mock('@/lib/hamper', () => ({
   parseHamperJarCount: vi.fn(),
   parseHoneySelection: vi.fn(),

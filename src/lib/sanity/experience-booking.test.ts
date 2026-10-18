@@ -101,6 +101,12 @@ vi.mock('@/lib/sanity/client', () => ({
 vi.mock('@/lib/shopify/product', () => ({
   getProductByHandle: vi.fn(),
 }))
+// The module under test only needs next-sanity's `groq` tag, a pass-through
+// re-export of the tiny standalone `groq` package. Loading the real
+// next-sanity barrel (Studio, live preview, visual editing) inside the first
+// test cost several seconds on a cold full-suite run — enough to hit the 5s
+// timeout — so it's swapped for the real `groq` alone.
+vi.mock('next-sanity', async () => ({ groq: (await import('groq')).default }))
 
 const META = { webhookId: 'webhook-1', orderId: 1, orderName: '#1001', lineItemId: '10' }
 

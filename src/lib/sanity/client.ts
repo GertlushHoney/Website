@@ -1,5 +1,5 @@
 import { createClient } from 'next-sanity'
-import type { SanityClient, QueryParams } from '@sanity/client'
+import type { SanityClient, QueryParams } from 'next-sanity'
 import { apiVersion, dataset, projectId } from '@/sanity/env'
 
 export function isSanityConfigured(): boolean {

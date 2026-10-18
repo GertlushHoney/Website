@@ -1,5 +1,5 @@
 import { createClient } from 'next-sanity'
-import type { SanityClient } from '@sanity/client'
+import type { SanityClient } from 'next-sanity'
 import { apiVersion, dataset, projectId } from '@/sanity/env'
 
 // Separate from client.ts's read-only client and its own token

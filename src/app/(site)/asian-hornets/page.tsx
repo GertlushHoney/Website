@@ -7,6 +7,12 @@ import { getYellowLeggedHornetUpdate } from '@/lib/national-bee-unit'
 // see src/lib/national-bee-unit.ts.
 export const revalidate = 86400
 
+// The two app-store links are the page's main call to action, so they get the
+// site's primary-button treatment (honey-amber fill, ink text) rather than a
+// faint outline that didn't read as clickable.
+const APP_BUTTON_CLASS =
+  'group bg-honey-amber text-ink hover:bg-comb-gold focus-visible:outline-porcelain flex items-center gap-3 rounded-2xl px-5 py-4 shadow-lg shadow-black/30 transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-4'
+
 export const metadata: Metadata = {
   title: 'Asian Hornets',
   description:
@@ -178,31 +184,38 @@ export default async function AsianHornetsPage() {
               href="https://apps.apple.com/gb/app/asian-hornet-watch/id1161238813"
               target="_blank"
               rel="noopener noreferrer"
-              className="border-ink-line hover:border-honey-amber focus-visible:outline-honey-amber flex items-center gap-3 rounded-xl border p-4 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
+              className={APP_BUTTON_CLASS}
             >
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
-                width="22"
-                height="22"
+                width="28"
+                height="28"
                 fill="currentColor"
                 className="shrink-0"
               >
                 <path d="M16.7 12.4c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1.9-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.6-.9 1-1.7 1.4-2.7-2.5-1-2.7-3.4-2.7-4.1zM14 4.5c.6-.8 1-1.9.9-3-1 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1.1.1 2.2-.6 2.9-1.3z" />
               </svg>
-              <span>Asian Hornet Watch — App Store (iPhone)</span>
+              <span className="flex flex-1 flex-col leading-tight">
+                <span className="text-ink/70 text-xs font-medium">Get Asian Hornet Watch on the</span>
+                <span className="text-base font-bold">App Store</span>
+                <span className="sr-only">(iPhone, opens in a new tab)</span>
+              </span>
+              <span aria-hidden="true" className="text-lg transition-transform group-hover:translate-x-1">
+                &rarr;
+              </span>
             </a>
             <a
               href="https://play.google.com/store/apps/details?id=uk.ac.ceh.hornets"
               target="_blank"
               rel="noopener noreferrer"
-              className="border-ink-line hover:border-honey-amber focus-visible:outline-honey-amber flex items-center gap-3 rounded-xl border p-4 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-2"
+              className={APP_BUTTON_CLASS}
             >
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
-                width="22"
-                height="22"
+                width="28"
+                height="28"
                 fill="currentColor"
                 className="shrink-0"
               >
@@ -211,8 +224,51 @@ export default async function AsianHornetsPage() {
                 <path d="M15.9 15l-2.9-3-9.6 9.6c.4.4 1 .4 1.6 0L15.9 15z" opacity=".5" />
                 <path d="M15.9 9.1l-9-5c-.6-.4-1.2-.4-1.6 0l9.6 9.6 3-2.7z" opacity=".9" />
               </svg>
-              <span>Asian Hornet Watch — Google Play (Android)</span>
+              <span className="flex flex-1 flex-col leading-tight">
+                <span className="text-ink/70 text-xs font-medium">Get Asian Hornet Watch on</span>
+                <span className="text-base font-bold">Google Play</span>
+                <span className="sr-only">(Android, opens in a new tab)</span>
+              </span>
+              <span aria-hidden="true" className="text-lg transition-transform group-hover:translate-x-1">
+                &rarr;
+              </span>
             </a>
+          </div>
+          {/* Scan-to-open codes for someone reading on a computer. Hidden on
+              phones, where you can't scan your own screen and the buttons
+              above already open the store. Generated once with the qrcode
+              package (2026-10-21) and checked to decode to these exact links. */}
+          <div className="mt-3 hidden gap-3 sm:grid sm:grid-cols-2">
+            {[
+              {
+                src: '/images/qr/asian-hornet-watch-app-store.svg',
+                store: 'the App Store',
+                phone: 'iPhone',
+              },
+              {
+                src: '/images/qr/asian-hornet-watch-google-play.svg',
+                store: 'Google Play',
+                phone: 'Android phone',
+              },
+            ].map((code) => (
+              <div
+                key={code.src}
+                className="border-ink-line bg-honeycomb-surface flex items-center gap-4 rounded-2xl border p-4"
+              >
+                <Image
+                  src={code.src}
+                  alt={`QR code linking to Asian Hornet Watch on ${code.store}`}
+                  width={112}
+                  height={112}
+                  unoptimized
+                  className="shrink-0 rounded-lg"
+                />
+                <p className="text-porcelain/70 text-sm">
+                  On a computer? Scan this with your {code.phone}&apos;s camera to open{' '}
+                  {code.store}.
+                </p>
+              </div>
+            ))}
           </div>
           <p className="text-porcelain/70 mt-4 text-sm">
             You can also report online via the{' '}

@@ -1,7 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
-import { yellowLeggedHornetUpdate as update } from '@/lib/national-bee-unit'
+import { getYellowLeggedHornetUpdate } from '@/lib/national-bee-unit'
+
+// Rebuilt at most once a day with the National Bee Unit's latest figures —
+// see src/lib/national-bee-unit.ts.
+export const revalidate = 86400
 
 export const metadata: Metadata = {
   title: 'Asian Hornets',
@@ -10,7 +14,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/asian-hornets' },
 }
 
-export default function AsianHornetsPage() {
+export default async function AsianHornetsPage() {
+  const update = await getYellowLeggedHornetUpdate()
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
       <BackToCategoryLink href="/information" label="Information" />
@@ -46,8 +52,7 @@ export default function AsianHornetsPage() {
           See the live map and full nest list on BeeBase
         </a>
         <p className="text-porcelain/40 mt-2 text-xs">
-          Figures checked against APHA&apos;s National Bee Unit — their site blocks automated
-          fetching, so these are updated by hand rather than pulled live.
+          Figures from APHA&apos;s National Bee Unit, checked once a day.
         </p>
       </div>
 

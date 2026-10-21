@@ -33,7 +33,9 @@ src/app/(site)/
   stockists/                 locator, become-a-stockist
   becoming-a-beekeeper/      supplier-facing beekeeper recruitment page
   become-a-supplier/         bulk-honey supplier enquiry page
-  asian-hornets/             yellow-legged hornet awareness page
+  asian-hornets/             yellow-legged hornet awareness page (UK figures fetched from the
+                             National Bee Unit once a day, hand-checked fallback — see
+                             src/lib/national-bee-unit.ts, 2026-10-21)
   bee-friendly-garden/       pollinator-friendly gardening awareness page
   weddings-events/           wedding/event honey favours (honey-led, soap/candles as an add-on)
   sustainability/            hive-sourcing/equipment page

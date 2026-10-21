@@ -26,8 +26,8 @@ const CARDS = [
     description:
       'A practical guide to getting started — local associations, courses, costs, equipment, and the route to Master Beekeeper.',
     image: {
-      src: '/images/source/bees-on-comb.jpg',
-      alt: 'Honeybees working a frame of comb, close up',
+      src: '/images/source/beekeeper-and-young-helper-at-hives.jpg',
+      alt: 'A beekeeper and a young helper in bee suits working at the hives',
     },
   },
   {

@@ -37,8 +37,8 @@ const CARDS = [
     description:
       'Keep bees and have surplus honey? We buy bulk honey from independent beekeepers across Britain and handle the retail side, so you can stick to the bees.',
     image: {
-      src: '/images/source/beekeeping-experience-bramble-farm.jpg',
-      alt: 'Beekeepers inspecting a frame at the hives on Bramble Farm',
+      src: '/images/source/honey-pour-detail-landscape.jpg',
+      alt: 'Golden honey pouring through a fine mesh strainer',
     },
   },
   {

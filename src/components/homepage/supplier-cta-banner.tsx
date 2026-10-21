@@ -4,15 +4,15 @@ import Link from 'next/link'
 // PREVIEW (2026-08-27) — the real Become a Supplier flow already exists at
 // /become-a-supplier, buried under Information today. This just gives it
 // homepage prominence; no new copy claims beyond what that page already
-// makes. Photo is a real one from Adam's own apiary (Media/Experiences —
-// originally shot for the Bee Day Experience page), not stock.
+// makes. Photo is a real one, not stock (Media/Honey/02-pour-detail-landscape.jpg,
+// swapped in 2026-10-21 at the user's request).
 export function SupplierCtaBanner() {
   return (
     <section className="border-ink-line grid items-stretch border-b lg:grid-cols-2">
       <div className="relative order-2 min-h-[320px] lg:order-1 lg:min-h-[420px]">
         <Image
-          src="/images/source/beekeeping-experience-bramble-farm.jpg"
-          alt="Beekeepers inspecting a frame at the hives on Bramble Farm"
+          src="/images/source/honey-pour-detail-landscape.jpg"
+          alt="Golden honey pouring through a fine mesh strainer"
           fill
           sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"

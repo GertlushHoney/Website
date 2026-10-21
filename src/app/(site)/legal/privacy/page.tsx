@@ -35,16 +35,16 @@ export default function PrivacyPage() {
             basket&quot; adds it to a real, live basket rather than doing anything else.
           </p>
           <p className="mt-2">
-            A few things on this site still just open an email in your own email app, addressed to
-            us, rather than submitting anything to this site — the contact form, and the &quot;Apply
-            to become a supplier&quot; button. The site itself doesn&apos;t capture or store what you
-            type into either; we only receive whatever you choose to send. The same &quot;email
-            instead&quot; fallback also appears on an individual product page if that specific
-            product or subscription hasn&apos;t been fully set up for online checkout yet.
+            The contact form still just opens an email in your own email app, addressed to us,
+            rather than submitting anything to this site — the site itself doesn&apos;t capture or
+            store what you type into it; we only receive whatever you choose to send. The same
+            &quot;email instead&quot; fallback also appears on an individual product page if that
+            specific product or subscription hasn&apos;t been fully set up for online checkout yet.
           </p>
           <p className="mt-2">
-            Separately, this site also has a product review form, a restock-notification signup, and
-            a newsletter signup (including a popup) — each described in its own section below,
+            Separately, this site also has a product review form, a restock-notification signup, a
+            newsletter signup (including a popup), and the &quot;send me the form&quot; boxes on our
+            Become a Supplier and Our Beekeepers pages — each described in its own section below,
             since each collects different information for a different purpose.
           </p>
           <p className="mt-2">
@@ -89,6 +89,26 @@ export default function PrivacyPage() {
             asking. We&apos;ll email you directly and individually when that product is back — not
             through a general marketing send — and you can ask us to remove you at any time by
             emailing us.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Supplier and beekeeper forms</h2>
+          <p className="mt-2">
+            If you enter your email on our Become a Supplier page or in the &quot;Already one of
+            our beekeepers?&quot; box on our Our Beekeepers page, we send that one email to you — a
+            link to our supplier form or our Meet the Beekeeper questions — and a short note to our
+            own inbox saying you asked for it, so we can follow up. It isn&apos;t a marketing
+            signup: we won&apos;t add you to our newsletter for asking. Both emails are sent from
+            our own business email account, run on Microsoft 365, so a copy stays in that account
+            like any email we send.
+          </p>
+          <p className="mt-2">
+            The forms themselves are Microsoft Forms, run by Microsoft in our Microsoft 365 account.
+            Anything you choose to enter there is stored by Microsoft on our behalf and only seen by
+            us. To stop these boxes being misused to email someone who didn&apos;t ask, we also keep
+            a short-lived count of requests against each email address, which we don&apos;t use for
+            anything else.
           </p>
         </section>
 
@@ -156,6 +176,20 @@ export default function PrivacyPage() {
             track how many places are left and flag it if two orders ever conflict over the same
             place. That record holds order numbers and booking details, not your name, email or
             address — those stay in Shopify, as part of the order itself.
+          </p>
+          <p className="mt-2">
+            <strong className="text-porcelain">Microsoft</strong> runs our business email (Microsoft
+            365) and Microsoft Forms, which together handle the supplier and beekeeper forms
+            described above. Microsoft acts as a data processor for that information — see{' '}
+            <a
+              href="https://privacy.microsoft.com/privacystatement"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-comb-gold underline underline-offset-2"
+            >
+              Microsoft&apos;s privacy statement
+            </a>
+            .
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Vercel</strong> hosts this website and provides

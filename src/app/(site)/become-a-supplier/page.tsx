@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { InviteRequestForm } from '@/components/forms/invite-request-form'
 import { BackToCategoryLink } from '@/components/shop/back-to-category-link'
 import { standardCopy } from '@/lib/gert-lush-standard'
 
@@ -75,12 +76,11 @@ export default function BecomeASupplierPage() {
           <li>Any current beekeeping association registration and insurance</li>
           <li>When you&apos;d expect to have honey ready to supply</li>
         </ul>
-        <a
-          href="mailto:suppliers@gertlushhoney.co.uk?subject=Become%20a%20supplier&body=Apiary%20area%3A%0AApproximate%20colonies%3A%0ATypical%20seasonal%20surplus%3A%0AExtraction%2Fstorage%20arrangement%3A%0ARegistration%2Finsurance%3A%0ALikely%20supply%20timing%3A"
-          className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-        >
-          Apply to become a supplier
-        </a>
+        <p className="text-porcelain/70 mt-6 text-sm">
+          Pop your email in and we&apos;ll send you our short supplier form — it covers all of the
+          above.
+        </p>
+        <InviteRequestForm kind="supplier" buttonLabel="Send me the form" />
       </div>
     </div>
   )

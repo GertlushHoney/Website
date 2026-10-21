@@ -303,6 +303,40 @@ same string — Bee S3 is a confirmed example (`shopifyHandle: "bees3-honey"`, b
 That's exactly why the resolution happens server-side against Sanity's own `shopifyHandle` field
 rather than assuming the Shopify handle can be used as the URL directly.
 
+## 19. Website-sent invite emails via Microsoft 365 (unblocks: the "send me the form" boxes)
+
+Added 2026-10-21. The Become a Supplier page and the "Already one of our beekeepers?" box on Our
+Beekeepers now take an email address and send the matching invite email (each links to its
+Microsoft Form), plus a heads-up to `suppliers@` or `admin@`. Mail goes out through Microsoft Graph
+from the business's own Microsoft 365 mailbox — see `docs/technical-architecture.md`, "Invite
+emails (Microsoft 365)". Until all four env vars below are set, both boxes show "This isn't
+available right now — please email us instead" rather than breaking.
+
+1. **Register an app.** entra.microsoft.com → **Identity → Applications → App registrations → New
+   registration**. Name it e.g. "Gert Lush website mail", single tenant, no redirect URI. From its
+   Overview page copy the **Application (client) ID** and **Directory (tenant) ID**.
+2. **Give it permission to send mail.** The app → **API permissions → Add a permission → Microsoft
+   Graph → Application permissions → Mail.Send** → Add, then **Grant admin consent** for the
+   organisation. (Application permission, not Delegated — the website sends without anyone signed
+   in.)
+3. **Create a client secret.** The app → **Certificates & secrets → New client secret**. Copy the
+   **Value** straight away (it's only shown once). Note its expiry date — when it expires, emails
+   stop sending until a new one is created and swapped in.
+4. **Restrict it to the one mailbox.** By default Mail.Send lets the app send as *any* mailbox in the
+   organisation. Lock it down in Exchange Online PowerShell:
+   ```powershell
+   Connect-ExchangeOnline
+   New-DistributionGroup -Name "Website mail senders" -Type Security -Members <mailbox address>
+   New-ApplicationAccessPolicy -AppId <client ID> -PolicyScopeGroupId "Website mail senders" -AccessRight RestrictAccess -Description "Website invite emails only"
+   Test-ApplicationAccessPolicy -AppId <client ID> -Identity <mailbox address>   # should say Granted
+   ```
+5. **Set the env vars** in `.env.local` and Vercel (Production + Preview), then redeploy:
+   `MS_GRAPH_TENANT_ID`, `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_CLIENT_SECRET`, and
+   `MS_GRAPH_SENDER_MAILBOX` — the real mailbox address that `suppliers@`/`admin@` are aliases of
+   (not an alias itself). The aliases go on each email as Reply-To, so replies still land there.
+6. **Test it** by entering your own address in each box: you should get the invite (honeycomb
+   background, gold logo, amber button opening the right form) and the heads-up in the shared inbox.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required

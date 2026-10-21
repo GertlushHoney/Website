@@ -447,11 +447,44 @@ by what the enquiry is about rather than one shared inbox:
 - `sales@` — Stockists, product waitlists, "email to order/subscribe" fallbacks, subscription
   management
 - `suppliers@` — Become a Supplier (split out 2026-08-22, previously shared `sales@`: a beekeeper
-  offering to supply honey is a different kind of contact from someone wanting to buy something)
+  offering to supply honey is a different kind of contact from someone wanting to buy something).
+  Since 2026-10-21 the page sends an invite email instead of opening a mailto — see "Invite emails
+  (Microsoft 365)" below; `suppliers@` and `admin@` are now Reply-To/notification addresses there.
 - `hello@` — the Contact form and Terms page's general legal contact line
 
 All five currently land in one shared inbox via Microsoft 365 aliases (not separate mailboxes) —
 the "To" address is what lets a human triage by eye.
+
+## Invite emails (Microsoft 365) (2026-10-21)
+
+The one place the site itself sends email. Become a Supplier (`/become-a-supplier`) and the
+"Already one of our beekeepers?" box on `/beekeepers` take an email address and send the matching
+invite — the business's own final copy, styled to match the site (honeycomb page, dark card, gold
+logo, amber button), with a button linking to its Microsoft Form — then a short heads-up to
+`suppliers@` (supplier) or `admin@` (beekeeper), Reply-To set to the visitor.
+
+- `src/lib/email/graph-mail.ts` — Microsoft Graph `sendMail` from the business's own Microsoft 365
+  mailbox (`MS_GRAPH_SENDER_MAILBOX`), authenticated with an Entra ID app (application permission
+  `Mail.Send`, restricted to that one mailbox by an Exchange application access policy) via OAuth
+  client_credentials — same shape as the Shopify Admin token exchange. Chosen over a third-party
+  sender (Resend etc.) because the domain's mail already runs on Microsoft 365: no new account, no
+  new DNS records, and sent invites land in the shared inbox's Sent Items. Role addresses are
+  aliases, so they go on as Reply-To rather than From (avoids needing Exchange's send-from-alias).
+- `src/lib/email/invite-emails.ts` — the two templates and the notification. Email-client HTML
+  (tables, inline styles, `bgcolor`, a VML background for Outlook desktop). Images are inline
+  `cid:` attachments from `email-images.ts` (base64 PNGs), so they show without the recipient
+  allowing remote images and don't depend on the site being public.
+- `src/lib/email/invite-requests.ts` — the one Server Action, `requestInviteEmail(kind, email,
+  honeypot)`, following "Form submission architecture" above: stricter email validation than the
+  other forms (the address goes into a real To/Reply-To), the honeypot, and rate limiting tighter
+  than the newsletter's (5/hour per IP, 2/day per email, per kind) — every request sends a real
+  email to whatever address was typed, so without limits the box could be used to mail our invite
+  to someone who never asked. Unconfigured Graph returns a friendly ok:false; a failed heads-up is
+  logged, not shown to the visitor, since their own email already went.
+- `src/components/forms/invite-request-form.tsx` — the shared client form.
+
+Setup steps: `docs/launch-checklist.md` point 19. Privacy Notice section "Supplier and beekeeper
+forms" and the Microsoft entry under "Third parties we use" describe this.
 
 ## Homepage, navigation and trust signals (2026-08-27, independent review response)
 
@@ -757,6 +790,10 @@ Vercel (ever CDN'd through Cloudflare, for instance) — Vercel's own docs flag 
   for the same reason — narrow, purpose-specific credentials rather than one token doing
   everything. It has Editor (create) permission and is used only by
   `src/lib/sanity/submit-review.ts` to create unapproved `productReview` drafts.
+- `MS_GRAPH_CLIENT_SECRET` and friends (2026-10-21) are server-only too, used only by
+  `src/lib/email/graph-mail.ts` to send the invite emails. The Entra app's `Mail.Send` is
+  restricted to the one sending mailbox by an Exchange application access policy, so a leaked
+  secret can't send as anyone else in the tenant.
 - All external input (forms) validated server-side manually (see "Form submission architecture"
   — no Zod, despite an earlier plan to use it) regardless of client-side validation.
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { InviteRequestForm } from '@/components/forms/invite-request-form'
 import { getBeekeepers } from '@/lib/sanity/beekeepers'
 import { urlForImage } from '@/lib/sanity/image'
 
@@ -114,6 +115,21 @@ export default async function BeekeepersPage() {
         More beekeeper profiles will appear here as new postcode honeys join Gert Lush — we
         don&apos;t publish details until they&apos;re confirmed and approved.
       </p>
+
+      <div className="border-ink-line bg-honeycomb-surface mt-8 rounded-2xl border p-8">
+        <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">
+          Already one of our beekeepers?
+        </p>
+        <h2 className="text-porcelain mt-2 text-2xl font-bold tracking-tight">
+          Every jar has a beekeeper behind it.
+        </h2>
+        <p className="text-porcelain/70 mt-4 text-sm">
+          Help us write your Meet the Beekeeper profile. Pop your email in and we&apos;ll send you a
+          few questions to get you talking — and we&apos;ll send the finished profile over for you
+          to check before anything goes on the website.
+        </p>
+        <InviteRequestForm kind="beekeeper" buttonLabel="Send me the questions" />
+      </div>
 
       <div className="border-ink-line bg-honeycomb-surface mt-8 rounded-2xl border p-8">
         <p className="text-comb-gold text-sm font-semibold tracking-wide uppercase">

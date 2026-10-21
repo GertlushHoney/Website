@@ -64,7 +64,21 @@ async function getAccessToken(): Promise<string> {
   })
 
   if (!res.ok) {
-    throw new GraphMailError(`Microsoft Graph token exchange failed: ${res.status}`)
+    // Entra's error body never echoes the secret, only its own AADSTS code
+    // and explanation (e.g. AADSTS7000215 "invalid client secret") — worth
+    // logging, since a bare 401 can't tell a mistyped secret from a wrong
+    // tenant or an expired one.
+    let reason = ''
+    try {
+      const body = (await res.json()) as { error?: string; error_description?: string }
+      const description = body.error_description?.split(/\r?\n/)[0]
+      reason = [body.error, description].filter(Boolean).join(': ')
+    } catch {
+      // Not JSON — the status code alone will have to do.
+    }
+    throw new GraphMailError(
+      `Microsoft Graph token exchange failed: ${res.status}${reason ? ` (${reason})` : ''}`
+    )
   }
 
   const json = (await res.json()) as { access_token: string; expires_in: number }
@@ -110,6 +124,12 @@ export async function sendGraphMail(email: OutgoingEmail): Promise<void> {
 
   // Graph answers a successful sendMail with 202 Accepted and an empty body.
   if (res.status !== 202) {
-    throw new GraphMailError(`Microsoft Graph sendMail failed: ${res.status}`)
+    let code = ''
+    try {
+      code = ((await res.json()) as { error?: { code?: string } }).error?.code ?? ''
+    } catch {
+      // Not JSON — the status code alone will have to do.
+    }
+    throw new GraphMailError(`Microsoft Graph sendMail failed: ${res.status}${code ? ` (${code})` : ''}`)
   }
 }

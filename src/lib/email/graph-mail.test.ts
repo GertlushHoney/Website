@@ -81,11 +81,23 @@ describe('sendGraphMail', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 
-  it('throws when the token exchange or the send is refused', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(jsonResponse({}, 401)))
+  it('throws when the token exchange or the send is refused, with Microsoft’s reason', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValueOnce(
+        jsonResponse(
+          {
+            error: 'invalid_client',
+            error_description:
+              'AADSTS7000215: Invalid client secret provided.\r\nTrace ID: abc Correlation ID: def',
+          },
+          401
+        )
+      )
+    )
     const first = await import('./graph-mail')
     await expect(first.sendGraphMail({ to: 'a@b.com', subject: 's', html: 'h' })).rejects.toThrow(
-      'token exchange failed: 401'
+      'token exchange failed: 401 (invalid_client: AADSTS7000215: Invalid client secret provided.)'
     )
 
     vi.resetModules()
@@ -98,7 +110,7 @@ describe('sendGraphMail', () => {
     )
     const second = await import('./graph-mail')
     await expect(second.sendGraphMail({ to: 'a@b.com', subject: 's', html: 'h' })).rejects.toThrow(
-      'sendMail failed: 403'
+      'sendMail failed: 403 (ErrorAccessDenied)'
     )
   })
 })

@@ -226,7 +226,13 @@ export function InteractiveUkMap({
           ref={containerRef}
           role="group"
           aria-label="Interactive map of UK postcode areas"
-          className="pc-map mx-auto max-w-[460px] lg:mx-0 [&_svg]:h-auto [&_svg]:w-full"
+          className={`pc-map mx-auto max-w-[460px] lg:mx-0 [&_svg]:h-auto [&_svg]:w-full ${
+            // The SVG itself is overflow:visible (see globals.css), so a zoomed
+            // map spills well outside its column — behind the district buttons —
+            // and the area being zoomed on looks off-centre against the page.
+            // Clipping to the frame keeps it centred in a visible box.
+            view === 'district' ? 'border-ink-line overflow-hidden rounded-2xl border' : ''
+          }`}
           dangerouslySetInnerHTML={{ __html: svgMarkup }}
         />
         {view === 'district' && (

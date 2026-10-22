@@ -9,6 +9,7 @@ export type InformationCardPageKey =
   | '/gert-lush-standard'
   | '/asian-hornets'
   | '/bee-friendly-garden'
+  | '/fake-honey'
   | '/faqs'
 
 type RawInformationCard = {

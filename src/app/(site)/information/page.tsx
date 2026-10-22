@@ -81,6 +81,17 @@ const CARDS = [
     },
   },
   {
+    href: '/fake-honey',
+    eyebrow: 'Honey fraud',
+    title: 'Is it really honey?',
+    description:
+      'Why honey is easy to dilute and hard to test, what EU testing found, and what to look for on a label.',
+    image: {
+      src: '/images/source/honey-pour-detail-landscape.jpg',
+      alt: 'Golden honey being poured',
+    },
+  },
+  {
     href: '/faqs',
     eyebrow: 'Common questions',
     title: 'FAQs',

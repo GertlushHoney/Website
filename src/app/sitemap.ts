@@ -27,6 +27,7 @@ const staticRoutes: { path: string; priority: number }[] = [
   { path: '/sustainability', priority: 0.4 },
   { path: '/asian-hornets', priority: 0.4 },
   { path: '/bee-friendly-garden', priority: 0.4 },
+  { path: '/fake-honey', priority: 0.4 },
   { path: '/information', priority: 0.4 },
   { path: '/faqs', priority: 0.5 },
   { path: '/contact', priority: 0.4 },

@@ -21,6 +21,7 @@ export const informationCard = defineType({
           { title: 'The Gert Lush Standard', value: '/gert-lush-standard' },
           { title: 'Asian Hornets', value: '/asian-hornets' },
           { title: 'Bee-Friendly Gardens', value: '/bee-friendly-garden' },
+          { title: 'Is It Really Honey?', value: '/fake-honey' },
           { title: 'FAQs', value: '/faqs' },
         ],
       },

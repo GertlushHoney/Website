@@ -16,7 +16,7 @@ export default function TermsPage() {
         The small print.
       </h1>
 
-      <div className="text-porcelain/80 mt-8 space-y-6 text-base">
+      <div className="text-porcelain/80 mt-8 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Who we are</h2>
           <p className="mt-2">

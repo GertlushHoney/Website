@@ -21,7 +21,7 @@ export default function AccessibilityPage() {
         <DraftNotice />
       </div>
 
-      <div className="text-porcelain/80 space-y-6 text-base">
+      <div className="text-porcelain/80 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Our target</h2>
           <p className="mt-2">

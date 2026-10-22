@@ -325,7 +325,7 @@ export default function FaqsPage() {
                       +
                     </span>
                   </summary>
-                  <div className="text-porcelain/70 mt-3 text-sm">{item.a}</div>
+                  <div className="text-porcelain/70 mt-3 text-sm hyphens-auto sm:text-justify">{item.a}</div>
                 </details>
               ))}
             </div>

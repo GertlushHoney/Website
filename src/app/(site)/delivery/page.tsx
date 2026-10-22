@@ -26,7 +26,7 @@ export default function DeliveryPage() {
         and in the same gert lush condition it left us.
       </p>
 
-      <div className="text-porcelain/80 mt-8 space-y-6 text-base">
+      <div className="text-porcelain/80 mt-8 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
           <h2 className="text-porcelain text-lg font-semibold">UK delivery</h2>
           <p className="mt-2">

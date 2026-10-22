@@ -266,7 +266,11 @@ kept enabled rather than disabled, since disabling it also stops abandoned-check
 Shop app campaigns — the Privacy Notice was updated to disclose it honestly instead of turning it
 off.
 
-## 17. Enable Dependabot alerts on the GitHub repo (unblocks: real-time vulnerability notification)
+## 17. Enable Dependabot alerts on the GitHub repo — DONE (confirmed 2026-10-22)
+
+*GitHub now reports its open-alert count on every push and real Dependabot PRs exist, so this is
+switched on. 16 alerts were open at that date, mostly in the Sanity tooling chain, which is being
+monitored rather than force-upgraded. The original instructions are kept below.*
 
 The one piece of "ADD AUTOMATED DEPENDENCY MONITORING" (2026-09-15) that genuinely can't be done
 from inside this codebase — it's a per-repository setting, not a file. On github.com: the repo →
@@ -337,6 +341,20 @@ available right now — please email us instead" rather than breaking.
 6. **Test it** by entering your own address in each box: you should get the invite (honeycomb
    background, gold logo, amber button opening the right form) and the heads-up in the shared inbox.
 
+## 20. Royal Mail Click & Drop (postage labels) — connected 2026-10, follow-ups open
+
+Click & Drop is connected to Shopify (set up by the owner). Still to do or check:
+
+1. **Weigh every product** (packed, as posted) and send the grams so they can be entered in Sanity
+   and synced to Shopify. Only the two honeys (613 g) are done; until the rest are, checkout
+   postage and Click & Drop's suggested service won't be accurate for them.
+2. **Place a small test order** (e.g. a 100% discount code) and confirm it appears in Click & Drop
+   within about 10 minutes, then cancel it.
+3. **Experiences:** make sure the Bee Day Experience is not marked "This is a physical product" in
+   Shopify, or it may appear in Click & Drop as a parcel.
+4. The Privacy Notice now names Royal Mail (Click & Drop) as a recipient of delivery details —
+   include that paragraph in the next legal review.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required
@@ -347,8 +365,9 @@ real email. What genuinely still needs action from you: item 6 (food-business re
 item 7's one remaining open point (the Refund Policy's own honey-exemption hedge needs the
 reviewer's actual answer, and food-information wording on product pages wasn't part of this
 review), item 11's ongoing review habit (approving submitted reviews in Sanity Studio), item 14
-(company registration/VAT), and item 17 (turning on GitHub's Dependabot alerts — a repo setting,
-not something committed code can enable on its own). Item 18 is optional, not blocking anything
+(company registration/VAT), and item 20 (weigh the remaining products, a Click & Drop test order,
+and legal review of the new Royal Mail privacy paragraph and the new fake-honey and waiting-list
+wording). Item 17 (Dependabot alerts) is done. Item 18 is optional, not blocking anything
 — the generic review prompt already works with zero setup; it's only there for whoever wants the
 sharper per-product version.
 The codebase still degrades gracefully to mocked/static content if a credential is ever missing

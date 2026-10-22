@@ -542,6 +542,42 @@ genuinely shared run-level code, unused today) and `traceabilityFormat` (describ
 pattern without asserting one specific number, e.g. Bee S3's real `"GL-BS3-XXX"` — the actual
 per-jar number is printed on that jar's own physical label, never claimed on the website).
 
+## Postcode map waiting list (2026-10-22)
+
+The "Join the waiting list" control on /postcode-honey (an area or district with no honey yet) used
+to be a `mailto:` link, which does nothing for visitors with no email app set up. It is now an
+email box and button (`src/components/postcode-map/waiting-list-form.tsx`) calling the Server
+Action `joinPostcodeWaitingList(areaCode, email, honeypot)` in `src/lib/email/waiting-list.ts`.
+Same shape as the invite form: strict email check, honeypot, two-axis rate limiting (10/hour per
+IP, 5/day per email). The area code is checked server-side against the real postcode list, so
+calling the action directly can't put arbitrary text in our inbox. It sends one email through
+Microsoft Graph (see "Invite emails" below) to `sales@` with the postcode and the visitor's address
+(Reply-To is the visitor). Nothing is sent to the visitor and **nothing is stored** — the `sales@`
+inbox is the list. It therefore needs the `MS_GRAPH_*` env vars (launch-checklist point 19) set in
+Production; without them it shows "This isn't available right now". The Privacy Notice's "Supplier
+and beekeeper forms" section describes it.
+
+## Sanity Studio navigation (2026-10-22)
+
+`sanity.config.ts` passes a custom structure (`src/sanity/structure.ts`) to the structure tool.
+"Merch Product" opens a sub-menu split by shop category (Candles, Gift Hampers, Soap, Lip Balm,
+Experiences) — keep its category list in sync with the `category` options in `merchProduct.ts`.
+The auto-generated, read-only bookkeeping types (`processedWebhookEvent`, `webhookOperation`,
+`rateLimitBucket`) sit under a separate "Operational Logs" section. `experienceBookingConflict`
+deliberately stays in the main list because a person has to act on it.
+
+## Shipping weights and Royal Mail (2026-10-22)
+
+Delivery is Royal Mail Tracked 48. Labels are bought in Royal Mail Click & Drop, connected to
+Shopify by the owner in Shopify/Click & Drop settings — nothing in this codebase touches label
+creation. Checkout postage is weight-based in Shopify, so each product needs a real packed weight
+in Shopify. The weight lives in Sanity (`shippingWeightGrams`) and is pushed to Shopify's inventory
+item by `/tools/sync-shipping-weights` (`src/lib/shopify/admin-shipping.ts`). That mutation
+declared a GraphQL input type Shopify doesn't have (`InventoryItemUpdateInput`; the real one is
+`InventoryItemInput`) so the tool would have failed for every product — fixed 2026-10-22.
+**Current state:** only the two honeys (Bee S3, Bee S4) have a weight (613 g, set in Sanity and
+Shopify); every other product is still unset until weighed.
+
 ## Hamper stock sync
 
 A hamper (`merchProduct` with `category: 'hamper'`) is its own Shopify product with inventory
@@ -577,6 +613,16 @@ jar #1 and wrong for every other jar sold, so it's split into two: `batchCode` (
 genuinely shared run-level code, unused today) and `traceabilityFormat` (describes the per-jar
 pattern without asserting one specific number, e.g. Bee S3's real `"GL-BS3-XXX"` — the actual
 per-jar number is printed on that jar's own physical label, never claimed on the website).
+
+## Information pages (2026-10-22)
+
+`/information` is a hub of seven tiles (`src/app/(site)/information/page.tsx`; each can be
+overridden from Sanity "Information Hub Card"). `/fake-honey` ("Is it really honey?") is an
+original, sourced explainer: the UK definition and labelling rules, the European Commission's
+2021–22 "From the Hives" results (46% of 320 samples *suspected* non-compliant — framed as
+suspicion, with the Commission's own caveat that testing lags), why kitchen tests don't work, and
+label checks. It deliberately avoids unsourced statistics and makes no claim about how our honey
+is processed or tested. Its Gert Lush Standard sentence uses `standardCopy`.
 
 ## Legal pages
 
@@ -708,8 +754,11 @@ catching something the others don't:
 1. **GitHub Dependabot alerts** — real-time, the moment an advisory is published, regardless of
    any schedule below. This is a **repository setting** (Settings → Code security → Dependabot
    alerts + Dependabot security updates), not a file in this repo — nothing here can flip it on
-   from the outside. **Still needs enabling by whoever owns the GitHub repo** — see
-   `docs/launch-checklist.md`.
+   from the outside. **Confirmed active (checked 2026-10-22):** every push reports GitHub's open
+   alert count and real Dependabot PRs exist. At that date 16 alerts were open (7 high, 9
+   moderate); the earlier fixable ones (nanoid, Vitest) were patched 2026-09-24, and the rest sit
+   in the Sanity CLI/tooling chain, which is deliberately monitored rather than force-upgraded
+   across a risky major version.
 2. **`.github/dependabot.yml`** — weekly (Monday), grouped minor/patch version-update PRs for npm
    dependencies, plus the GitHub Actions versions in the workflows below (a stale pinned action
    can carry its own vulnerabilities too). A major version bump gets its own ungrouped PR, since

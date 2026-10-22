@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { postcodeAreaCodes, postcodeAreaNames } from '@/lib/postcode-areas'
 import { bristolDistricts } from '@/lib/bristol-districts'
 import { bathDistricts } from '@/lib/bath-districts'
+import { WaitingListForm } from './waiting-list-form'
 
 export type ActiveMapProduct = {
   slug: string
@@ -364,20 +365,16 @@ export function InteractiveUkMap({
                 Let us know you&apos;d like honey from here and we&apos;ll get in touch when a
                 beekeeper joins from your area — or if that&apos;s you, get in touch directly.
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <a
-                  href={`mailto:sales@gertlushhoney.co.uk?subject=Postcode%20honey%20interest%20-%20${selectedCode}&body=I'd like to hear about honey from ${encodeURIComponent(areaName ?? selectedCode)} (${selectedCode}) when it's available.`}
-                  className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-block rounded-full border px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-                >
-                  Join the waiting list
-                </a>
+              <WaitingListForm key={selectedCode} areaCode={selectedCode} />
+              <p className="text-porcelain/50 mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-2 text-sm">
+                <span>Keep bees yourself?</span>
                 <Link
                   href="/become-a-supplier"
-                  className="bg-honey-amber text-ink focus-visible:outline-porcelain inline-block rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+                  className="border-porcelain/40 bg-porcelain/10 text-comb-gold hover:bg-porcelain/20 hover:border-porcelain focus-visible:outline-honey-amber inline-flex rounded-full border px-3 py-1 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2"
                 >
                   Become a supplier
                 </Link>
-              </div>
+              </p>
             </>
           )}
         </div>

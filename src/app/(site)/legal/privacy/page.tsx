@@ -104,6 +104,13 @@ export default function PrivacyPage() {
             like any email we send.
           </p>
           <p className="mt-2">
+            The same applies to the &quot;Join the waiting list&quot; box on our Postcode Honey
+            map: if you enter your email there for a postcode area with no honey yet, we send a
+            short note to our own inbox with your email address and that postcode, so we can let
+            you know when a beekeeper joins from your area. We don&apos;t send you an email back,
+            and it isn&apos;t a marketing signup.
+          </p>
+          <p className="mt-2">
             The forms themselves are Microsoft Forms, run by Microsoft in our Microsoft 365 account.
             Anything you choose to enter there is stored by Microsoft on our behalf and only seen by
             us. To stop these boxes being misused to email someone who didn&apos;t ask, we also keep

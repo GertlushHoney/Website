@@ -14,7 +14,7 @@ export default function ContactPage() {
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
         Get in touch.
       </h1>
-      <p className="text-porcelain/70 mt-4 text-base">
+      <p className="text-porcelain/70 mt-4 text-base hyphens-auto sm:text-justify">
         Orders, subscriptions, wholesale and supplier enquiries — but also anything else: spotted
         something on the website that could be better, want to suggest a postcode or area we
         should try to source honey from next, or just have a question. Fill in the form below and
@@ -23,7 +23,7 @@ export default function ContactPage() {
 
       <ContactForm />
 
-      <p className="text-porcelain/50 mt-6 text-sm">
+      <p className="text-porcelain/50 mt-6 text-sm hyphens-auto sm:text-justify">
         We&apos;re a small, independent operation, so replies are by a real person rather than an
         automated system — please bear with us if it takes a day or two.
       </p>

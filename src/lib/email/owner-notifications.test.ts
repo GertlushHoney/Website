@@ -52,6 +52,27 @@ describe('owner notifications', () => {
     expect(email.html).toContain('/studio/structure/experienceBookingConflict')
   })
 
+  it('emails a bad hamper selection to admin@ with the customer text escaped and stock-not-deducted made clear', async () => {
+    const { sendGraphMail } = await import('./graph-mail')
+    const { notifyHamperSelectionProblem } = await import('./owner-notifications')
+
+    await notifyHamperSelectionProblem({
+      orderName: '#1300',
+      productTitle: 'Hamper - 3 Jar Honey',
+      variantTitle: 'Choose your own',
+      selectionText: '1x <b>Bee S3</b>',
+      reason: '1 jar(s) were selected but this hamper holds exactly 3',
+    })
+
+    const [email] = vi.mocked(sendGraphMail).mock.calls[0]
+    expect(email.to).toBe('admin@gertlushhoney.co.uk')
+    expect(email.subject).toContain('#1300')
+    expect(email.html).toContain('no honey stock was deducted')
+    expect(email.html).toContain('holds exactly 3')
+    expect(email.html).not.toContain('<b>Bee S3</b>')
+    expect(email.html).toContain('&lt;b&gt;Bee S3&lt;/b&gt;')
+  })
+
   it('does nothing and reports false when Microsoft Graph is not configured', async () => {
     const { isGraphMailConfigured, sendGraphMail } = await import('./graph-mail')
     vi.mocked(isGraphMailConfigured).mockReturnValueOnce(false)

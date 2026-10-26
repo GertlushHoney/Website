@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getHoneyProducts } from '@/lib/sanity/products'
 import { getProductByHandle } from '@/lib/shopify/product'
 import { deductHoneyStock } from '@/lib/shopify/admin-inventory'
+import { validateHamperSelection } from '@/lib/hamper-selection'
+import { notifyHamperSelectionProblem } from '@/lib/email/owner-notifications'
 import {
   parseHamperJarCount,
   parseHoneySelection,
@@ -338,10 +340,31 @@ export async function POST(request: NextRequest) {
       )
       continue
     }
-    if (tally.length === 0) {
+    // The whole selection must add up to exactly this hamper's size before
+    // any stock moves — a crafted "1x Bee S3" against a 3-jar hamper would
+    // otherwise deduct one jar for a hamper that physically needs three (the
+    // customer has paid the full hamper price, but the stock count would be
+    // wrong and could eventually allow overselling). A bad selection is a
+    // data problem, not a transient one: nothing is deducted, the webhook
+    // still completes (a retry would see the same text), and the owner is
+    // told so they can sort the order by hand.
+    const selectionText =
+      line.properties?.find((p) => p.name === HONEY_CHOICE_PROPERTY_NAME)?.value ?? null
+    const rejectSelection = async (reason: string) => {
       console.error(
-        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — couldn't resolve a honey selection for "${line.title}" (variant "${line.variant_title}")`
+        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — not deducting stock for "${line.title}" (variant "${line.variant_title}"): ${reason}`
       )
+      await notifyHamperSelectionProblem({
+        orderName: order.name,
+        productTitle: line.title,
+        variantTitle: line.variant_title ?? null,
+        selectionText,
+        reason,
+      })
+    }
+    const selectionCheck = validateHamperSelection(tally, jarsPerHamper)
+    if (!selectionCheck.ok) {
+      await rejectSelection(selectionCheck.reason)
       continue
     }
 
@@ -356,14 +379,16 @@ export async function POST(request: NextRequest) {
     // be exploitable for experience bookings — where this actually
     // matters. See "TIE HAMPER STOCK DEDUCTION TO A REAL HONEY" audit,
     // 2026-09-15.
+    // All-or-nothing: if any honey named isn't real, the selection as a whole
+    // can't be trusted (dropping just that entry would leave a total that no
+    // longer matches the hamper), so nothing is deducted.
     const activeHoneyNames = new Set((await getHoneyProducts()).map((honey) => honey.name))
-    const validatedTally = tally.filter(({ honeyName }) => {
-      if (activeHoneyNames.has(honeyName)) return true
-      console.error(
-        `order-paid webhook: order ${order.name} (webhook ${webhookId}) — "${line.title}" named a honey selection ("${honeyName}") that isn't a real, active honey product — skipping this entry rather than deducting an unverified product's stock`
-      )
-      return false
-    })
+    const unknownHoney = selectionCheck.tally.find(({ honeyName }) => !activeHoneyNames.has(honeyName))
+    if (unknownHoney) {
+      await rejectSelection(`"${unknownHoney.honeyName}" isn't a real, active honey product`)
+      continue
+    }
+    const validatedTally = selectionCheck.tally
 
     for (const { honeyName, jars } of validatedTally) {
       const totalJars = jars * line.quantity

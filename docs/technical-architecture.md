@@ -762,6 +762,23 @@ judgement this build doesn't make — it is put to the legal reviewer as a speci
 (`sessionStorage`, cleared when the tab closes), the `gl_cart_id` basket cookie (up to 30 days),
 and that popup flag; Vercel Web Analytics uses none.
 
+## Hamper selection integrity (2026-10-26)
+
+An external review found the "Choose your own" hamper's customer-controlled "Honey selection"
+text was checked for *which* honeys it named (real and active) but not for *how many* jars: a
+crafted "1x Bee S3" against a 3-jar hamper deducted one jar of stock for a hamper that needs
+three. The customer has paid the full price, so it wasn't theft, but it corrupted the stock count.
+Now `validateHamperSelection` (`src/lib/hamper-selection.ts`, kept out of `hamper.ts` so the
+webhook's tests can't stub it away) runs before anything is deducted, for every hamper line: the
+jars must be whole numbers ≥ 1 and add up to **exactly** the hamper's size; one honey named twice
+is merged into one deduction (two entries would have shared an idempotency id and under-deducted);
+and an empty or unparseable selection is rejected. It is all-or-nothing — if any honey named
+isn't a real, active one, nothing is deducted (dropping just that entry would leave a wrong
+total). A rejected selection is a data problem, not a transient one, so the webhook still
+completes without a retry, logs why, and **emails `admin@`** (`notifyHamperSelectionProblem`)
+with the order, the customer's text and the reason, so the owner can sort the order and adjust
+stock by hand. Covered by unit tests of the validator and webhook tests including the crafted case.
+
 ## Being found by AI assistants (2026-10-26)
 
 AI search and assistants mostly draw on the same indexes as Google and Bing plus their own

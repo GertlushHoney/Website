@@ -51,6 +51,22 @@ export function notifyNewReview(review: {
   })
 }
 
+export function notifyHamperSelectionProblem(details: {
+  orderName: string
+  productTitle: string
+  variantTitle: string | null
+  selectionText: string | null
+  reason: string
+}): Promise<boolean> {
+  return sendOwnerNotification({
+    subject: `Action needed: hamper order ${details.orderName} — stock not deducted`,
+    html: `<p style="${STYLE}">Order <b>${escapeHtml(details.orderName)}</b> includes <b>${escapeHtml(details.productTitle)}</b>${details.variantTitle ? ` (${escapeHtml(details.variantTitle)})` : ''}, but its honey selection couldn't be trusted, so <b>no honey stock was deducted</b>.</p>
+<p style="${STYLE}">Why: ${escapeHtml(details.reason)}.</p>
+<p style="${STYLE}">What the customer's order said: <i>${details.selectionText ? escapeHtml(details.selectionText) : '(nothing)'}</i></p>
+<p style="${STYLE}">Check the order in Shopify Admin, contact the customer if the choice isn't clear, then adjust the honey stock by hand.</p>`,
+  })
+}
+
 export function notifyBookingConflict(details: {
   orderName: string
   productTitle: string

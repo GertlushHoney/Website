@@ -39,6 +39,9 @@ vi.mock('@/lib/hamper', () => ({
   CHOOSE_YOUR_OWN_VARIANT_LABEL: 'Choose your own',
   SURPRISE_VARIANT_LABEL: 'Surprise selection',
 }))
+vi.mock('@/lib/email/owner-notifications', () => ({
+  notifyHamperSelectionProblem: vi.fn(async () => true),
+}))
 vi.mock('@/lib/shopify/admin-inventory', () => ({
   deductHoneyStock: vi.fn(),
 }))
@@ -687,5 +690,161 @@ describe('per-operation idempotency across a partial-failure retry', () => {
     const keys = vi.mocked(deductHoneyStock).mock.calls.map(([, , key]) => key)
     expect(keys[0]).toBe(keys[1])
     expect(keys[0]).toMatch(/^webhookOp\./)
+  })
+})
+
+// A "Choose your own" selection is customer-controlled text. Beyond each honey
+// being real and active, the selection as a whole must add up to exactly the
+// hamper's size before any stock moves — otherwise a crafted "1x Bee S3"
+// against a 3-jar hamper deducts one jar for a hamper that needs three.
+describe('hamper selection must match the hamper size', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+    process.env.SHOPIFY_WEBHOOK_SECRET = WEBHOOK_SECRET
+  })
+
+  async function postHamper(options: {
+    tally: { honeyName: string; jars: number }[]
+    selectionText: string
+    jarsPerHamper?: number
+    quantity?: number
+  }) {
+    const mocks = await commonMocks()
+    const { parseHamperJarCount, parseHoneySelection } = await import('@/lib/hamper')
+    const { deductHoneyStock } = await import('@/lib/shopify/admin-inventory')
+    const { notifyHamperSelectionProblem } = await import('@/lib/email/owner-notifications')
+    vi.mocked(parseHamperJarCount).mockReturnValue(options.jarsPerHamper ?? 3)
+    vi.mocked(parseHoneySelection).mockReturnValue(options.tally)
+    vi.mocked(deductHoneyStock).mockResolvedValue(true)
+
+    const { POST } = await import('./route')
+    const response = await POST(
+      signedRequest({
+        id: 300,
+        name: '#1300',
+        line_items: [
+          {
+            id: 3001,
+            title: 'Hamper - 3 Jar Honey',
+            quantity: options.quantity ?? 1,
+            variant_title: 'Choose your own',
+            properties: [{ name: 'Honey selection', value: options.selectionText }],
+          },
+        ],
+      })
+    )
+    return { response, deductHoneyStock, notifyHamperSelectionProblem, ...mocks }
+  }
+
+  it('deducts nothing for a crafted 1-jar selection against a 3-jar hamper, and tells the owner', async () => {
+    const { response, deductHoneyStock, notifyHamperSelectionProblem, markWebhookProcessed } =
+      await postHamper({ tally: [{ honeyName: 'Bee S3', jars: 1 }], selectionText: '1x Bee S3' })
+
+    expect(response.status).toBe(200)
+    expect(deductHoneyStock).not.toHaveBeenCalled()
+    expect(markWebhookProcessed).toHaveBeenCalledTimes(1)
+    expect(notifyHamperSelectionProblem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderName: '#1300',
+        selectionText: '1x Bee S3',
+        reason: expect.stringContaining('holds exactly 3'),
+      })
+    )
+  })
+
+  it('deducts nothing when more jars are named than the hamper holds', async () => {
+    const { response, deductHoneyStock } = await postHamper({
+      tally: [{ honeyName: 'Bee S3', jars: 7 }],
+      selectionText: '7x Bee S3',
+    })
+    expect(response.status).toBe(200)
+    expect(deductHoneyStock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['zero', 0],
+    ['negative', -2],
+    ['fractional', 1.5],
+  ])('deducts nothing for a %s jar count', async (_label, jars) => {
+    const { deductHoneyStock } = await postHamper({
+      tally: [
+        { honeyName: 'Bee S3', jars },
+        { honeyName: 'Bee S3', jars: 3 },
+      ],
+      selectionText: 'crafted',
+    })
+    expect(deductHoneyStock).not.toHaveBeenCalled()
+  })
+
+  it('deducts nothing, not even for the real honey, when any honey named is not a real one', async () => {
+    const { response, deductHoneyStock, notifyHamperSelectionProblem } = await postHamper({
+      tally: [
+        { honeyName: 'Bee S3', jars: 2 },
+        { honeyName: 'Definitely Not A Real Honey', jars: 1 },
+      ],
+      selectionText: '2x Bee S3, 1x Definitely Not A Real Honey',
+    })
+    expect(response.status).toBe(200)
+    expect(deductHoneyStock).not.toHaveBeenCalled()
+    expect(notifyHamperSelectionProblem).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: expect.stringContaining('Definitely Not A Real Honey') })
+    )
+  })
+
+  it('does not email the owner for a valid selection, and deducts exactly what was chosen', async () => {
+    const { getHoneyProducts } = await import('@/lib/sanity/products')
+    const { parseHamperJarCount, parseHoneySelection } = await import('@/lib/hamper')
+    const { deductHoneyStock } = await import('@/lib/shopify/admin-inventory')
+    const { notifyHamperSelectionProblem } = await import('@/lib/email/owner-notifications')
+    const { markWebhookProcessed } = await commonMocks()
+    vi.mocked(getHoneyProducts).mockResolvedValue([
+      { name: 'Bee S3', shopifyHandle: 'bee-s3' },
+      { name: 'Bee S4', shopifyHandle: 'bee-s4' },
+    ] as Awaited<ReturnType<typeof getHoneyProducts>>)
+    vi.mocked(parseHamperJarCount).mockReturnValue(3)
+    vi.mocked(parseHoneySelection).mockReturnValue([
+      { honeyName: 'Bee S3', jars: 2 },
+      { honeyName: 'Bee S4', jars: 1 },
+    ])
+    vi.mocked(deductHoneyStock).mockResolvedValue(true)
+
+    const { POST } = await import('./route')
+    const response = await POST(
+      signedRequest({
+        id: 301,
+        name: '#1301',
+        line_items: [
+          {
+            id: 3002,
+            title: 'Hamper - 3 Jar Honey',
+            quantity: 2,
+            variant_title: 'Choose your own',
+            properties: [{ name: 'Honey selection', value: '2x Bee S3, 1x Bee S4' }],
+          },
+        ],
+      })
+    )
+
+    expect(response.status).toBe(200)
+    expect(notifyHamperSelectionProblem).not.toHaveBeenCalled()
+    expect(deductHoneyStock).toHaveBeenCalledTimes(2)
+    expect(deductHoneyStock).toHaveBeenCalledWith('Bee S3', 4, expect.any(String))
+    expect(deductHoneyStock).toHaveBeenCalledWith('Bee S4', 2, expect.any(String))
+    expect(markWebhookProcessed).toHaveBeenCalledTimes(1)
+  })
+
+  it('merges one honey named twice into a single deduction of the full amount', async () => {
+    const { response, deductHoneyStock, notifyHamperSelectionProblem } = await postHamper({
+      tally: [
+        { honeyName: 'Bee S3', jars: 1 },
+        { honeyName: 'Bee S3', jars: 2 },
+      ],
+      selectionText: '1x Bee S3, 2x Bee S3',
+    })
+    expect(response.status).toBe(200)
+    expect(notifyHamperSelectionProblem).not.toHaveBeenCalled()
+    expect(deductHoneyStock).toHaveBeenCalledTimes(1)
+    expect(deductHoneyStock).toHaveBeenCalledWith('Bee S3', 3, expect.any(String))
   })
 })

@@ -413,10 +413,12 @@ never-actually-built plan that assumed Zod and a CRM provider):
    avoided for the accessibility cost; the contact form additionally has a simple arithmetic
    "what's X + Y?" human check, since it has no server round-trip to rate-limit.
 4. Where there's somewhere real to write to (Shopify customer tags, a Sanity document), the
-   action writes there. The **contact form** is the exception: it has no backend at all — it
-   assembles a `mailto:` link entirely in the browser at submit time and hands off to the
-   visitor's own mail client, specifically so the address never appears as literal text in this
-   page's server-rendered HTML (a bot scraping the page source has nothing to harvest).
+   action writes there. The **contact form** used to be the exception (a `mailto:` hand-off to the
+   visitor's own mail client); since 2026-10-26 it is a Server Action too (`src/lib/email/contact.ts`,
+   `sendContactMessage`): it emails `hello@` through Microsoft Graph with Reply-To set to the visitor
+   (so it also asks for their email), re-checks the topic against `contact-topics.ts`, honeypot, and
+   rate-limits 5/hour per IP and 5/day per email. The arithmetic check stays client-side only. The
+   address never reaches the browser, so nothing is left to scrape.
 
 No CRM/email-marketing provider has been added — Shopify Email (via the Shopify account already
 in use) is what actually sends the newsletter and marketing emails; no separate service like
@@ -565,6 +567,19 @@ only both failing shows an error, and if only the Shopify save fails the email s
 hand. Needs the `MS_GRAPH_*` env vars (launch-checklist point 19) and the Shopify Admin API
 (`write_customers` scope, already granted) in Production. The Privacy Notice's "Supplier and
 beekeeper forms" section describes it.
+
+## Owner notification emails (2026-10-26)
+
+Things that used to sit unnoticed until someone looked in Studio now email `admin@` through
+Microsoft Graph (`src/lib/email/owner-notifications.ts`; never throws, never blocks the real
+action; silently skipped if `MS_GRAPH_*` isn't set): a **new review** waiting for approval
+(`submitReview`, after the document is saved — includes the review text and where to tick
+Approved) and an **experience overbooking** (`recordBookingConflict`, sent before the Sanity record
+is written so a Sanity failure can't suppress it). Both link to the relevant Studio list. They
+depend on the same Microsoft 365 app registration as the invite emails — see launch-checklist
+point 19, including the client-secret **expiry date**: when it expires, every email from the site
+stops (these alerts, the invites, the waiting list and the contact form) until a new secret is
+created and set in Vercel.
 
 ## Sanity Studio navigation (2026-10-22)
 

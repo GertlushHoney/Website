@@ -35,11 +35,14 @@ export default function PrivacyPage() {
             basket&quot; adds it to a real, live basket rather than doing anything else.
           </p>
           <p className="mt-2">
-            The contact form still just opens an email in your own email app, addressed to us,
-            rather than submitting anything to this site — the site itself doesn&apos;t capture or
-            store what you type into it; we only receive whatever you choose to send. The same
-            &quot;email instead&quot; fallback also appears on an individual product page if that
-            specific product or subscription hasn&apos;t been fully set up for online checkout yet.
+            When you use the contact form, the name, email address and message you type are sent
+            as an email to our own business inbox (run on Microsoft 365, see &quot;Third parties we
+            use&quot; below) so we can reply to you. The site doesn&apos;t store them anywhere
+            else, and we don&apos;t send you an email back unless we&apos;re replying to you. To
+            stop the form being misused we also keep a short-lived count of messages against each
+            email address, which we don&apos;t use for anything else. An &quot;email us
+            instead&quot; fallback also appears on an individual product page if that specific
+            product or subscription hasn&apos;t been fully set up for online checkout yet.
           </p>
           <p className="mt-2">
             Separately, this site also has a product review form, a restock-notification signup, a
@@ -178,7 +181,8 @@ export default function PrivacyPage() {
             review text and submission date are stored there — we don&apos;t ask for or store an
             email address as part of a review. Reviews aren&apos;t shown until we approve them —
             once approved, your name and review text are displayed publicly on that product&apos;s
-            page.
+            page. When you submit one we also email a copy to our own business inbox so we know
+            it&apos;s waiting to be approved.
           </p>
           <p className="mt-2">
             If you book an Experience (e.g. a beekeeping visit), Sanity also keeps a record of that
@@ -189,8 +193,9 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             <strong className="text-porcelain">Microsoft</strong> runs our business email (Microsoft
-            365) and Microsoft Forms, which together handle the supplier and beekeeper forms
-            described above. Microsoft acts as a data processor for that information — see{' '}
+            365) and Microsoft Forms, which together handle the supplier and beekeeper forms,
+            the contact form and the waiting-list box described above, and the emails we send
+            ourselves about reviews and bookings. Microsoft acts as a data processor for that information — see{' '}
             <a
               href="https://privacy.microsoft.com/privacystatement"
               target="_blank"

@@ -18,7 +18,7 @@ export default function ContactPage() {
         Orders, subscriptions, wholesale and supplier enquiries — but also anything else: spotted
         something on the website that could be better, want to suggest a postcode or area we
         should try to source honey from next, or just have a question. Fill in the form below and
-        it&apos;ll open in your own email app, addressed to us and ready to send.
+        we&apos;ll get your message straight away — no email app needed.
       </p>
 
       <ContactForm />

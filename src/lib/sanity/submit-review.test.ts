@@ -17,6 +17,9 @@ vi.mock('@/lib/sanity/write-client', () => ({
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
+vi.mock('@/lib/email/owner-notifications', () => ({
+  notifyNewReview: vi.fn(async () => true),
+}))
 vi.mock('@/lib/rate-limit', () => ({
   getClientIp: vi.fn(async () => '203.0.113.1'),
   isRateLimited: vi.fn(async () => false),
@@ -69,6 +72,39 @@ describe('submitReview', () => {
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ productSlug: 'bee-s3', productName: 'Bee S3' })
     )
+  })
+
+  it('emails the owner the review so it can be approved, using the server-derived product name', async () => {
+    const { getActiveProductName } = await import('@/lib/sanity/reviews')
+    vi.mocked(getActiveProductName).mockResolvedValue('Bee S3')
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    vi.mocked(getSanityWriteClient).mockReturnValue({ create: vi.fn().mockResolvedValue({}) } as never)
+    const { notifyNewReview } = await import('@/lib/email/owner-notifications')
+
+    const { submitReview } = await import('./submit-review')
+    expect(await submitReview(validInput)).toEqual({ ok: true })
+
+    expect(notifyNewReview).toHaveBeenCalledWith({
+      productName: 'Bee S3',
+      reviewerName: 'Alex',
+      rating: 5,
+      body: 'Lovely honey, would buy again and again.',
+    })
+  })
+
+  it('does not email the owner for a review that was not saved', async () => {
+    const { getActiveProductName } = await import('@/lib/sanity/reviews')
+    vi.mocked(getActiveProductName).mockResolvedValue('Bee S3')
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    vi.mocked(getSanityWriteClient).mockReturnValue({
+      create: vi.fn().mockRejectedValue(new Error('down')),
+    } as never)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { notifyNewReview } = await import('@/lib/email/owner-notifications')
+
+    const { submitReview } = await import('./submit-review')
+    expect((await submitReview(validInput)).ok).toBe(false)
+    expect(notifyNewReview).not.toHaveBeenCalled()
   })
 
   it('rejects a reviewer name over the length cap without ever looking up the product', async () => {

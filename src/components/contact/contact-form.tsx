@@ -1,31 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
+import { sendContactMessage } from '@/lib/email/contact'
+import { CONTACT_TOPICS } from '@/lib/email/contact-topics'
 
-const TOPICS = [
-  'Website feedback or a bug',
-  'Honey from a specific postcode/area',
-  'An order or subscription',
-  'Wholesale or stocking Gert Lush Honey',
-  'Something else',
-]
-
-// Assembles the mailto: link entirely here, in the browser, at submit time
-// — the address never appears as literal text anywhere in this component's
-// server-rendered output, so a bot scraping the page's HTML has nothing to
-// harvest. It does still exist inside the downloaded JS bundle (any client
-// component's code ships to the browser), so this raises the bar against
-// simple scrapers rather than making harvesting impossible outright.
-const CONTACT_EMAIL = ['hello', 'gertlushhoney.co.uk'].join('@')
-
+// Sends through a Server Action (src/lib/email/contact.ts) — the visitor
+// needs no email app, and our address never reaches the browser at all.
 export function ContactForm() {
   const [name, setName] = useState('')
-  const [topic, setTopic] = useState(TOPICS[0])
+  const [email, setEmail] = useState('')
+  const [topic, setTopic] = useState<string>(CONTACT_TOPICS[0])
   const [message, setMessage] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
   const [humanAnswer, setHumanAnswer] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [status, setStatus] = useState<'idle' | 'sent'>('idle')
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   // Math.random can't run during render (impure), so this starts fixed and
   // re-rolls once in an effect after mount — same reasoning as the random
@@ -41,12 +31,6 @@ export function ContactForm() {
     e.preventDefault()
     setError(null)
 
-    if (companyWebsite.trim() !== '') {
-      // Honeypot tripped — report success without doing anything, so a bot
-      // doesn't learn its submission was rejected.
-      setStatus('sent')
-      return
-    }
     if (!name.trim() || !message.trim()) {
       setError('Fill in your name and a message.')
       return
@@ -56,18 +40,32 @@ export function ContactForm() {
       return
     }
 
-    const subject = `${topic} — via gertlushhoney.co.uk`
-    const body = `${message}\n\n— ${name}`
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setStatus('sent')
+    startTransition(async () => {
+      // A filled honeypot is reported as success by the server without
+      // sending anything, so a bot doesn't learn it was rejected.
+      const result = await sendContactMessage({
+        name,
+        email,
+        topic,
+        message,
+        honeypot: companyWebsite,
+      })
+      if (result.ok) {
+        setSentTo(email.trim())
+      } else {
+        setError(result.error)
+      }
+    })
   }
 
-  if (status === 'sent') {
+  if (sentTo) {
     return (
-      <p className="border-ink-line bg-honeycomb-surface text-porcelain mt-8 rounded-xl border p-5 text-sm" role="status">
-        Your email app should be opening now, addressed to us with your message already filled
-        in — just hit send from there. If nothing opened, your device might not have a mail app
-        set up.
+      <p
+        className="border-ink-line bg-honeycomb-surface text-porcelain mt-8 rounded-xl border p-5 text-sm"
+        role="status"
+      >
+        Thanks — your message is on its way. We&apos;ll reply to {sentTo}, usually within a day or
+        two. If you don&apos;t hear back, check your junk folder.
       </p>
     )
   }
@@ -82,9 +80,26 @@ export function ContactForm() {
           id="contact-name"
           type="text"
           required
+          maxLength={100}
           autoComplete="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="bg-ink border-ink-line text-porcelain placeholder:text-porcelain/40 focus-visible:outline-honey-amber mt-1 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
+        />
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="contact-email" className="text-porcelain/60 block text-sm">
+          Your email (so we can reply)
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          required
+          maxLength={254}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="bg-ink border-ink-line text-porcelain placeholder:text-porcelain/40 focus-visible:outline-honey-amber mt-1 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
         />
       </div>
@@ -99,7 +114,7 @@ export function ContactForm() {
           onChange={(e) => setTopic(e.target.value)}
           className="bg-ink border-ink-line text-porcelain focus-visible:outline-honey-amber mt-1 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
         >
-          {TOPICS.map((t) => (
+          {CONTACT_TOPICS.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
@@ -115,6 +130,7 @@ export function ContactForm() {
           id="contact-message"
           required
           rows={5}
+          maxLength={5000}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="bg-ink border-ink-line text-porcelain placeholder:text-porcelain/40 focus-visible:outline-honey-amber mt-1 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline focus-visible:outline-offset-2"
@@ -158,9 +174,10 @@ export function ContactForm() {
 
       <button
         type="submit"
-        className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+        disabled={isPending}
+        className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-4 rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4 disabled:opacity-50"
       >
-        Send message
+        {isPending ? 'Sending…' : 'Send message'}
       </button>
     </form>
   )

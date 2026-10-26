@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getSanityWriteClient, isSanityWriteConfigured } from './write-client'
 import { getActiveProductName } from './reviews'
 import { getClientIp, isRateLimited } from '@/lib/rate-limit'
+import { notifyNewReview } from '@/lib/email/owner-notifications'
 
 // Sensible, generous caps — a real name or slug never gets close to these,
 // so hitting the limit only ever means someone is sending something that
@@ -102,6 +103,9 @@ export async function submitReview(input: {
       approved: false,
     })
     revalidatePath(`/shop/${productSlug}`)
+    // Reviews stay hidden until approved in Studio, so tell the owner one is
+    // waiting. Never throws — a failed email must not fail the review.
+    await notifyNewReview({ productName, reviewerName, rating: input.rating, body })
     return { ok: true }
   } catch (error) {
     console.error('Review submission failed:', error)

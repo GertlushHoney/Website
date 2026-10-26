@@ -338,6 +338,13 @@ available right now — please email us instead" rather than breaking.
    `MS_GRAPH_TENANT_ID`, `MS_GRAPH_CLIENT_ID`, `MS_GRAPH_CLIENT_SECRET`, and
    `MS_GRAPH_SENDER_MAILBOX` — the real mailbox address that `suppliers@`/`admin@` are aliases of
    (not an alias itself). The aliases go on each email as Reply-To, so replies still land there.
+**Since 2026-10-26 more of the site depends on this setup** — the postcode waiting-list box, the
+Contact form, and the owner alert emails for new reviews and experience overbookings all send
+through it too. So the client secret's **expiry date** matters: put it in your calendar a couple of
+weeks ahead, because once it expires all of these stop silently until a new secret is created
+(step 3) and set in Vercel (step 5). Also test the Contact form and submit a review once after
+setup.
+
 6. **Test it** by entering your own address in each box: you should get the invite (honeycomb
    background, gold logo, amber button opening the right form) and the heads-up in the shared inbox.
 

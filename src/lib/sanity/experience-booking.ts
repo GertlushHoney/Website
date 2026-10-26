@@ -2,6 +2,7 @@ import { groq } from 'next-sanity'
 import { sanityFetch } from './client'
 import { getSanityWriteClient, isSanityWriteConfigured } from './write-client'
 import { isAlreadyExistsConflict } from './webhook-operations'
+import { notifyBookingConflict } from '@/lib/email/owner-notifications'
 import { getProductByHandle } from '@/lib/shopify/product'
 import type { ExperienceSession } from './merch'
 
@@ -242,6 +243,9 @@ export async function recordBookingConflict(details: {
   placesRequested: number
   placesRemaining: number
 }): Promise<void> {
+  // Email first and independently of Sanity, so the owner is told even if
+  // writing the record fails. Never throws.
+  await notifyBookingConflict(details)
   if (!isSanityWriteConfigured()) return
   await getSanityWriteClient().create({
     _type: 'experienceBookingConflict',

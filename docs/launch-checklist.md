@@ -396,6 +396,31 @@ parts are yours, and matter most:
 5. **A month after launch**, ask ChatGPT, Gemini and Perplexity things like "where can I buy
    single-postcode honey in Bristol" and note what comes back.
 
+## 22. Take the Gert Lush Standard live (decided 2026-10-26: option A)
+
+Decision: finish the Standard operationally before launch and switch it to live, rather than
+launching with the "Working draft — pending compliance review" page. **Only flip it once what
+the page promises is genuinely happening** — the page tells customers beekeepers are reviewed and
+every batch is checked, and that has to be true. Steps:
+
+1. **Supplier review.** Use `Gert-Lush-Standard-working-documents.docx` (Part 1, Supplier Review
+   Checklist; also the answer to "a list of questions for suppliers") with each beekeeper, starting
+   with Adam (Bee S3 and Bee S4). Decide in advance what you will accept, and keep the completed sheets.
+2. **Batch acceptance.** For each batch that arrives, complete Part 2 (Batch Acceptance Record)
+   before it is packed: condition checks, a measured moisture reading (you need a honey
+   refractometer) against a limit you set — check the legal maximum with Trading Standards or your
+   adviser — and a batch code. Record that batch code on the product in Sanity Studio.
+3. **Mark the product.** Only after steps 1 and 2 are complete for that honey, tick "Meets the Gert
+   Lush Standard" on that product in Studio. Going live never ticks it automatically.
+4. **Show the reviewer the final wording**, since going live turns every "will / designed to" into
+   "we do" (the Standard page, homepage strip, FAQs, supplier page and the Information hub card).
+5. **Then ask me to flip the switch**: change `GERT_LUSH_STANDARD_STATUS` to `'live'` in
+   `src/lib/gert-lush-standard.ts` (the draft notice disappears and the wording changes
+   everywhere at once), re-run the tests and accessibility audit, and deploy.
+
+If it won't be ready by launch day, the fallback is to keep it draft but soften the notice (option
+B in the discussion) rather than claim something that isn't yet true.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required

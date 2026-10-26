@@ -282,6 +282,7 @@ export default async function ShopProductPage({
           slug: product.slug,
           price: shopifyProduct?.price ?? null,
           availability: isSoldOut ? 'OutOfStock' : 'InStock',
+          reviews,
         })}
       />
       <JsonLd

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { InteractiveUkMap, type ActiveMapProduct } from '@/components/postcode-map/interactive-uk-map'
 import { getUkPostcodeMapSvg } from '@/lib/uk-map-svg'
-import { getHoneyProducts } from '@/lib/sanity/products'
+import { getHoneyProducts, getHoneyProductsWithBeekeeper } from '@/lib/sanity/products'
+import { getAreaNameForCode } from '@/lib/postcode-areas'
 import { urlForImage } from '@/lib/sanity/image'
 
 export const metadata: Metadata = {
@@ -13,7 +15,10 @@ export const metadata: Metadata = {
 
 export default async function PostcodeHoneyPage() {
   const svgMarkup = getUkPostcodeMapSvg()
-  const products = await getHoneyProducts()
+  const [products, honeyList] = await Promise.all([
+    getHoneyProducts(),
+    getHoneyProductsWithBeekeeper(),
+  ])
 
   const activeProducts: Record<string, ActiveMapProduct> = {}
   for (const product of products) {
@@ -52,6 +57,54 @@ export default async function PostcodeHoneyPage() {
       <div className="mt-12">
         <InteractiveUkMap svgMarkup={svgMarkup} activeProducts={activeProducts} />
       </div>
+
+      {/* The map is interactive, so also a plain list: the same information as
+          readable text and links, for anyone (or any search engine or AI
+          assistant) that can't use the map. */}
+      {honeyList.length > 0 && (
+        <section className="mt-16 max-w-2xl" aria-labelledby="honey-by-postcode">
+          <h2 id="honey-by-postcode" className="text-porcelain text-2xl font-bold tracking-tight">
+            Honey available now, by postcode
+          </h2>
+          <ul className="mt-5 space-y-4">
+            {honeyList.map((honey) => {
+              const area = getAreaNameForCode(honey.postcodeCode)
+              return (
+                <li key={honey._id} className="border-ink-line border-b pb-4 text-sm">
+                  <p className="text-comb-gold font-semibold">
+                    {honey.postcodeCode}
+                    {area ? ` · ${area}` : ''}
+                  </p>
+                  <p className="text-porcelain mt-1 text-base">
+                    <Link
+                      href={`/shop/${honey.slug}`}
+                      className="hover:text-comb-gold underline underline-offset-2"
+                    >
+                      {honey.name}
+                    </Link>
+                    {honey.beekeeper ? (
+                      <>
+                        {' '}
+                        — from beekeeper{' '}
+                        <Link
+                          href={`/beekeepers/${honey.beekeeper.slug}`}
+                          className="hover:text-comb-gold underline underline-offset-2"
+                        >
+                          {honey.beekeeper.name}
+                        </Link>
+                      </>
+                    ) : null}
+                  </p>
+                  <p className="text-porcelain/70 mt-1">{honey.tagline.trim()}</p>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="text-porcelain/60 mt-4 text-sm">
+            Don&apos;t see your postcode? Choose it on the map above to join the waiting list.
+          </p>
+        </section>
+      )}
     </div>
   )
 }

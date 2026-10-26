@@ -745,6 +745,24 @@ off — now built:
   files from this path directly and uncredentialed, so gating it breaks every local `<Image>`
   with a confusing "isn't a valid image" error.
 
+## Being found by AI assistants (2026-10-26)
+
+AI search and assistants mostly draw on the same indexes as Google and Bing plus their own
+crawlers, so the foundations are the existing ones (server-rendered pages, sitemap, canonical
+URLs, JSON-LD) plus clear, quotable content. Added: **`/llms.txt`**
+(`src/app/llms.txt/route.ts`, text built by `src/lib/seo/llms-txt.ts`) — a plain-text summary of
+the brand, the honeys on sale (from live data) and key pages; there is no proof yet that any given
+AI product reads it, so it's a cheap extra, and it deliberately says nothing about the Gert Lush
+Standard (its draft/live state can't be tracked in static text). A **"Honey available now, by
+postcode"** list on `/postcode-honey` gives the same information as the interactive map as plain
+links. **Product** JSON-LD now carries `aggregateRating` and up to five `review`s, but only from
+reviews already approved in Studio and never when there are none (`reviewJsonLd` in
+`src/lib/seo/json-ld.ts`). Beekeeper profile pages carry **Person** JSON-LD
+(`beekeeperJsonLd`). Still open: no `sameAs` social links (no profiles exist yet); the
+robots file already allows all crawlers, AI ones included. **Off-site presence** (Google Business
+Profile, Google Search Console and Bing Webmaster Tools registration, reviews, stockist and press
+mentions) matters most and is the owner's to set up — see `docs/launch-checklist.md` point 21.
+
 ## Search
 
 Real, built (`src/lib/search.ts`, `src/components/layout/search-overlay.tsx`) — not the

@@ -372,6 +372,22 @@ Click & Drop is connected to Shopify (set up by the owner). Still to do or check
 4. The Privacy Notice now names Royal Mail (Click & Drop) as a recipient of delivery details —
    include that paragraph in the next legal review.
 
+## 21. Being found by search engines and AI assistants (do these at launch)
+
+The site side is built (see `docs/technical-architecture.md`, "Being found by AI assistants"). These
+parts are yours, and matter most:
+
+1. **Remove the public password** (only the two `SITE_PASSWORD*` variables — keep the Studio ones,
+   point 12). While it's on, no search engine or AI tool can see anything.
+2. **Register the site** with **Google Search Console** and **Bing Webmaster Tools** (both free)
+   and submit `https://www.gertlushhoney.co.uk/sitemap.xml`. Bing matters because several AI
+   assistants use its index.
+3. **Create a Google Business Profile** (and keep name, address and details identical everywhere).
+4. **Build outside mentions:** reviews, stockist pages, local press, beekeeping associations, your
+   social profiles. Tell me the profile URLs and I'll add them to the site's `sameAs` data.
+5. **A month after launch**, ask ChatGPT, Gemini and Perplexity things like "where can I buy
+   single-postcode honey in Bristol" and note what comes back.
+
 ## What's already unblocked, needing nothing from you
 
 *(Corrected 2026-09-15 — this section originally said "the current codebase (Phase 0) required

@@ -74,6 +74,7 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
           slug: product.slug,
           price: shopifyProduct?.price ?? null,
           availability: isSoldOut ? 'OutOfStock' : 'InStock',
+          reviews,
         })}
       />
       <JsonLd

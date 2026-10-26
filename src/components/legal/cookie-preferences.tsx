@@ -71,8 +71,8 @@ export function CookiePreferences() {
         >
           <p className="font-semibold">Cookie options</p>
           <p className="text-porcelain/60 mt-1 text-sm">
-            This site doesn&apos;t set any tracking or advertising cookies — there&apos;s nothing to
-            opt in or out of.
+            This site doesn&apos;t set any tracking or advertising cookies. The small things it does
+            store on your device are listed below and in the full cookie policy.
           </p>
 
           <div className="mt-4 space-y-3">
@@ -93,6 +93,13 @@ export function CookiePreferences() {
               </span>
               <input type="checkbox" checked disabled className="accent-honey-amber mt-1" />
             </label>
+            <div className="text-sm">
+              <span className="block font-medium">Your choices</span>
+              <span className="text-porcelain/50">
+                If you close or sign up through the newsletter box, a flag in local storage
+                remembers that so it doesn&apos;t show again. Saved only when you do that.
+              </span>
+            </div>
           </div>
 
           <div className="mt-5 flex items-center justify-between">

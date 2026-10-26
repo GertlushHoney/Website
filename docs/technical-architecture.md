@@ -745,6 +745,23 @@ off — now built:
   files from this path directly and uncredentialed, so gating it breaks every local `<Image>`
   with a confusing "isn't a valid image" error.
 
+## Browser storage and the newsletter popup (2026-10-26)
+
+An external review noted that PECR covers local storage as well as cookies (ICO guidance on
+"storage and access technologies"), that the newsletter popup wrote its `localStorage` flag
+(`gert-lush-newsletter-popup-seen`) as soon as the popup *appeared*, and that the Cookie Policy
+didn't list it while saying there was "nothing to opt in or out of". Changed: the flag is now
+written only when the visitor closes the popup (button, backdrop or Escape) or signs up
+(`rememberChoice` in `newsletter-popup.tsx`, covered by tests), so it records something the
+visitor did; an unanswered popup can show again next visit. The Cookie Policy has a new
+"Preferences you choose" section, its opening no longer says there is nothing to opt in or out of,
+the "Cookie options" panel lists it under "Your choices", and the Privacy Notice's storage
+paragraph matches. Whether this satisfies PECR (and whether a consent control is needed) is a legal
+judgement this build doesn't make — it is put to the legal reviewer as a specific question in
+`docs/launch-checklist.md` point 7. Everything the site stores: the splash flag
+(`sessionStorage`, cleared when the tab closes), the `gl_cart_id` basket cookie (up to 30 days),
+and that popup flag; Vercel Web Analytics uses none.
+
 ## Being found by AI assistants (2026-10-26)
 
 AI search and assistants mostly draw on the same indexes as Google and Bing plus their own

@@ -92,6 +92,14 @@ now sending through Microsoft 365, the review-alert email, and a new "Preventing
 forms" section describing the hashed, auto-deleted IP/email counters) — so the reviewer should see
 the current version. The /fake-honey page is not a legal page but makes claims about the law.
 
+**Ask the reviewer this specific question (raised by an external review, 2026-10-26):** "We store
+a persistent localStorage flag only to remember that a visitor has closed or signed up through
+the newsletter popup. It is written only when they do one of those things, and it is described in
+the Cookie Policy ("Preferences you choose") and the Cookie options panel. Does our current Cookie
+Policy and Cookie options implementation satisfy PECR under the ICO's 2026 storage-and-access
+guidance, or do we need a consent control or different wording?" The site's other storage is a
+session-only splash flag and the basket cookie, both already disclosed.
+
 Food-information wording (Honey (England) Regulations 2015 — net quantity, ingredients, storage,
 batch, best-before, infant-honey warning on each product page) is product-page content, not one of
 the legal pages, and was not mentioned in the review; check it was covered.

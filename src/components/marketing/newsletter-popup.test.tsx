@@ -53,13 +53,58 @@ describe('NewsletterPopup', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('shows once delaySeconds has elapsed, and records it in localStorage', () => {
+  it('shows once delaySeconds has elapsed, but stores nothing merely for showing it', () => {
     render(<NewsletterPopup content={content} />)
     act(() => {
       vi.advanceTimersByTime(25_000)
     })
     expect(screen.getByRole('dialog', { name: content.heading })).toBeInTheDocument()
-    expect(localStorage.getItem('gert-lush-newsletter-popup-seen')).toBe('1')
+    expect(localStorage.getItem('gert-lush-newsletter-popup-seen')).toBeNull()
+  })
+
+  describe('remembers a visitor’s choice only once they make one', () => {
+    function openPopup() {
+      render(<NewsletterPopup content={content} />)
+      act(() => {
+        vi.advanceTimersByTime(25_000)
+      })
+    }
+
+    it('stores the flag when the close button is pressed', () => {
+      openPopup()
+      act(() => {
+        screen.getAllByRole('button', { name: 'Close' })[1].click()
+      })
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(localStorage.getItem('gert-lush-newsletter-popup-seen')).toBe('1')
+    })
+
+    it('stores the flag when the backdrop is clicked', () => {
+      openPopup()
+      act(() => {
+        screen.getAllByRole('button', { name: 'Close' })[0].click()
+      })
+      expect(localStorage.getItem('gert-lush-newsletter-popup-seen')).toBe('1')
+    })
+
+    it('stores the flag when Escape is pressed', () => {
+      openPopup()
+      act(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      })
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(localStorage.getItem('gert-lush-newsletter-popup-seen')).toBe('1')
+    })
+
+    it('shows again on a later visit if it was never answered', () => {
+      openPopup()
+      cleanup()
+      render(<NewsletterPopup content={content} />)
+      act(() => {
+        vi.advanceTimersByTime(25_000)
+      })
+      expect(screen.getByRole('dialog', { name: content.heading })).toBeInTheDocument()
+    })
   })
 
   it('shows immediately on desktop exit-intent, well before the delay elapses', () => {

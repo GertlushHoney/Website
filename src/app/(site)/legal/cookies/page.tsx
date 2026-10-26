@@ -22,10 +22,10 @@ export default function CookiesPage() {
           <p className="mt-2">
             This site doesn&apos;t set any advertising or tracking cookies. We do use an analytics
             service (Vercel Web Analytics, see below) to see roughly how many people visit and
-            which pages they land on — but it doesn&apos;t use cookies either, so there&apos;s
-            genuinely nothing to opt in or out of. You can still open{' '}
-            <span className="text-porcelain font-medium">Cookie options</span> (bottom-right of any
-            page) to see exactly what&apos;s stored.
+            which pages they land on — but it doesn&apos;t use cookies. The only things stored on
+            your device are the few small items listed below, each for a purpose we explain. You
+            can open <span className="text-porcelain font-medium">Cookie options</span>{' '}
+            (bottom-right of any page) at any time to see them.
           </p>
         </section>
 
@@ -42,6 +42,19 @@ export default function CookiesPage() {
             holding a reference to your Shopify cart, kept for up to 30 days so your basket
             persists between visits. It&apos;s strictly necessary for the basket to work, and
             doesn&apos;t identify you or track you anywhere else.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Preferences you choose</h2>
+          <p className="mt-2">
+            If you close our newsletter sign-up box, or sign up through it, we save one small flag
+            in your browser&apos;s local storage (named{' '}
+            <code>gert-lush-newsletter-popup-seen</code>) so we don&apos;t show you the box again.
+            It is only saved when you do one of those things — not just because the box
+            appeared — and it stays on your device until you clear your browser&apos;s site data.
+            It isn&apos;t sent to us or anyone else and doesn&apos;t identify you. If you clear it,
+            the box may appear again.
           </p>
         </section>
 

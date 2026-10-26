@@ -14,6 +14,22 @@ import type { NewsletterPopupContent } from '@/lib/sanity/newsletter-popup'
 // it days earlier.
 const STORAGE_KEY = 'gert-lush-newsletter-popup-seen'
 
+// The flag is a saved *choice*, not a "has appeared" marker: it is only
+// written when the visitor closes the popup or signs up — an action they took
+// that records a preference — and never merely because it was shown. This
+// keeps what we store limited to something the visitor did, and it is
+// described in the Cookie Policy ("Preferences you choose"). If the page is
+// left without answering, it may show again next visit, which is the honest
+// outcome of never having been answered. See the ICO's storage and access
+// technologies guidance (PECR).
+function rememberChoice() {
+  try {
+    localStorage.setItem(STORAGE_KEY, '1')
+  } catch {
+    // Nothing more to do — worst case it can show again next visit.
+  }
+}
+
 // Exit-intent only makes sense with a real pointer that can move "toward"
 // the browser chrome and be read as about-to-leave — a touch screen has no
 // equivalent gesture, so this is desktop-only. `(pointer: fine)` is a
@@ -37,8 +53,8 @@ function hasFinePointer(): boolean {
 //    is the one moment showing a popup is low-cost rather than intrusive:
 //    the visitor was about to go anyway, so it can't interrupt browsing
 //    that would otherwise have continued.
-// Never shown at all if localStorage already has the "seen" flag, so it
-// can only ever appear once per browser, full stop.
+// Never shown at all once the visitor has closed it or signed up (see
+// rememberChoice above) — so after they have answered it, it doesn't return.
 export function NewsletterPopup({ content }: { content: NewsletterPopupContent }) {
   const [visible, setVisible] = useState(false)
   const [email, setEmail] = useState('')
@@ -72,11 +88,6 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
         document.removeEventListener('mouseout', handleExitIntent)
       }
       setVisible(true)
-      try {
-        localStorage.setItem(STORAGE_KEY, '1')
-      } catch {
-        // Nothing more to do — worst case it can show again next visit.
-      }
     }
 
     const timer = setTimeout(show, content.delaySeconds * 1000)
@@ -105,6 +116,7 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
 
     function handleKeydown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
+        rememberChoice()
         setVisible(false)
         return
       }
@@ -134,11 +146,17 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
     startTransition(async () => {
       const result = await subscribeToNewsletter(email)
       if (result.ok) {
+        rememberChoice()
         setStatus('success')
       } else {
         setError(result.error)
       }
     })
+  }
+
+  function dismiss() {
+    rememberChoice()
+    setVisible(false)
   }
 
   if (!visible) return null
@@ -148,7 +166,7 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
       <button
         type="button"
         aria-label="Close"
-        onClick={() => setVisible(false)}
+        onClick={dismiss}
         className="absolute inset-0 bg-black/60"
       />
       <div
@@ -161,7 +179,7 @@ export function NewsletterPopup({ content }: { content: NewsletterPopupContent }
       >
         <button
           type="button"
-          onClick={() => setVisible(false)}
+          onClick={dismiss}
           aria-label="Close"
           className="text-porcelain/60 hover:text-porcelain focus-visible:outline-honey-amber absolute top-4 right-4 rounded-full p-1 focus-visible:outline focus-visible:outline-offset-2"
         >

@@ -68,7 +68,7 @@ export default function PrivacyPage() {
             confirmation page, or use the newsletter signup popup that can appear while browsing the
             site, we&apos;ll email you when a new postcode honey arrives — and nothing else. We only
             ever add you if you actively opt in; nobody is signed up automatically just for placing
-            an order, and the popup only ever appears once per browser (see &quot;Cookies and browser
+            an order, and once you&apos;ve closed the popup or signed up through it, it won&apos;t appear again on that browser (see &quot;Cookies and browser
             storage&quot; below).
           </p>
           <p className="mt-2">
@@ -234,9 +234,10 @@ export default function PrivacyPage() {
           <p className="mt-2">
             We don&apos;t use any advertising or tracking cookies. A few things are stored in your
             browser: a small flag that remembers you&apos;ve seen the intro animation, for the
-            length of your browsing session; a separate flag that remembers you&apos;ve seen the
-            newsletter signup popup, so it doesn&apos;t show again on that browser; and, if
-            you&apos;ve added something to your basket, a cookie holding a reference to your Shopify
+            length of your browsing session; a separate flag that remembers you&apos;ve closed, or
+            signed up through, the newsletter signup popup, so it doesn&apos;t show again on that
+            browser (it&apos;s saved only when you do one of those, not just because the popup
+            appeared); and, if you&apos;ve added something to your basket, a cookie holding a reference to your Shopify
             cart (kept for up to 30 days so your basket persists between visits). None of these
             identify you personally or track you elsewhere.
           </p>

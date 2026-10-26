@@ -207,6 +207,12 @@ form above.
 
 ## 12. Password gates (site-wide + Studio) — DONE 2026-08-19
 
+**Important (2026-10-26):** the Studio gate now fails *closed* in production. If
+`STUDIO_PASSWORD_USER` / `STUDIO_PASSWORD` are ever missing from Vercel, Studio and the internal
+tools show "Internal tools are unavailable" (503) instead of opening up. So: **keep both Studio
+variables set in Vercel for Production and Preview — even after you remove `SITE_PASSWORD_USER` /
+`SITE_PASSWORD` at launch.** Only the two `SITE_PASSWORD*` variables are meant to be deleted.
+
 Two separate HTTP Basic Auth gates live in `src/middleware.ts` — a browser login prompt, no
 Shopify/Sanity account involved. Both need their env vars added in **two** places to actually
 work: `.env.local` for your own machine, and Vercel's Environment Variables for the live site

@@ -949,6 +949,18 @@ relaxations).
 
 ## Pre-launch and permanent access control
 
+**The Studio gate fails closed in production (2026-10-26).** An external review pointed out that
+if `STUDIO_PASSWORD_USER` or `STUDIO_PASSWORD` went missing (deleted or mistyped in Vercel), the
+middleware let `/studio`, `/tools` and the `/api/feather-image`, `/api/sync-shipping-weights` and
+`/api/new-product` routes straight through — and some of those write to the live Shopify and
+Sanity data. Now, with `NODE_ENV=production` and either variable missing, every one of those
+paths returns **503** and logs an error; only local dev and tests (not production) still pass
+through so `npm run dev` works without credentials. This is separate from the public
+`SITE_PASSWORD`, which is *meant* to be removed at launch — removing it leaves the Studio gate
+untouched (covered by a test), and the webhook route stays reachable for Shopify. Checked against a
+real production build with the Studio variables blanked. Note this applies to Vercel **Preview**
+deployments too: they need the Studio variables set as well, or the tools return 503 there.
+
 Two independent HTTP Basic Auth gates in `src/middleware.ts`, checked by request path:
 
 - **Site-wide gate** (`SITE_PASSWORD_USER`/`SITE_PASSWORD`, added 2026-08-14) — every route

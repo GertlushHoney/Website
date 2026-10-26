@@ -66,6 +66,13 @@ function authRequired(realm: string) {
   })
 }
 
+function studioUnavailable() {
+  return new NextResponse('Internal tools are unavailable.', {
+    status: 503,
+    headers: { 'Cache-Control': 'no-store' },
+  })
+}
+
 // Webhook endpoints (added 2026-09-04, hamper stock sync) — Shopify calls
 // these directly and can't supply the site-wide Basic Auth credentials, so
 // they're excluded from both gates. Their real security boundary is each
@@ -204,7 +211,22 @@ export function middleware(request: NextRequest) {
   }
 
   if (STUDIO_GATED_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
-    if (!STUDIO_USERNAME || !STUDIO_PASSWORD) return applySecurityHeaders(next(), request, nonce)
+    if (!STUDIO_USERNAME || !STUDIO_PASSWORD) {
+      // Fail closed in production. This gate is permanent (unlike the
+      // pre-launch site password below, which is meant to disappear at
+      // launch) and guards tools that write to the live Shopify and Sanity
+      // data — so a deleted or mistyped STUDIO_PASSWORD_USER/STUDIO_PASSWORD
+      // in Vercel must lock them, never open them. Local dev and tests
+      // (NODE_ENV not "production") still pass through so `npm run dev`
+      // works without credentials.
+      if (process.env.NODE_ENV === 'production') {
+        console.error(
+          'STUDIO_PASSWORD_USER / STUDIO_PASSWORD are not set — refusing to serve internal tools'
+        )
+        return applySecurityHeaders(studioUnavailable(), request, nonce)
+      }
+      return applySecurityHeaders(next(), request, nonce)
+    }
     if (isAuthorized(request, STUDIO_USERNAME, STUDIO_PASSWORD)) {
       return applySecurityHeaders(next(), request, nonce)
     }

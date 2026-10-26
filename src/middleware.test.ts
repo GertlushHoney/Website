@@ -229,6 +229,81 @@ describe('Content-Security-Policy exemption for /studio and /tools', () => {
     expect(response.headers.get('Content-Security-Policy')).toBeNull()
   })
 
+  describe('production with the Studio credentials missing (must fail closed)', () => {
+    const INTERNAL_PATHS = [
+      '/studio',
+      '/studio/structure/honeyProduct',
+      '/tools',
+      '/tools/new-product',
+      '/api/feather-image',
+      '/api/sync-shipping-weights',
+      '/api/new-product',
+    ]
+
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    test.each(INTERNAL_PATHS)('%s returns 503, not the page', async (path) => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      const middleware = await loadMiddleware()
+      const response = middleware(request(path))
+      expect(response.status).toBe(503)
+      expect(response.headers.get('x-middleware-next')).toBeNull()
+    })
+
+    test('stays closed even when only one of the two Studio variables is set', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      process.env.STUDIO_PASSWORD_USER = 'user'
+      const middleware = await loadMiddleware()
+      expect(middleware(request('/tools/new-product')).status).toBe(503)
+
+      delete process.env.STUDIO_PASSWORD_USER
+      process.env.STUDIO_PASSWORD = 'pass'
+      vi.resetModules()
+      const second = await loadMiddleware()
+      expect(second(request('/api/new-product')).status).toBe(503)
+    })
+
+    test('stays closed even once the public site password has been removed at launch', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      // SITE_PASSWORD_USER / SITE_PASSWORD deliberately unset, as after launch.
+      const middleware = await loadMiddleware()
+      expect(middleware(request('/studio')).status).toBe(503)
+      // ...while the public site itself stays reachable.
+      expect(middleware(request('/shop')).status).toBe(200)
+    })
+
+    test('still 401s without credentials and serves with them when they are configured', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      process.env.STUDIO_PASSWORD_USER = 'user'
+      process.env.STUDIO_PASSWORD = 'pass'
+      const middleware = await loadMiddleware()
+      expect(middleware(request('/tools')).status).toBe(401)
+
+      const ok = middleware(
+        request('/tools', {
+          headers: { authorization: `Basic ${btoa('user:pass')}` },
+        })
+      )
+      expect(ok.status).toBe(200)
+    })
+
+    test('the webhook route stays reachable for Shopify (it verifies its own signature)', async () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const middleware = await loadMiddleware()
+      expect(middleware(request('/api/webhooks/shopify/order-paid')).status).toBe(200)
+    })
+  })
+
+  test('outside production, a missing Studio gate still lets local development through', async () => {
+    const middleware = await loadMiddleware()
+    expect(middleware(request('/tools')).status).toBe(200)
+  })
+
   test('401s unauthenticated /tools/new-product and its /api/new-product backend, which write to the live store', async () => {
     process.env.STUDIO_PASSWORD_USER = 'user'
     process.env.STUDIO_PASSWORD = 'pass'

@@ -22,9 +22,9 @@ export default function AccessibilityPage() {
           <p className="mt-2">
             We build and test this site against WCAG 2.1/2.2 AA. Every real page has been run
             through an automated audit and a manual review, and issues found by either have been
-            fixed — most recently re-run 2026-09-13 after adding the product information tabs, the
-            shop carousel, the redesigned newsletter popup and several new pages (Weddings &amp;
-            Events, the Bee-Friendly Garden, individual merchandise/hamper/experience products).
+            fixed — most recently re-run on 26 October 2026, covering 36 pages and 5 interactive
+            states (41 checks in total), including the &ldquo;Is it really honey?&rdquo; page,
+            the postcode honey list, the contact form and the newsletter popup.
             That&apos;s still our own testing, not an independent certification. See &quot;Known
             gaps&quot; below for what that doesn&apos;t cover.
           </p>
@@ -35,7 +35,9 @@ export default function AccessibilityPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
               Automated: every real page is crawled with axe-core against the WCAG 2.0/2.1/2.2 A
-              and AA rule sets — currently 0 automated violations across all 34 pages.
+              and AA rule sets — currently 0 automated violations across all 36 pages and 5 interactive states (the search
+              and basket overlays, the mobile menu at phone width, the newsletter popup and a
+              product information tab), as of 26 October 2026.
             </li>
             <li>
               Manual: colour contrast is checked by hand for anything automated tools can&apos;t

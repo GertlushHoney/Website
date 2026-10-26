@@ -38,6 +38,17 @@ export default async function PostcodeHoneyPage() {
         somewhere specific. Select a postcode area to see what&apos;s available.
       </p>
 
+      <div className="border-ink-line bg-honeycomb-surface mt-8 max-w-xl rounded-2xl border p-5">
+        <h2 className="text-comb-gold text-base font-bold tracking-tight">
+          A little selection, growing with us 🍯
+        </h2>
+        <p className="text-porcelain/70 mt-2 text-sm">
+          Gert Lush is just getting started, so you might only find a few honeys near your postcode
+          for now. We’re working to bring more local beekeepers on board—thanks for supporting us
+          from the beginning.
+        </p>
+      </div>
+
       <div className="mt-12">
         <InteractiveUkMap svgMarkup={svgMarkup} activeProducts={activeProducts} />
       </div>

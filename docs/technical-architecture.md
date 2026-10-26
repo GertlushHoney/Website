@@ -581,6 +581,24 @@ point 19, including the client-secret **expiry date**: when it expires, every em
 stops (these alerts, the invites, the waiting list and the contact form) until a new secret is
 created and set in Vercel.
 
+## New product tool (2026-10-26)
+
+`/tools/new-product` (page `src/components/tools/new-product-tool.tsx`, backend
+`src/app/api/new-product/route.ts`, pure logic `src/lib/tools/new-product.ts`) replaces most of
+`docs/product-creation-sop.md` steps 2–3. Same Studio login gate as the other tools
+(`/api/new-product` is in `STUDIO_GATED_PREFIXES`, covered by a middleware test). GET lists
+Storefront products (so only ones published to the Headless channel appear) that no
+`honeyProduct`/`merchProduct` links yet, plus the beekeepers. POST takes a handle plus the
+site-only fields; the **server** re-reads the product from Shopify (title/photo — the client never
+supplies an image URL, and the download is restricted to cdn.shopify.com), validates
+(`validateNewProduct`: real postcode area or Bristol/Bath district, real beekeeper id, merch
+category, lengths), makes a unique slug, uploads the photo as a Sanity asset, creates the document,
+and pushes `shippingWeightGrams` to Shopify with `syncShippingWeight`. Honey defaults to live,
+merch to off (the schema defaults). The photo is used as-is by default since Shopify's are already
+feathered; the shared `featherToPng` (`src/lib/images/feather.ts`, also used by
+`/api/feather-image`) runs only if ticked. Not covered (still Studio): gallery, tasting profile,
+seasons, batch/traceability, subscriptions, experiences and their dates.
+
 ## Sanity Studio navigation (2026-10-22)
 
 `sanity.config.ts` passes a custom structure (`src/sanity/structure.ts`) to the structure tool.
@@ -599,8 +617,13 @@ in Shopify. The weight lives in Sanity (`shippingWeightGrams`) and is pushed to 
 item by `/tools/sync-shipping-weights` (`src/lib/shopify/admin-shipping.ts`). That mutation
 declared a GraphQL input type Shopify doesn't have (`InventoryItemUpdateInput`; the real one is
 `InventoryItemInput`) so the tool would have failed for every product — fixed 2026-10-22.
-**Current state:** only the two honeys (Bee S3, Bee S4) have a weight (613 g, set in Sanity and
-Shopify); every other product is still unset until weighed.
+**Current state (checked 2026-10-26, Shopify Storefront):** the honeys are 613 g (set in Sanity and
+Shopify). Several other products already carry a weight **in Shopify** (entered there directly,
+possibly estimates: candles 100–500 g, soap 200 g, lip balm 50 g, hampers 1–1.75 kg), while
+Sanity's `shippingWeightGrams` is still empty for them. The sync only pushes non-empty Sanity
+weights, so it will not overwrite those until a real weight is entered in Sanity. Six products are
+still 0 in Shopify: Skep candle (small), beeswax bars, pillar candle, ghost candle, and both
+plates.
 
 ## Hamper stock sync
 

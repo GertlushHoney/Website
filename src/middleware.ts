@@ -29,6 +29,7 @@ const STUDIO_GATED_PREFIXES = [
   '/tools',
   '/api/feather-image',
   '/api/sync-shipping-weights',
+  '/api/new-product',
 ]
 
 // A best-effort constant-time string comparison for Edge Runtime, which

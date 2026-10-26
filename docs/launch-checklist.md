@@ -352,9 +352,11 @@ setup.
 
 Click & Drop is connected to Shopify (set up by the owner). Still to do or check:
 
-1. **Weigh every product** (packed, as posted) and send the grams so they can be entered in Sanity
-   and synced to Shopify. Only the two honeys (613 g) are done; until the rest are, checkout
-   postage and Click & Drop's suggested service won't be accurate for them.
+1. **Check and finish the weights.** Shopify already holds weights for most products (candles,
+   soap, lip balm, hampers — entered directly there, possibly estimates; honeys are a real 613 g),
+   but six are still 0: Skep candle (small), beeswax bars, pillar candle, ghost candle and both
+   plates. Weigh those (packed, as posted) and replace any estimate that is wrong. Checkout
+   postage and Click & Drop's suggested service rely on these.
 2. **Place a small test order** (e.g. a 100% discount code) and confirm it appears in Click & Drop
    within about 10 minutes, then cancel it.
 3. **Experiences:** make sure the Bee Day Experience is not marked "This is a physical product" in

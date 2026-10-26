@@ -17,6 +17,20 @@ Both types share the same shape everywhere else: a Sanity document for content, 
 for price/stock/checkout, linked by an exact `shopifyHandle` string — never by title, never by
 guessing.
 
+## The quick way (since 2026-10-26): /tools/new-product
+
+Do **Step 1** below in Shopify (title, price, stock, a photo, published to the Headless channel),
+then open `/tools/new-product` (same login as Studio). Pick the product from the list, say whether
+it's a honey or a candle/soap/lip balm/hamper, fill in the few fields only the website needs
+(tagline, postcode + beekeeper or category, size, the story/description, packed weight), and press
+**Add to the site**. It reads the name, handle and photo from Shopify itself, creates the Sanity
+document with the photo uploaded (Steps 2–3 done), and pushes the packed weight to Shopify. It
+shows links to check the result — still do **Step 4** (look at it live). Use the manual steps
+below for anything the tool doesn't cover: extra gallery photos, tasting profile, seasons,
+batch/traceability fields, experiences and their dates (all added afterwards in Studio). The
+photo used is Shopify's own, which is normally already edge-softened; only tick "soften" if it
+isn't.
+
 ## Step 1 — Create the product in Shopify
 
 1. Shopify admin → Products → Add product.

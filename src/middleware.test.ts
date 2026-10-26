@@ -229,6 +229,14 @@ describe('Content-Security-Policy exemption for /studio and /tools', () => {
     expect(response.headers.get('Content-Security-Policy')).toBeNull()
   })
 
+  test('401s unauthenticated /tools/new-product and its /api/new-product backend, which write to the live store', async () => {
+    process.env.STUDIO_PASSWORD_USER = 'user'
+    process.env.STUDIO_PASSWORD = 'pass'
+    const middleware = await loadMiddleware()
+    expect(middleware(request('/tools/new-product')).status).toBe(401)
+    expect(middleware(request('/api/new-product')).status).toBe(401)
+  })
+
   test('still 401s an unauthenticated /studio request once the studio gate is configured, without a CSP', async () => {
     process.env.STUDIO_PASSWORD_USER = 'user'
     process.env.STUDIO_PASSWORD = 'pass'

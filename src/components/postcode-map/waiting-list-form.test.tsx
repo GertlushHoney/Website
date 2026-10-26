@@ -24,8 +24,22 @@ describe('WaitingListForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Join the waiting list' }))
 
     await waitFor(() => expect(screen.getByRole('status')).toBeTruthy())
-    expect(joinPostcodeWaitingList).toHaveBeenCalledWith('BS3', 'bee@example.com', '')
+    expect(joinPostcodeWaitingList).toHaveBeenCalledWith('BS3', 'bee@example.com', '', false)
     expect(screen.getByRole('status').textContent).toContain('BS3')
+  })
+
+  it('passes the optional newsletter box through when ticked', async () => {
+    vi.mocked(joinPostcodeWaitingList).mockResolvedValue({ ok: true })
+    render(<WaitingListForm areaCode="BS3" />)
+
+    fireEvent.change(screen.getByLabelText('Email address'), {
+      target: { value: 'bee@example.com' },
+    })
+    fireEvent.click(screen.getByLabelText('Also send me news of new honeys (optional)'))
+    fireEvent.click(screen.getByRole('button', { name: 'Join the waiting list' }))
+
+    await waitFor(() => expect(screen.getByRole('status')).toBeTruthy())
+    expect(joinPostcodeWaitingList).toHaveBeenCalledWith('BS3', 'bee@example.com', '', true)
   })
 
   it('shows the error and keeps the form when the action fails', async () => {

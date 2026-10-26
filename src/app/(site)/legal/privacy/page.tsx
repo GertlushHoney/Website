@@ -105,10 +105,13 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             The same applies to the &quot;Join the waiting list&quot; box on our Postcode Honey
-            map: if you enter your email there for a postcode area with no honey yet, we send a
-            short note to our own inbox with your email address and that postcode, so we can let
-            you know when a beekeeper joins from your area. We don&apos;t send you an email back,
-            and it isn&apos;t a marketing signup.
+            map: if you enter your email there for a postcode area with no honey yet, we save your
+            email address in our Shopify customer list, tagged with that postcode area, and send a
+            short note to our own inbox, so we can let you know when a beekeeper joins from your
+            area. We don&apos;t send you an email back. Joining the waiting list on its own isn&apos;t
+            a marketing signup: only if you tick the optional &quot;Also send me news of new
+            honeys&quot; box do we also add you to our marketing emails, which you can leave at any
+            time using the link in any of them.
           </p>
           <p className="mt-2">
             The forms themselves are Microsoft Forms, run by Microsoft in our Microsoft 365 account.

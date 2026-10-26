@@ -542,20 +542,29 @@ genuinely shared run-level code, unused today) and `traceabilityFormat` (describ
 pattern without asserting one specific number, e.g. Bee S3's real `"GL-BS3-XXX"` — the actual
 per-jar number is printed on that jar's own physical label, never claimed on the website).
 
-## Postcode map waiting list (2026-10-22)
+## Postcode map waiting list (2026-10-22, updated 2026-10-26)
 
 The "Join the waiting list" control on /postcode-honey (an area or district with no honey yet) used
 to be a `mailto:` link, which does nothing for visitors with no email app set up. It is now an
-email box and button (`src/components/postcode-map/waiting-list-form.tsx`) calling the Server
-Action `joinPostcodeWaitingList(areaCode, email, honeypot)` in `src/lib/email/waiting-list.ts`.
-Same shape as the invite form: strict email check, honeypot, two-axis rate limiting (10/hour per
-IP, 5/day per email). The area code is checked server-side against the real postcode list, so
-calling the action directly can't put arbitrary text in our inbox. It sends one email through
-Microsoft Graph (see "Invite emails" below) to `sales@` with the postcode and the visitor's address
-(Reply-To is the visitor). Nothing is sent to the visitor and **nothing is stored** — the `sales@`
-inbox is the list. It therefore needs the `MS_GRAPH_*` env vars (launch-checklist point 19) set in
-Production; without them it shows "This isn't available right now". The Privacy Notice's "Supplier
-and beekeeper forms" section describes it.
+email box, button and optional "Also send me news of new honeys" tick box
+(`src/components/postcode-map/waiting-list-form.tsx`) calling the Server Action
+`joinPostcodeWaitingList(areaCode, email, honeypot, subscribeToNews)` in
+`src/lib/email/waiting-list.ts`. Same shape as the invite form: strict email check, honeypot,
+two-axis rate limiting (10/hour per IP, 5/day per email). The area code is checked server-side
+against the real postcode list.
+
+Two things happen. (1) **The list itself:** `addToPostcodeWaitlist` (`src/lib/shopify/waitlist.ts`,
+Admin API) creates or finds the Shopify customer and tags it `waitlist:<area code>` (e.g.
+`waitlist:BS3`) — filter Shopify Admin → Customers by that tag to see everyone waiting for an
+area. Marketing consent follows the tick box: ticked → SUBSCRIBED (so Shopify Email can reach
+them); unticked → NOT_SUBSCRIBED, like the restock alerts, so the owner emails them by hand.
+(2) **A heads-up** goes through Microsoft Graph (see "Invite emails" below) to `sales@` with the
+postcode, the visitor's address (Reply-To is the visitor) and whether they were saved/subscribed.
+Nothing is sent to the visitor. Either step succeeding is enough for the visitor to see success;
+only both failing shows an error, and if only the Shopify save fails the email says to add them by
+hand. Needs the `MS_GRAPH_*` env vars (launch-checklist point 19) and the Shopify Admin API
+(`write_customers` scope, already granted) in Production. The Privacy Notice's "Supplier and
+beekeeper forms" section describes it.
 
 ## Sanity Studio navigation (2026-10-22)
 

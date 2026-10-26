@@ -11,6 +11,7 @@ export function WaitingListForm({ areaCode }: { areaCode: string }) {
   const id = useId()
   const [email, setEmail] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
+  const [news, setNews] = useState(false)
   const [joined, setJoined] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -19,7 +20,7 @@ export function WaitingListForm({ areaCode }: { areaCode: string }) {
     e.preventDefault()
     setError(null)
     startTransition(async () => {
-      const result = await joinPostcodeWaitingList(areaCode, email, companyWebsite)
+      const result = await joinPostcodeWaitingList(areaCode, email, companyWebsite, news)
       if (result.ok) {
         setJoined(true)
       } else {
@@ -62,6 +63,16 @@ export function WaitingListForm({ areaCode }: { areaCode: string }) {
           {isPending ? 'Joining…' : 'Join the waiting list'}
         </button>
       </div>
+
+      <label className="text-porcelain/70 mt-3 flex cursor-pointer items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={news}
+          onChange={(e) => setNews(e.target.checked)}
+          className="accent-honey-amber focus-visible:outline-honey-amber mt-0.5 h-4 w-4 shrink-0 focus-visible:outline focus-visible:outline-offset-2"
+        />
+        <span>Also send me news of new honeys (optional)</span>
+      </label>
 
       <div className="h-0 w-0 overflow-hidden opacity-0" aria-hidden="true">
         <label htmlFor={`${id}-company-website`}>Company website</label>

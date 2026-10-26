@@ -28,7 +28,7 @@ function buildFakeWriteClient() {
     }
   }
 
-  return { createIfNotExists, patch: vi.fn(patch), docs }
+  return { createIfNotExists, patch: vi.fn(patch), docs, delete: vi.fn(async () => ({})) }
 }
 
 vi.mock('@/lib/sanity/write-client', () => ({
@@ -70,6 +70,70 @@ describe('isRateLimited', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
+  })
+
+  it('never puts a raw IP address or email in the stored document id', async () => {
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    const fakeClient = buildFakeWriteClient()
+    vi.mocked(getSanityWriteClient).mockReturnValue(fakeClient as never)
+    const { isRateLimited } = await import('./rate-limit')
+
+    await isRateLimited([
+      { action: 'contact-ip', identifier: '203.0.113.9', windowMs: 60_000, max: 5 },
+      { action: 'contact-email', identifier: 'Alex@Example.com', windowMs: 60_000, max: 5 },
+    ])
+
+    const ids = [...fakeClient.docs.keys()]
+    expect(ids).toHaveLength(2)
+    for (const id of ids) {
+      expect(id).not.toContain('203')
+      expect(id.toLowerCase()).not.toContain('alex')
+      expect(id.toLowerCase()).not.toContain('example')
+    }
+    expect(ids[0]).toContain('contact-ip')
+  })
+
+  it('treats the same email in different letter-case as one bucket', async () => {
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    const fakeClient = buildFakeWriteClient()
+    vi.mocked(getSanityWriteClient).mockReturnValue(fakeClient as never)
+    const { isRateLimited } = await import('./rate-limit')
+
+    await isRateLimited([{ action: 'a', identifier: 'Bee@Example.com', windowMs: 60_000, max: 5 }])
+    await isRateLimited([{ action: 'a', identifier: 'bee@example.com ', windowMs: 60_000, max: 5 }])
+    expect(fakeClient.docs.size).toBe(1)
+  })
+
+  it('deletes buckets older than the retention period every time it runs', async () => {
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    const fakeClient = buildFakeWriteClient()
+    vi.mocked(getSanityWriteClient).mockReturnValue(fakeClient as never)
+    const { isRateLimited, RATE_LIMIT_RETENTION_MS } = await import('./rate-limit')
+
+    await isRateLimited([{ action: 'a', identifier: 'x', windowMs: 60_000, max: 5 }])
+
+    expect(fakeClient.delete).toHaveBeenCalledTimes(1)
+    const [{ query, params }] = vi.mocked(fakeClient.delete).mock.calls[0] as unknown as [
+      { query: string; params: { cutoff: string } },
+    ]
+    expect(query).toContain('rateLimitBucket')
+    const age = Date.now() - new Date(params.cutoff).getTime()
+    expect(Math.abs(age - RATE_LIMIT_RETENTION_MS)).toBeLessThan(5000)
+  })
+
+  it('does not let a failed cleanup break the request', async () => {
+    const { getSanityWriteClient } = await import('@/lib/sanity/write-client')
+    const fakeClient = {
+      ...buildFakeWriteClient(),
+      delete: vi.fn(async () => {
+        throw new Error('nope')
+      }),
+    }
+    vi.mocked(getSanityWriteClient).mockReturnValue(fakeClient as never)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { isRateLimited } = await import('./rate-limit')
+
+    expect(await isRateLimited([{ action: 'a', identifier: 'x', windowMs: 60_000, max: 5 }])).toBe(false)
   })
 
   it('allows requests up to the max, then blocks the next one in the same window', async () => {

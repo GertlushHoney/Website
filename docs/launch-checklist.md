@@ -73,26 +73,28 @@ Per the Food Standards Agency, a food business must register with the local auth
 least 28 days before trading**. This is unrelated to the website build but is a real launch
 blocker per the project pack (source S11) — flagging it now so it isn't discovered late.
 
-## 7. Legal content review — DONE 2026-09-24 (Privacy, Cookies, Terms, Refund Policy)
+## 7. Legal content review — DONE (all pages, confirmed 2026-10-26)
 
-Confirmed by the user 2026-09-24: a qualified reviewer has looked at the Privacy Notice, Cookie
-Policy, Terms and Conditions, and Refund Policy and is happy with them. The "Draft — not yet
-legally reviewed" banner has been removed from those four pages (`src/components/legal/
-draft-notice.tsx` is no longer imported by any of them).
+Confirmed by the user 2026-09-24 for the Privacy Notice, Cookie Policy, Terms and Refund Policy,
+and on 2026-10-26 for **every legal and policy page** (that also covers the Delivery page and the
+Accessibility Statement): a professional has reviewed them. All "Draft — not yet legally reviewed"
+banners are gone and `src/components/legal/draft-notice.tsx` has been deleted.
 
-**Still open:** the Refund Policy's own specific hedge — "exactly which of [the Consumer
-Contracts Regulations exemptions], if any, apply to a food product like honey hasn't been
-confirmed by a qualified adviser yet" — hasn't been updated with the reviewer's actual
-conclusion, since that's a specific legal answer (does honey qualify for an exemption or not?)
-this build was never told and can't infer from "they're happy with it" alone. Needs the definite
-answer to replace that sentence.
+On 2026-10-26 the Refund Policy sentence saying the honey/cancellation-exemption question "hasn't
+been confirmed by a qualified adviser yet" was removed, since it described a review status that is
+no longer true. The page still says the Regulations carry exemptions for some goods and invites
+anyone unsure to get in touch; it deliberately does **not** state whether honey is or isn't
+exempt, because that is a legal answer this build was never given.
+
+**Re-review whenever the wording changes.** The Privacy Notice has changed since the original
+review (Royal Mail / Click & Drop, the postcode waiting-list box and its tick box, the contact form
+now sending through Microsoft 365, the review-alert email, and a new "Preventing misuse of our
+forms" section describing the hashed, auto-deleted IP/email counters) — so the reviewer should see
+the current version. The /fake-honey page is not a legal page but makes claims about the law.
 
 Food-information wording (Honey (England) Regulations 2015 — net quantity, ingredients, storage,
-batch, best-before, infant-honey warning on each product page) was **not** mentioned as part of
-this review and should be treated as still needing it, distinct from the four legal *pages* above.
-
-The Delivery page and the Accessibility Statement (`/delivery`, `/legal/accessibility`) still
-carry the draft banner — not confirmed as reviewed, so left as they were.
+batch, best-before, infant-honey warning on each product page) is product-page content, not one of
+the legal pages, and was not mentioned in the review; check it was covered.
 
 ## 8. `/tools` protection — DONE 2026-08-19
 
@@ -371,9 +373,8 @@ none of the above... designed to run entirely on mocked/placeholder data," which
 early state the project has long since moved past.)* Most items above are marked **DONE** and
 are in active use with real credentials — real Shopify store, real Sanity project, real domain,
 real email. What genuinely still needs action from you: item 6 (food-business registration),
-item 7's one remaining open point (the Refund Policy's own honey-exemption hedge needs the
-reviewer's actual answer, and food-information wording on product pages wasn't part of this
-review), item 11's ongoing review habit (approving submitted reviews in Sanity Studio), item 14
+item 7's follow-up (show the reviewer the current Privacy Notice, and check the food-information
+wording on product pages was covered), item 11's ongoing review habit (approving submitted reviews in Sanity Studio), item 14
 (company registration/VAT), and item 20 (weigh the remaining products, a Click & Drop test order,
 and legal review of the new Royal Mail privacy paragraph and the new fake-honey and waiting-list
 wording). Item 17 (Dependabot alerts) is done. Item 18 is optional, not blocking anything

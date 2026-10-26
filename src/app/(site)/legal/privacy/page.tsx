@@ -15,6 +15,7 @@ export default function PrivacyPage() {
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
         Your privacy.
       </h1>
+      <p className="text-porcelain/40 mt-3 text-sm">Last updated: October 2026</p>
 
       <div className="text-porcelain/80 mt-8 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
@@ -39,16 +40,16 @@ export default function PrivacyPage() {
             as an email to our own business inbox (run on Microsoft 365, see &quot;Third parties we
             use&quot; below) so we can reply to you. The site doesn&apos;t store them anywhere
             else, and we don&apos;t send you an email back unless we&apos;re replying to you. To
-            stop the form being misused we also keep a short-lived count of messages against each
-            email address, which we don&apos;t use for anything else. An &quot;email us
-            instead&quot; fallback also appears on an individual product page if that specific
+            stop the form being misused we also count how often it is used (see &quot;Preventing
+            misuse of our forms&quot; below). An &quot;email us instead&quot; fallback also appears on an individual product page if that specific
             product or subscription hasn&apos;t been fully set up for online checkout yet.
           </p>
           <p className="mt-2">
             Separately, this site also has a product review form, a restock-notification signup, a
-            newsletter signup (including a popup), and the &quot;send me the form&quot; boxes on our
-            Become a Supplier and Our Beekeepers pages — each described in its own section below,
-            since each collects different information for a different purpose.
+            newsletter signup (including a popup), a waiting-list box on the Postcode Honey map, and
+            the &quot;send me the form&quot; boxes on our Become a Supplier and Our Beekeepers pages
+            — each described in its own section below, since each collects different information
+            for a different purpose.
           </p>
           <p className="mt-2">
             We use whatever information we do receive only to fulfil your order, respond to your
@@ -119,9 +120,23 @@ export default function PrivacyPage() {
           <p className="mt-2">
             The forms themselves are Microsoft Forms, run by Microsoft in our Microsoft 365 account.
             Anything you choose to enter there is stored by Microsoft on our behalf and only seen by
-            us. To stop these boxes being misused to email someone who didn&apos;t ask, we also keep
-            a short-lived count of requests against each email address, which we don&apos;t use for
-            anything else.
+            us.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-porcelain text-lg font-semibold">Preventing misuse of our forms</h2>
+          <p className="mt-2">
+            To stop our forms being used to send us spam, or to email people who didn&apos;t ask,
+            we count how often each internet (IP) address and — where a form asks for one — each
+            email address has used a form recently. This applies to the contact form, the
+            waiting-list box, the supplier and beekeeper boxes, reviews, restock alerts and the
+            newsletter signup. We don&apos;t keep the IP address or email address itself for this:
+            each is turned into a scrambled code that can&apos;t be turned back into the original,
+            and the code is only ever used to check the count. These counts are deleted
+            automatically after about three days (older ones are cleared each time one of these
+            forms is next used). Our reason is to keep the site working and secure, and we
+            don&apos;t use these counts for anything else.
           </p>
         </section>
 

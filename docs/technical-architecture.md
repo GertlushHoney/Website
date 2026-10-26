@@ -858,6 +858,15 @@ one suspected issue, investigated and found not to apply here.
    Middleware runs in Edge Runtime, which doesn't have that Node API, so `src/middleware.ts` now
    has its own fixed-iteration constant-time string comparison instead.
 
+**Rate-limit privacy (2026-10-26).** `rateLimitBucket` documents used to carry the raw IP or email in their
+`_id` and were never deleted, contradicting the Privacy Notice's "short-lived count". Identifiers
+are now a keyed hash (HMAC-SHA256 with `RATE_LIMIT_SALT`, falling back to the Sanity write token),
+and every `isRateLimited` call deletes buckets older than 3 days (`purgeExpiredRateLimitBuckets`;
+deliberately on every call rather than at random, since forms are rarely used on a quiet site).
+Existing raw-id buckets are removed by the same purge. Set `RATE_LIMIT_SALT` in Vercel to use a
+dedicated secret instead of the write token (optional). The Privacy Notice has a matching
+"Preventing misuse of our forms" section.
+
 **Investigated, found not exploitable here:** rate limiting's per-IP axis (`getClientIp()` in
 `src/lib/rate-limit.ts`) trusts the `x-forwarded-for` header — which would be a real bypass (an
 attacker sending their own X-Forwarded-For to reset which "IP" they appear as) on many hosting

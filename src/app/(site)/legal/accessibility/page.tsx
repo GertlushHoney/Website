@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { DraftNotice } from '@/components/legal/draft-notice'
 
 export const metadata: Metadata = {
   title: 'Accessibility Statement',
@@ -17,11 +16,7 @@ export default function AccessibilityPage() {
         Accessibility statement.
       </h1>
 
-      <div className="mt-8">
-        <DraftNotice />
-      </div>
-
-      <div className="text-porcelain/80 space-y-6 text-base hyphens-auto sm:text-justify">
+      <div className="text-porcelain/80 mt-8 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Our target</h2>
           <p className="mt-2">

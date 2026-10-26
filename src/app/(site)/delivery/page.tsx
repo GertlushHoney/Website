@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { DraftNotice } from '@/components/legal/draft-notice'
 
 export const metadata: Metadata = {
   title: 'Shipping and Delivery Policy',
@@ -16,11 +15,7 @@ export default function DeliveryPage() {
         Shipping and delivery policy.
       </h1>
 
-      <div className="mt-8">
-        <DraftNotice />
-      </div>
-
-      <p className="text-porcelain/70 text-base">
+      <p className="text-porcelain/70 mt-8 text-base">
         At Gert Lush Honey, we take great care when packing your order. Our honey is packed in
         glass jars, so every parcel is carefully prepared to help make sure it reaches you safely
         and in the same gert lush condition it left us.
@@ -153,7 +148,7 @@ export default function DeliveryPage() {
           </p>
         </section>
 
-        <p className="text-porcelain/40 text-sm">Last updated: August 2026</p>
+        <p className="text-porcelain/40 text-sm">Last updated: October 2026</p>
       </div>
     </div>
   )

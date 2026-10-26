@@ -32,6 +32,7 @@ const routes = [
   '/contact',
   '/delivery',
   '/faqs',
+  '/fake-honey',
   '/information',
   '/our-story',
   '/sustainability',

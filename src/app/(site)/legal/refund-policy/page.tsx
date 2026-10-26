@@ -33,9 +33,8 @@ export default function RefundPolicyPage() {
             order within 14 days of receiving it, without giving a reason, under the Consumer
             Contracts Regulations 2013. The Regulations also carry exemptions for certain goods
             (for example items that deteriorate quickly, or are sealed for hygiene reasons and
-            unsealed after delivery) — exactly which of those, if any, apply to a food product like
-            honey hasn&apos;t been confirmed by a qualified adviser yet, so please don&apos;t rely on
-            this section alone. If in doubt, get in touch and we&apos;ll sort it fairly.
+            unsealed after delivery). If you&apos;re not sure whether your order is covered, get in
+            touch and we&apos;ll sort it fairly.
           </p>
           <p className="mt-2">
             Where the right to cancel does apply, you have a further 14 days from telling us you
@@ -107,7 +106,7 @@ export default function RefundPolicyPage() {
           <p className="mt-2">These terms are governed by the law of England and Wales.</p>
         </section>
 
-        <p className="text-porcelain/40 text-sm">Last updated: August 2026</p>
+        <p className="text-porcelain/40 text-sm">Last updated: October 2026</p>
       </div>
     </div>
   )

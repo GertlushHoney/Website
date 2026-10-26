@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto'
 import { headers } from 'next/headers'
 import { getSanityWriteClient, isSanityWriteConfigured } from './sanity/write-client'
 
@@ -25,6 +26,39 @@ import { getSanityWriteClient, isSanityWriteConfigured } from './sanity/write-cl
 // and reset it. The same deterministic-id idea as webhookOperation, for
 // the same reason: it turns "what's the count for this window" into a
 // single, unambiguous lookup.
+
+// Privacy: a bucket's id used to contain the raw IP address or email it was
+// counting, and nothing ever deleted old buckets — so the notice's promise of
+// a "short-lived count" wasn't true. Now (2026-10-26) the identifier is
+// replaced by a keyed one-way hash (HMAC-SHA256), so no raw IP or email is
+// ever stored here, and buckets older than RATE_LIMIT_RETENTION_MS are
+// deleted every time the limiter runs (these forms are used rarely, so one
+// small delete-by-query per use is cheap — and on a quiet site a random
+// "sometimes" cleanup could leave old buckets for weeks). The longest window any
+// caller uses is 24 hours, so a bucket is useless long before it is deleted.
+// The key is RATE_LIMIT_SALT if set, else the Sanity write token — a secret
+// the server already has; never the identifier alone, since a plain hash of
+// an IPv4 address could be reversed by trying every address.
+export const RATE_LIMIT_RETENTION_MS = 3 * 24 * 60 * 60 * 1000
+
+function hashIdentifier(identifier: string): string {
+  const key = process.env.RATE_LIMIT_SALT || process.env.SANITY_API_WRITE_TOKEN || 'gert-lush-local-dev'
+  return createHmac('sha256', key).update(identifier.trim().toLowerCase()).digest('hex').slice(0, 32)
+}
+
+// Deletes every expired bucket, including any created before hashing
+// existed. Never throws.
+export async function purgeExpiredRateLimitBuckets(): Promise<void> {
+  if (!isSanityWriteConfigured()) return
+  try {
+    await getSanityWriteClient().delete({
+      query: '*[_type == "rateLimitBucket" && _createdAt < $cutoff]',
+      params: { cutoff: new Date(Date.now() - RATE_LIMIT_RETENTION_MS).toISOString() },
+    })
+  } catch (error) {
+    console.error('Rate limit cleanup failed:', error)
+  }
+}
 
 // Sanity document ids allow a limited character set — keeps every segment
 // safe (lowercase alphanumeric and hyphens) regardless of what an email
@@ -64,7 +98,7 @@ export async function getClientIp(): Promise<string> {
 async function hit(action: string, identifier: string, windowMs: number): Promise<number> {
   if (!isSanityWriteConfigured()) return 0
   const windowIndex = Math.floor(Date.now() / windowMs)
-  const id = `rateLimit.${sanitizeIdSegment(action)}.${sanitizeIdSegment(identifier)}.${windowIndex}`
+  const id = `rateLimit.${sanitizeIdSegment(action)}.${hashIdentifier(identifier)}.${windowIndex}`
   try {
     const client = getSanityWriteClient()
     await client.createIfNotExists({ _id: id, _type: 'rateLimitBucket', action, count: 0 })
@@ -98,5 +132,6 @@ export async function isRateLimited(checks: RateLimitCheck[]): Promise<boolean> 
     const count = await hit(check.action, check.identifier, check.windowMs)
     if (count > check.max) limited = true
   }
+  await purgeExpiredRateLimitBuckets()
   return limited
 }

@@ -369,8 +369,8 @@ setup.
 Click & Drop is connected to Shopify (set up by the owner). Still to do or check:
 
 1. **Weights — done (2026-10-28).** Every product now has a real packed weight (including packaging) in
-   Sanity and Shopify. Left: confirm Bee S4's jar weighs the same as Bee S3 (615 g; it is still
-   set to 613 g), and decide whether the 95 g "half soap" in your list should become a product.
+   Sanity and Shopify. Both honeys are 615 g. Left: decide whether the 95 g "half soap" in your list should become a
+   product.
 2. **Place a small test order** (e.g. a 100% discount code) and confirm it appears in Click & Drop
    within about 10 minutes, then cancel it.
 3. **Experiences:** make sure the Bee Day Experience is not marked "This is a physical product" in

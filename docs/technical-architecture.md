@@ -621,8 +621,7 @@ declared a GraphQL input type Shopify doesn't have (`InventoryItemUpdateInput`; 
 grams *including packaging*, set in Sanity (`shippingWeightGrams`) and pushed to Shopify: soap 150 g,
 lip balm 60 g, pillar and ghost candles 200 g, skep candle 85 g (small) / 100 g (large), rolled
 candles 100 g / 150 g, ceramic plates 85 g / 105 g, beeswax bars 85 g, hampers 1845 g / 2460 g /
-3690 g (3 / 4 / 6 jars), Bee S3 615 g. Bee S4 is still 613 g (not in the owner's list — presumably
-the same jar as Bee S3). The experience has no weight (nothing is posted). "Half soap" (95 g) was
+3690 g (3 / 4 / 6 jars), Bee S3 and Bee S4 615 g each (Bee S4 confirmed as the same jar). The experience has no weight (nothing is posted). "Half soap" (95 g) was
 in the owner's list but has no product yet. `syncShippingWeight` now sets the weight on **every**
 variant (a hamper has two), not just the first.
 

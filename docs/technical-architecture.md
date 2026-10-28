@@ -617,13 +617,14 @@ in Shopify. The weight lives in Sanity (`shippingWeightGrams`) and is pushed to 
 item by `/tools/sync-shipping-weights` (`src/lib/shopify/admin-shipping.ts`). That mutation
 declared a GraphQL input type Shopify doesn't have (`InventoryItemUpdateInput`; the real one is
 `InventoryItemInput`) so the tool would have failed for every product — fixed 2026-10-22.
-**Current state (checked 2026-10-26, Shopify Storefront):** the honeys are 613 g (set in Sanity and
-Shopify). Several other products already carry a weight **in Shopify** (entered there directly,
-possibly estimates: candles 100–500 g, soap 200 g, lip balm 50 g, hampers 1–1.75 kg), while
-Sanity's `shippingWeightGrams` is still empty for them. The sync only pushes non-empty Sanity
-weights, so it will not overwrite those until a real weight is entered in Sanity. Six products are
-still 0 in Shopify: Skep candle (small), beeswax bars, pillar candle, ghost candle, and both
-plates.
+**Current state (2026-10-28):** every product has a real packed weight, supplied by the owner in
+grams *including packaging*, set in Sanity (`shippingWeightGrams`) and pushed to Shopify: soap 150 g,
+lip balm 60 g, pillar and ghost candles 200 g, skep candle 85 g (small) / 100 g (large), rolled
+candles 100 g / 150 g, ceramic plates 85 g / 105 g, beeswax bars 85 g, hampers 1845 g / 2460 g /
+3690 g (3 / 4 / 6 jars), Bee S3 615 g. Bee S4 is still 613 g (not in the owner's list — presumably
+the same jar as Bee S3). The experience has no weight (nothing is posted). "Half soap" (95 g) was
+in the owner's list but has no product yet. `syncShippingWeight` now sets the weight on **every**
+variant (a hamper has two), not just the first.
 
 ## Hamper stock sync
 

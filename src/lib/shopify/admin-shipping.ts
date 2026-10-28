@@ -24,18 +24,22 @@ type ProductInventoryItemResponse = {
 // and merchProduct document already carries its real shopifyHandle for
 // exactly this kind of lookup (see getProductByHandle), so there's no
 // need for the title-matching workaround here.
-async function getInventoryItemIdByHandle(handle: string): Promise<string | null> {
+// Every variant, not just the first: a product like a hamper has several
+// ("Choose your own", "Surprise selection") and each has its own inventory
+// item and weight. They are one physical parcel, so they all get the same
+// packed weight.
+async function getInventoryItemIdsByHandle(handle: string): Promise<string[]> {
   const data = await shopifyAdminFetch<ProductInventoryItemResponse>({
     query: `
-      query InventoryItemByHandle($handle: String!) {
+      query InventoryItemsByHandle($handle: String!) {
         productByHandle(handle: $handle) {
-          variants(first: 1) { edges { node { inventoryItem { id } } } }
+          variants(first: 50) { edges { node { inventoryItem { id } } } }
         }
       }
     `,
     variables: { handle },
   })
-  return data.productByHandle?.variants.edges[0]?.node.inventoryItem.id ?? null
+  return data.productByHandle?.variants.edges.map((edge) => edge.node.inventoryItem.id) ?? []
 }
 
 export type ShippingWeightSyncResult =
@@ -51,28 +55,31 @@ export async function syncShippingWeight(
   handle: string,
   grams: number
 ): Promise<ShippingWeightSyncResult> {
-  const inventoryItemId = await getInventoryItemIdByHandle(handle)
-  if (!inventoryItemId) return { handle, status: 'not-found' }
+  const inventoryItemIds = await getInventoryItemIdsByHandle(handle)
+  if (inventoryItemIds.length === 0) return { handle, status: 'not-found' }
 
-  const data = await shopifyAdminFetch<{
-    inventoryItemUpdate: { userErrors: { field: string[] | null; message: string }[] }
-  }>({
-    query: `
-      mutation SetShippingWeight($id: ID!, $input: InventoryItemInput!) {
-        inventoryItemUpdate(id: $id, input: $input) {
-          userErrors { field message }
+  const messages: string[] = []
+  for (const id of inventoryItemIds) {
+    const data = await shopifyAdminFetch<{
+      inventoryItemUpdate: { userErrors: { field: string[] | null; message: string }[] }
+    }>({
+      query: `
+        mutation SetShippingWeight($id: ID!, $input: InventoryItemInput!) {
+          inventoryItemUpdate(id: $id, input: $input) {
+            userErrors { field message }
+          }
         }
-      }
-    `,
-    variables: {
-      id: inventoryItemId,
-      input: { measurement: { weight: { value: grams, unit: 'GRAMS' } } },
-    },
-  })
+      `,
+      variables: {
+        id,
+        input: { measurement: { weight: { value: grams, unit: 'GRAMS' } } },
+      },
+    })
+    for (const e of data.inventoryItemUpdate.userErrors) messages.push(e.message)
+  }
 
-  const errors = data.inventoryItemUpdate.userErrors
-  if (errors.length > 0) {
-    return { handle, status: 'error', message: errors.map((e) => e.message).join('; ') }
+  if (messages.length > 0) {
+    return { handle, status: 'error', message: messages.join('; ') }
   }
   return { handle, status: 'synced' }
 }

@@ -74,6 +74,14 @@ export const merchProduct = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'ingredients',
+      title: 'Ingredients',
+      description:
+        'For soap and lip balm: copy the ingredient list exactly from the approved label for this product. Shown on the product page. Leave blank for products without one.',
+      type: 'text',
+      rows: 4,
+    }),
+    defineField({
       name: 'weight',
       title: 'Size / weight',
       description:

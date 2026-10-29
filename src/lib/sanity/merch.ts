@@ -42,6 +42,9 @@ export type ExperienceSession = {
 
 export type MerchProduct = MerchProductSummary & {
   description: PortableTextBlock[]
+  // Plain text copied from the approved label (soap, lip balm); null when
+  // none has been entered.
+  ingredients: string | null
   // Only ever populated for category "experiences" — null for everything
   // else, and null (not []) for an experience with no dates added yet.
   sessions: ExperienceSession[] | null
@@ -106,6 +109,7 @@ export async function getMerchProductBySlug(slug: string): Promise<MerchProduct 
     groq`*[_type == "merchProduct" && slug.current == $slug && active == true][0] {
       ${summaryFields},
       description,
+      ingredients,
       ${galleryProjection},
       sessions[]{ _key, date, placesTotal, placesBooked },
       beekeeper -> { name, "slug": slug.current }

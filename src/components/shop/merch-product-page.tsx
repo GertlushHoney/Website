@@ -12,6 +12,26 @@ import { parseHamperJarCount } from '@/lib/hamper'
 import { JsonLd } from '@/components/seo/json-ld'
 import { breadcrumbJsonLd, productJsonLd } from '@/lib/seo/json-ld'
 
+// Usage lines shared by every product in a category, shown under the size.
+// Kept here rather than copied into each product's Sanity description so
+// changing the wording is one edit.
+const USAGE_ROWS: Partial<Record<MerchProduct['category'], [string, string][]>> = {
+  soap: [
+    ['How to use', 'Lather with water, massage onto wet skin and rinse thoroughly.'],
+    ['Looking after your bar', 'Let it drain and dry between uses.'],
+    [
+      'Warnings',
+      'For external use only. Avoid contact with eyes, mucous membranes, broken or irritated skin. Discontinue use if irritation occurs.',
+    ],
+  ],
+  'lip-balm': [
+    [
+      'How to use',
+      'Apply a small amount to your lips with a clean fingertip and reapply as needed.',
+    ],
+  ],
+}
+
 // Shared real-product layout for candles/soap/hamper/lip-balm once each
 // actually has a matching, active Sanity document — see each category's
 // page.tsx for the "not real yet" fallback.
@@ -60,6 +80,11 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
       : undefined
 
   const categoryLabel = MERCH_CATEGORY_LABELS[product.category]
+  const detailRows: [string, string][] = [
+    ...(product.weight ? ([['Size / weight', product.weight]] as [string, string][]) : []),
+    ...(USAGE_ROWS[product.category] ?? []),
+    ...(product.ingredients ? ([['Ingredients', product.ingredients]] as [string, string][]) : []),
+  ]
   const isSoldOut = experienceSessions
     ? experienceSessions.every((session) => session.placesRemaining <= 0)
     : isProductSoldOut(shopifyProduct)
@@ -128,12 +153,14 @@ export async function MerchProductPage({ product }: { product: MerchProduct }) {
             <PortableText value={product.description} />
           </div>
 
-          {product.weight && (
+          {detailRows.length > 0 && (
             <dl className="mt-6 space-y-3">
-              <div className="border-ink-line flex gap-4 border-t pt-3">
-                <dt className="text-porcelain/50 w-28 shrink-0 text-sm">Size / weight</dt>
-                <dd className="text-porcelain/90 text-sm">{product.weight}</dd>
-              </div>
+              {detailRows.map(([label, value]) => (
+                <div key={label} className="border-ink-line flex gap-4 border-t pt-3">
+                  <dt className="text-porcelain/50 w-28 shrink-0 text-sm">{label}</dt>
+                  <dd className="text-porcelain/90 text-sm">{value}</dd>
+                </div>
+              ))}
             </dl>
           )}
 

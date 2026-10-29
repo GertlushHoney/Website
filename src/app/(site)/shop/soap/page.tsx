@@ -26,8 +26,8 @@ export default async function SoapPage() {
         <>
           <ul className="text-porcelain/70 mt-4 list-disc space-y-1 pl-5 text-sm">
             <li>Four scents to start: Lavender &amp; Rosemary, Lemongrass, Honey &amp; Oats (Unscented), Orange &amp; Black Pepper</li>
-            <li>Full bar, minimum 80g — £6</li>
-            <li>Half bar, minimum 30g — £3.50 (also available as wedding favours)</li>
+            <li>Full bar, 80–90g — £6</li>
+            <li>Half bar, 40–45g — £3 (also available as wedding favours)</li>
           </ul>
           <p className="text-porcelain/50 mt-3 text-sm">
             Planning a wedding?{' '}

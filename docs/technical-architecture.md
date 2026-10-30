@@ -797,6 +797,41 @@ robots file already allows all crawlers, AI ones included. **Off-site presence**
 Profile, Google Search Console and Bing Webmaster Tools registration, reviews, stockist and press
 mentions) matters most and is the owner's to set up — see `docs/launch-checklist.md` point 21.
 
+## Soap, lip balm and candle product content (2026-10-30)
+
+Wording, photos and ingredients for the merch categories live in Sanity (`merchProduct`), not in
+code, except for two things:
+
+- **Ingredients.** New optional `ingredients` plain-text field on `merchProduct` (schema,
+  `MerchProduct` type and the `getMerchProductBySlug` query in `src/lib/sanity/merch.ts`). It is
+  shown as an "Ingredients" row on the product page. For soap and lip balm it holds the INCI list
+  copied from the supplier label review (`Gert_Lush_All_Products_Label_Review.pdf`, Hollow Oak Own
+  Label Guide). Half soaps carry the same list as the full bar. On 2026-10-30 every stored list was
+  compared word for word against that PDF (all matched; Lavender & Rosemary shows "Kaolin" once
+  because the draft label repeats it) and cross-checked with Hollow Oak's own website, which
+  disagrees on two points (Lavender & Rosemary soap colourant/Kaolin, Sweet Orange lip balm
+  allergens). Both are with the supplier to confirm — see `docs/launch-checklist.md` item 23.
+- **Usage lines.** `USAGE_ROWS` in `src/components/shop/merch-product-page.tsx` adds the same
+  "How to use" (soap and lip balm), "Looking after your bar" and "Warnings" (soap, taken from the
+  label wording) rows to every product in the category. Changing the wording is one edit there, not
+  one per product.
+
+Sizes are shown from `weight` ("Size / weight" row). Because soaps are hand made, the labels
+declare a minimum (80 g full, 30 g half) while the real bars are usually 80–90 g and 40–45 g; the
+page says so ("Minimum 30g (usually 40–45g…)"). The Hollow Oak catalogue also states 80 g / 30 g /
+13 g minimums. Postage weights (`shippingWeightGrams`) are the packed weights and are separate.
+
+The four half soaps were created in Shopify (Headless channel) and added to Sanity through
+`/tools/new-product` using the Shopify photo; the new flavours not yet on sale (Rose, Peppermint,
+Cedarwood, Patchouli & Peppermint, Gardener's soap; Lemon, Peppermint, Tea Tree, Grapefruit lip
+balm) have deliberately not been added.
+
+**Company details (2026-10-30).** Gert Lush Honey Ltd, company number 17554119 (Companies House
+register: private limited company, incorporated 30 October 2026, registered office 14 Beckington
+Road, Bristol, BS3 5EB). Shown in the site footer, the "Who we are" sections of the Terms, Privacy
+Notice and Refund Policy, the Organization JSON-LD (`legalName`, `src/app/(site)/layout.tsx`) and the
+supplier invite email footer. Not VAT registered, by choice; no VAT number appears anywhere.
+
 ## Search
 
 Real, built (`src/lib/search.ts`, `src/components/layout/search-overlay.tsx`) — not the

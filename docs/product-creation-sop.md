@@ -141,6 +141,8 @@ the frame edge; re-crop with more headroom and re-run, don't just push `--end` u
 | `shopifyHandle` | The exact handle from Step 1. |
 | `heroImage` | The feathered image from Step 2. |
 | `description` | Portable text, shown on the product page. |
+| `ingredients` | Soap and lip balm: the full ingredient (INCI) list, copied exactly from the approved supplier label, shown as an "Ingredients" row. Leave blank for products without one. Added 2026-10-30. |
+| `weight` | Size shown on the page, e.g. "10cm tall" or "Minimum 30g (usually 40–45g…)". Optional. |
 | `shippingWeightGrams` | The packed parcel weight in grams — see the Honey Product row above. |
 | `active` | **Defaults to `false`** for merch products — turn it on explicitly once it's genuinely ready to sell. Until then it just won't appear anywhere, which is the point. |
 

@@ -374,8 +374,8 @@ setup.
 Click & Drop is connected to Shopify (set up by the owner). Still to do or check:
 
 1. **Weights — done (2026-10-28).** Every product now has a real packed weight (including packaging) in
-   Sanity and Shopify. Both honeys are 615 g. Left: decide whether the 95 g "half soap" in your list should become a
-   product.
+   Sanity and Shopify. Both honeys are 615 g. The four half soaps (95 g packed) were added to the
+   site on 2026-10-29.
 2. **Place a small test order** (e.g. a 100% discount code) and confirm it appears in Click & Drop
    within about 10 minutes, then cancel it.
 3. **Experiences:** make sure the Bee Day Experience is not marked "This is a physical product" in
@@ -432,12 +432,34 @@ early state the project has long since moved past.)* Most items above are marked
 are in active use with real credentials — real Shopify store, real Sanity project, real domain,
 real email. What genuinely still needs action from you: item 6 (food-business registration),
 item 7's follow-up (show the reviewer the current Privacy Notice, and check the food-information
-wording on product pages was covered), item 11's ongoing review habit (approving submitted reviews in Sanity Studio), item 14
-(company registration/VAT), and item 20 (weigh the remaining products, a Click & Drop test order,
-and legal review of the new Royal Mail privacy paragraph and the new fake-honey and waiting-list
-wording). Item 17 (Dependabot alerts) is done. Item 18 is optional, not blocking anything
+wording and the new soap/lip balm ingredient pages were covered), item 11's ongoing review habit (approving
+submitted reviews in Sanity Studio), item 20 (a Click & Drop test order, and legal review of the new Royal Mail
+privacy paragraph and the new fake-honey and waiting-list wording), and item 23 (supplier confirmations).
+Item 14 is done (company registered 2026-10-30; VAT deliberately not registered). Item 17 (Dependabot alerts) is done. Item 18 is optional, not blocking anything
 — the generic review prompt already works with zero setup; it's only there for whoever wants the
 sharper per-product version.
 The codebase still degrades gracefully to mocked/static content if a credential is ever missing
 or misconfigured — that fallback behaviour is a resilience feature now, not the project's
 actual day-to-day state.
+
+## 23. Supplier confirmations and remaining product details (added 2026-10-30)
+
+Soap, lip balm and candle wording, photos and ingredients are in Sanity and live. Open:
+
+1. **Hollow Oak to confirm in writing** (draft email prepared 2026-10-30): the Lavender & Rosemary
+   soap list (the label review shows "Kaolin, Kaolin, Lithospermum Erythrorhizon Root Extract";
+   their website shows Kaolin once and no root extract; their catalogue says "purple clay") and the
+   Sweet Orange lip balm allergens (label: Limonene, Linalool, Citral; their website: linalool,
+   limonene, coumarin, geraniol). Also that every other list in the label review is final. Update the
+   `ingredients` field in Studio if anything changes. The site does not say "purple clay".
+2. **Beeswax Bars:** size or weight still blank on the product page.
+3. **Labels:** half soaps stay labelled "30g" (a minimum; the bars run 40–45 g) and full soaps "80g"
+   (bars run 80–90 g) — decided 2026-10-30; the site wording says "minimum … usually …".
+4. **Tree-nut note for the legal reviewer:** all soaps contain sweet almond oil and coconut oil
+   (listed in the ingredients; the descriptions only say "plant oils").
+5. **Not on sale yet, deliberately not on the site:** soaps Rose, Peppermint, Cedarwood, Patchouli &
+   Peppermint, Gardener's; lip balms Lemon, Peppermint, Tea Tree, Grapefruit. When ready: create in
+   Shopify, then `/tools/new-product` (wording and ingredients are in the Codex copy file and the
+   label review).
+6. **Shopify, done 2026-10-30:** legal business name and the Legal notice policy updated with the
+   company details.

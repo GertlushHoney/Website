@@ -252,15 +252,20 @@ on `gertlushhoney.co.uk` (`gdpr@`, `complaints@`, `sales@`, `suppliers@`, `hello
 Exchange Online's Accepted Domains list caught up with the domain's own verification. All five
 aliases confirmed created on the working mailbox.
 
-## 14. Company registration and VAT — not yet done
+## 14. Company registration and VAT — company DONE 2026-10-30, VAT deliberately not registered
 
-Gert Lush Honey intends to incorporate as a limited company but hasn't yet (confirmed
-2026-08-22) — currently trades as a sole trader regardless of that intention. Not VAT registered,
-and turnover should be checked against the current threshold before assuming either way. This
-blocks writing a real Legal Notice / Impressum page (Shopify has a field for this) — a placeholder
-or invented company number must never be used. Register at gov.uk/set-up-a-limited-company (£50,
-usually approved within 24 hours) when ready, then come back with the real company number (and
-VAT number if applicable) to get the Legal Notice drafted.
+Gert Lush Honey Ltd is incorporated: company number 17554119, private limited company, registered
+office 14 Beckington Road, Bristol, BS3 5EB (checked on the Companies House register 2026-10-30).
+The number and registered office are now on the footer, the Terms, Privacy and Refund Policy
+"Who we are" sections, the Organization JSON-LD (legalName) and the supplier invite email footer.
+
+Not VAT registered, by choice: turnover is unknown and registration is only compulsory over the
+threshold (check gov.uk for the current figure). Keep an eye on turnover; no VAT number appears
+anywhere and Shopify tax collection stays off. When/if registering, add the VAT number to the same
+places and revisit the Terms line "include VAT where applicable".
+
+Still to do by hand in Shopify: Settings → General → set the legal business name to Gert Lush Honey
+Ltd, and paste the company details into Settings → Policies → Legal notice if used.
 
 ## 15. Shopify subscriptions — DONE 2026-08-22
 

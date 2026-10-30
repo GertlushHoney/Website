@@ -38,10 +38,14 @@ export function SiteFooter() {
           Based and packed in Bristol. Honey from independent British beekeepers.
         </p>
         <p className="text-porcelain/50 mt-4 text-xs">
-          &copy; {new Date().getFullYear()} GERT LUSH HONEY
+          &copy; {new Date().getFullYear()} GERT LUSH HONEY LTD
           <br className="sm:hidden" />
           <span className="hidden sm:inline"> &middot; </span>
           Based and packed in Bristol &bull; All rights reserved
+        </p>
+        <p className="text-porcelain/50 mt-2 text-xs">
+          Gert Lush Honey Ltd. Registered in England and Wales, company number 17554119.
+          Registered office: 14 Beckington Road, Bristol, BS3 5EB.
         </p>
       </div>
     </footer>

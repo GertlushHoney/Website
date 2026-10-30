@@ -67,6 +67,7 @@ const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: SITE_NAME,
+  legalName: 'Gert Lush Honey Ltd',
   url: SITE_URL,
   logo: `${SITE_URL}/images/brand/primary-logo.png`,
   address: {

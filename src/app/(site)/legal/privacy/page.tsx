@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-porcelain text-lg font-semibold">Who we are</h2>
           <p className="mt-2">
-            Gert Lush Honey, 14 Beckington Road, Bristol, BS3 5EB. We&apos;re the data controller
+            Gert Lush Honey Ltd (company number 17554119, registered in England and Wales), registered office 14 Beckington Road, Bristol, BS3 5EB. We&apos;re the data controller
             for any personal information you give us.
           </p>
         </section>

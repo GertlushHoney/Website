@@ -79,7 +79,8 @@ function renderInviteLayout(layout: InviteLayout): string {
 </td></tr>
 <tr><td style="padding:28px 40px 32px;${BODY_TEXT}">${layout.closingHtml}<br><br>Best<br><span style="color:#F7F5EF;font-weight:bold;">Adam Evans</span><br><span style="color:#F2C35B;">Gert Lush Honey</span></td></tr>
 <tr><td align="center" style="border-top:1px solid #33291D;padding:24px 40px 30px;${SANS}font-size:13px;line-height:1.7;color:#A89F8E;">
-Gert Lush Honey &middot; 14 Beckington Road, Bristol, BS3 5EB<br>
+Gert Lush Honey Ltd &middot; Registered in England and Wales, company number 17554119<br>
+14 Beckington Road, Bristol, BS3 5EB<br>
 <a href="mailto:${layout.footerAddress}" style="color:#D99614;text-decoration:none;"><span style="color:#D99614;">${layout.footerAddress}</span></a>
 </td></tr>
 </table>

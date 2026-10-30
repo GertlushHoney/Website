@@ -84,7 +84,7 @@ export default function WeddingsAndEventsPage() {
           Soap, candles and other hive products
         </h2>
         <p className="text-porcelain/70 mt-3 text-sm">
-          A half bar (40–45g, hand made so each one varies a little) of our honey and beeswax
+          A half bar (minimum 30g, usually 40–45g, hand made so each one varies a little) of our honey and beeswax
           soap, in four scents: Lavender &amp; Rosemary, Lemongrass, Honey &amp; Oats (Unscented)
           and Orange &amp; Black Pepper. £3.00 each. The same soaps are also sold as full-size bars
           in{' '}

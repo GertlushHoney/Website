@@ -809,8 +809,11 @@ code, except for two things:
   Label Guide). Half soaps carry the same list as the full bar. On 2026-10-30 every stored list was
   compared word for word against that PDF (all matched; Lavender & Rosemary shows "Kaolin" once
   because the draft label repeats it) and cross-checked with Hollow Oak's own website, which
-  disagrees on two points (Lavender & Rosemary soap colourant/Kaolin, Sweet Orange lip balm
-  allergens). Both are with the supplier to confirm — see `docs/launch-checklist.md` item 23.
+  disagreed on two points (Lavender & Rosemary soap colourant/Kaolin, Sweet Orange lip balm
+  allergens). Hollow Oak replied on 2026-11-01: the Own Label Guide lists are correct (Kaolin is
+  listed once because both of the recipe's clays share that INCI name; gromwell root is real; Sweet
+  Orange allergens are Limonene, Linalool, Citral) and their website is being corrected. The stored
+  lists therefore stand — see `docs/launch-checklist.md` item 23.
 - **Usage lines.** `USAGE_ROWS` in `src/components/shop/merch-product-page.tsx` adds the same
   "How to use" (soap and lip balm), "Looking after your bar" and "Warnings" (soap, taken from the
   label wording) rows to every product in the category. Changing the wording is one edit there, not

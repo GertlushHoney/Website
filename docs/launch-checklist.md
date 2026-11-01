@@ -446,12 +446,17 @@ actual day-to-day state.
 
 Soap, lip balm and candle wording, photos and ingredients are in Sanity and live. Open:
 
-1. **Hollow Oak to confirm in writing** (draft email prepared 2026-10-30): the Lavender & Rosemary
-   soap list (the label review shows "Kaolin, Kaolin, Lithospermum Erythrorhizon Root Extract";
-   their website shows Kaolin once and no root extract; their catalogue says "purple clay") and the
-   Sweet Orange lip balm allergens (label: Limonene, Linalool, Citral; their website: linalool,
-   limonene, coumarin, geraniol). Also that every other list in the label review is final. Update the
-   `ingredients` field in Studio if anything changes. The site does not say "purple clay".
+1. **Hollow Oak confirmed the ingredient lists — DONE (reply received 2026-11-01).** Lavender &
+   Rosemary soap: the recipe has two clays (white and purple) that share the INCI name Kaolin, so
+   Kaolin is listed **once**, and Lithospermum Erythrorhizon (gromwell) Root Extract is correct (it
+   boosts the purple naturally) — exactly what the website shows. The printed label draft repeats
+   "Kaolin"; ask Hollow Oak to list it once. Sweet Orange lip balm: the correct allergens are
+   Limonene, Linalool and Citral, as in the Own Label Guide (their website was wrong and is being
+   corrected); the website matches. Every other list in the guide was checked against their
+   formulations. Hollow Oak's advice: ingredient declarations can change, so print labels in small
+   runs, and send the finished labels to them for final approval before printing. "Purple clay" is
+   now supported by the supplier, but the product copy still doesn't use the phrase (the copy file
+   said to verify first) — add it if wanted.
 2. **Beeswax Bars:** size or weight still blank on the product page.
 3. **Labels:** half soaps stay labelled "30g" (a minimum; the bars run 40–45 g) and full soaps "80g"
    (bars run 80–90 g) — decided 2026-10-30; the site wording says "minimum … usually …".

@@ -457,6 +457,8 @@ Soap, lip balm and candle wording, photos and ingredients are in Sanity and live
    runs, and send the finished labels to them for final approval before printing. "Purple clay" is
    now supported by the supplier, but the product copy still doesn't use the phrase (the copy file
    said to verify first) — add it if wanted.
+   **Update 2026-11-02:** Hollow Oak have approved the finished labels (Lavender & Rosemary now lists
+   Kaolin once). Nothing further needed on the label side.
 2. **Beeswax Bars:** size or weight still blank on the product page.
 3. **Labels:** half soaps stay labelled "30g" (a minimum; the bars run 40–45 g) and full soaps "80g"
    (bars run 80–90 g) — decided 2026-10-30; the site wording says "minimum … usually …".

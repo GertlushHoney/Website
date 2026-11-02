@@ -459,7 +459,7 @@ Soap, lip balm and candle wording, photos and ingredients are in Sanity and live
    said to verify first) — add it if wanted.
    **Update 2026-11-02:** Hollow Oak have approved the finished labels (Lavender & Rosemary now lists
    Kaolin once). Nothing further needed on the label side.
-2. **Beeswax Bars:** size or weight still blank on the product page.
+2. **Beeswax Bars:** size set to "Approx. 30g" (2026-11-02).
 3. **Labels:** half soaps stay labelled "30g" (a minimum; the bars run 40–45 g) and full soaps "80g"
    (bars run 80–90 g) — decided 2026-10-30; the site wording says "minimum … usually …".
 4. **Tree-nut note for the legal reviewer:** all soaps contain sweet almond oil and coconut oil

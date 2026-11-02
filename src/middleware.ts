@@ -77,7 +77,9 @@ function studioUnavailable() {
 // these directly and can't supply the site-wide Basic Auth credentials, so
 // they're excluded from both gates. Their real security boundary is each
 // route verifying Shopify's HMAC signature itself, not this middleware.
-const UNGATED_PREFIXES = ['/api/webhooks']
+// Also Google Search Console's site-ownership file (added 2026-11-02): Google
+// fetches it with no credentials, and it contains only the verification line.
+const UNGATED_PREFIXES = ['/api/webhooks', '/google57341a6314339034.html']
 
 // Headers applied to every response, gate or no gate — none of these
 // interfere with how any page's own JS/CSS behaves, so there's no reason to

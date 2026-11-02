@@ -107,6 +107,14 @@ describe('security headers (every route)', () => {
     expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
   })
 
+  test('the Google Search Console verification file is readable without the site password', async () => {
+    process.env.SITE_PASSWORD_USER = 'user'
+    process.env.SITE_PASSWORD = 'pass'
+    const middleware = await loadMiddleware()
+    expect(middleware(request('/google57341a6314339034.html')).status).toBe(200)
+    expect(middleware(request('/google-other.html')).status).toBe(401)
+  })
+
   // The comparison itself moved to a hand-rolled constant-time check
   // ("ETHICAL HACKER REVIEW" audit, 2026-09-15) since Edge Runtime has no
   // crypto.timingSafeEqual — these confirm it still behaves like a plain

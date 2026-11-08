@@ -48,10 +48,12 @@ export function InteractiveUkMap({
 }: {
   svgMarkup: string
   // Keyed by exact postcode code — either a UK area ("M") or, for
-  // Bristol/Bath, a district ("BS3"). Comes from Sanity honeyProduct
-  // documents (see src/lib/sanity/products.ts) — this component has no
-  // hardcoded knowledge of which postcodes have real stock.
-  activeProducts: Record<string, ActiveMapProduct>
+  // Bristol/Bath, a district ("BS3"). Each code holds every active honey from
+  // that postcode (a postcode can have more than one, e.g. a runny and a
+  // creamed jar). Comes from Sanity honeyProduct documents (see
+  // src/lib/sanity/products.ts) — this component has no hardcoded knowledge
+  // of which postcodes have real stock.
+  activeProducts: Record<string, ActiveMapProduct[]>
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [view, setView] = useState<View>('uk')
@@ -203,7 +205,8 @@ export function InteractiveUkMap({
 
   const currentAreaData = drilledArea ? districtDataByArea[drilledArea] : undefined
   const isDistrictSelection = view === 'district' && selectedCode !== null
-  const activeProduct = selectedCode ? activeProducts[selectedCode] : undefined
+  const activeList = selectedCode ? (activeProducts[selectedCode] ?? []) : []
+  const activeProduct = activeList.length === 1 ? activeList[0] : undefined
   const areaName = selectedCode
     ? isDistrictSelection
       ? currentAreaData?.districts.find((d) => d.code === selectedCode)?.coverage
@@ -333,6 +336,39 @@ export function InteractiveUkMap({
                   Become a supplier
                 </Link>
               </p>
+            </>
+          ) : activeList.length > 1 ? (
+            <>
+              <p className="text-honey-amber text-sm font-semibold tracking-wide uppercase">
+                {selectedCode} &middot; {areaName}
+              </p>
+              <ul className="mt-4 space-y-5">
+                {activeList.map((product) => (
+                  <li key={product.slug} className="flex gap-4">
+                    {product.imageUrl && (
+                      <div className="from-ink-surface to-ink relative aspect-square w-24 shrink-0 rounded-xl bg-gradient-to-b">
+                        <Image
+                          src={product.imageUrl}
+                          alt={`A jar of ${product.name} honey`}
+                          fill
+                          sizes="96px"
+                          className="object-contain p-2"
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-porcelain text-lg font-semibold">{product.name}</p>
+                      <p className="text-porcelain/60 mt-1 text-sm">{product.tagline}</p>
+                      <Link
+                        href={`/shop/${product.slug}`}
+                        className="bg-honey-amber text-ink focus-visible:outline-porcelain mt-3 inline-block rounded-full px-5 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+                      >
+                        View {product.name}
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </>
           ) : activeProduct ? (
             <>

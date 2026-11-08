@@ -20,18 +20,17 @@ export default async function PostcodeHoneyPage() {
     getHoneyProductsWithBeekeeper(),
   ])
 
-  const activeProducts: Record<string, ActiveMapProduct> = {}
+  // A postcode can hold more than one honey (e.g. Bee S3 and Bee S3 Creamed);
+  // products arrive ordered by name, so the main honey comes first.
+  const activeProducts: Record<string, ActiveMapProduct[]> = {}
   for (const product of products) {
-    // Two honeys can share a postcode (e.g. Bee S3 and Bee S3 Creamed). The
-    // map shows one per postcode — the first, which is the main honey since
-    // products are ordered by name — and the plain list below shows them all.
-    if (product.postcodeCode in activeProducts) continue
-    activeProducts[product.postcodeCode] = {
+    const forCode = (activeProducts[product.postcodeCode] ??= [])
+    forCode.push({
       slug: product.slug,
       name: product.name,
       tagline: product.tagline,
       imageUrl: urlForImage(product.heroImage ?? undefined)?.width(320).height(320).url() ?? null,
-    }
+    })
   }
 
   return (

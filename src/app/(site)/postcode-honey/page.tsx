@@ -22,6 +22,10 @@ export default async function PostcodeHoneyPage() {
 
   const activeProducts: Record<string, ActiveMapProduct> = {}
   for (const product of products) {
+    // Two honeys can share a postcode (e.g. Bee S3 and Bee S3 Creamed). The
+    // map shows one per postcode — the first, which is the main honey since
+    // products are ordered by name — and the plain list below shows them all.
+    if (product.postcodeCode in activeProducts) continue
     activeProducts[product.postcodeCode] = {
       slug: product.slug,
       name: product.name,

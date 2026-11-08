@@ -182,3 +182,4 @@ Don't consider this done until checked in a running dev server, not just "looks 
   setup step, already done — not something to redo per product. If a new Sanity image ever 404s
   with a "hostname not configured" error, that's a sign this config broke, not something wrong
   with the product.
+- **Two honeys, one postcode.** A variant of an existing honey (e.g. Bee S3 Creamed, added 2026-11-08, switched off until its Shopify product exists) uses the same `postcodeCode`. The postcode map shows one honey per code — the first by name, i.e. the main one — while the "Honey available now, by postcode" list and the shop show both. A new honey is also offered in "Choose your own" hampers once it is active, so check that is wanted.

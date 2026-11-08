@@ -27,6 +27,11 @@ const PAGES: { path: string; label: string; description: string }[] = [
   { path: '/beekeepers', label: 'Our beekeepers', description: 'The independent beekeepers behind each jar.' },
   { path: '/our-story', label: 'Our story', description: 'Who Gert Lush Honey is and why it exists.' },
   {
+    path: '/why-buy-british',
+    label: 'Why buy British?',
+    description: 'Why honey made in Britain is scarce and worth choosing, and how to check a jar is British.',
+  },
+  {
     path: '/fake-honey',
     label: 'Is it really honey?',
     description: 'How honey fraud works, what EU testing found, and what to check on a label.',

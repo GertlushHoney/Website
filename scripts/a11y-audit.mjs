@@ -33,6 +33,7 @@ const routes = [
   '/delivery',
   '/faqs',
   '/fake-honey',
+  '/why-buy-british',
   '/information',
   '/our-story',
   '/sustainability',

@@ -671,6 +671,8 @@ suspicion, with the Commission's own caveat that testing lags), why kitchen test
 label checks. It deliberately avoids unsourced statistics and makes no claim about how our honey
 is processed or tested. Its Gert Lush Standard sentence uses `standardCopy`.
 
+**/why-buy-british ("Why buy British?", added 2026-11-09)** is the eighth tile. Original copy (a competitor's page was only used for ideas, and nothing is copied): why British honey is scarce, why it is worth choosing, how to check a label, how Gert Lush works, and an FAQ with FAQPage JSON-LD. The only statistic is the Bee Farmers' Association's own estimate (UK produces around 14 per cent of the honey consumed, against a European average around 60 per cent), attributed and linked to the Association's page and described as undated. The import-tonnage and China-share figures on the page that inspired it could not be verified against the Food Standards Agency (its risk-profile URL 404ed), so they are deliberately not used. Registered in the sitemap, llms.txt, the "Information Hub Card" Sanity options and the accessibility audit route list (audited clean on 2026-11-09 against the dev server; the Accessibility Statement's page count has not been updated).
+
 ## Legal pages
 
 - **Refund Policy** (`/legal/refund-policy`, added 2026-08-22) — previously just a vague,

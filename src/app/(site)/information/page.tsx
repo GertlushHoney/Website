@@ -81,6 +81,17 @@ const CARDS = [
     },
   },
   {
+    href: '/why-buy-british',
+    eyebrow: 'British honey',
+    title: 'Why buy British?',
+    description:
+      'Why honey made in Britain is scarce, why it is worth choosing, and how to check a jar really is British.',
+    image: {
+      src: '/images/source/northern-slopes.jpg',
+      alt: "A grassy hillside on Bristol's Northern Slopes looking out over the city under a blue sky",
+    },
+  },
+  {
     href: '/fake-honey',
     eyebrow: 'Honey fraud',
     title: 'Is it really honey?',

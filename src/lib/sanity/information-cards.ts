@@ -9,6 +9,7 @@ export type InformationCardPageKey =
   | '/gert-lush-standard'
   | '/asian-hornets'
   | '/bee-friendly-garden'
+  | '/why-buy-british'
   | '/fake-honey'
   | '/faqs'
 

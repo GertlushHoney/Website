@@ -90,7 +90,7 @@ exempt, because that is a legal answer this build was never given.
 review (Royal Mail / Click & Drop, the postcode waiting-list box and its tick box, the contact form
 now sending through Microsoft 365, the review-alert email, and a new "Preventing misuse of our
 forms" section describing the hashed, auto-deleted IP/email counters) — so the reviewer should see
-the current version. The /fake-honey page is not a legal page but makes claims about the law.
+the current version. The /fake-honey page is not a legal page but makes claims about the law, and so does /why-buy-british (added 2026-11-09: labelling rule on country of harvest; the "around 14 per cent produced in the UK / around 60 per cent European average" figures are the Bee Farmers' Association's own undated estimate from beefarmers.co.uk/about-bee-farming/what-is-bee-farming, presented as such — no import tonnage or country-share figures are used because they could not be verified against the Food Standards Agency).
 
 **Ask the reviewer this specific question (raised by an external review, 2026-10-26):** "We store
 a persistent localStorage flag only to remember that a visitor has closed or signed up through

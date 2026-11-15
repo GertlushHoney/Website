@@ -67,11 +67,11 @@ below for reference/future products, corrected after actually going through this
 5. Send me the project ID and dataset name (again, the token itself can go straight into
    `.env.local` without passing through me).
 
-## 6. Food-business registration — DONE (registered 19 Aug 2026), one follow-up open
+## 6. Food-business registration — DONE (registered 19 Aug 2026); change-of-operator email sent 2026-11-15, reply awaited
 
 Bristol City Council confirmed in writing on 19 August 2026 that the food premises are on the register (their ref TG400186 / 266993; registered as "Gert Lush Honey", 14 Beckington Road, operator Adam Evans as a person, business type "Home Caterer"; planned trading date 1 October 2026). That is well over the required 28 days before trading. The registration email also lists the activities declared: selling honey produced in the UK, to local customers, online and to other food businesses; no processing declared.
 
-**Follow-up (opened 2026-11-15):** the operator has since changed from Adam Evans personally to **Gert Lush Honey Ltd** (company number 17554119, incorporated 30 October 2026), and the activities now include jarring and labelling honey bought from other beekeepers and creaming honey. The registration declaration says the council must be told of significant changes, including a new operator, within 28 days (28 days from 30 October is 27 November 2026 — ask the council which date applies). Email food.safety@bristol.gov.uk quoting the reference to update the operator, the activities and the phone number (the council's letter has one digit missing compared with the registration email). A draft email was written 2026-11-15.
+**Follow-up (opened 2026-11-15):** the operator has since changed from Adam Evans personally to **Gert Lush Honey Ltd** (company number 17554119, incorporated 30 October 2026), and the activities now include jarring and labelling honey bought from other beekeepers and creaming honey. The registration declaration says the council must be told of significant changes, including a new operator, within 28 days (28 days from 30 October is 27 November 2026 — ask the council which date applies). Email food.safety@bristol.gov.uk quoting the reference to update the operator, the activities and the phone number (the council's letter has one digit missing compared with the registration email). The owner **sent that email on 2026-11-15**; waiting for the council's reply (keep it — it may ask for a new registration form).
 
 ## 7. Legal content review — DONE (all pages, confirmed 2026-10-26)
 

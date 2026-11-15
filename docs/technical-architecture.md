@@ -837,6 +837,10 @@ Road, Bristol, BS3 5EB). Shown in the site footer, the "Who we are" sections of 
 Notice and Refund Policy, the Organization JSON-LD (`legalName`, `src/app/(site)/layout.tsx`) and the
 supplier invite email footer. Not VAT registered, by choice; no VAT number appears anywhere.
 
+## Shopify customer emails (branded 2026-11-15)
+
+Shopify sends the order and refund emails itself (Settings → Notifications → Customer notifications); they are not sent by this codebase. On 2026-11-15 the **Order confirmation** (`order_confirmation`) and **Refund notification** (`refund_notification`) templates were restyled to match the invite emails: dark ink background with the honeycomb tile, an amber top bar, gold serif headings, amber pill buttons and the company details in the footer. Only the `<style>` block was replaced (the template's Liquid logic is untouched) plus one footer paragraph with the company number and registered office. The honeycomb picture is `public/images/email/honeycomb-tile.png`, served from `/images/`, which the middleware deliberately leaves ungated so email clients can load it. The logo and its size come from Settings → Notifications → Customize email templates (gold logo). To revert, use Shopify's "Revert to default template" on each template. The other customer templates (shipping confirmation, shipping update, order cancelled, local delivery and pick-up, draft order invoice and so on) have **not** been restyled and still have the older cream look; they use the same style block, so the same replacement applies.
+
 ## Search
 
 Real, built (`src/lib/search.ts`, `src/components/layout/search-overlay.tsx`) — not the

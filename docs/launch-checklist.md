@@ -67,11 +67,11 @@ below for reference/future products, corrected after actually going through this
 5. Send me the project ID and dataset name (again, the token itself can go straight into
    `.env.local` without passing through me).
 
-## 6. Food-business registration (legal requirement, not a website task)
+## 6. Food-business registration — DONE (registered 19 Aug 2026), one follow-up open
 
-Per the Food Standards Agency, a food business must register with the local authority **at
-least 28 days before trading**. This is unrelated to the website build but is a real launch
-blocker per the project pack (source S11) — flagging it now so it isn't discovered late.
+Bristol City Council confirmed in writing on 19 August 2026 that the food premises are on the register (their ref TG400186 / 266993; registered as "Gert Lush Honey", 14 Beckington Road, operator Adam Evans as a person, business type "Home Caterer"; planned trading date 1 October 2026). That is well over the required 28 days before trading. The registration email also lists the activities declared: selling honey produced in the UK, to local customers, online and to other food businesses; no processing declared.
+
+**Follow-up (opened 2026-11-15):** the operator has since changed from Adam Evans personally to **Gert Lush Honey Ltd** (company number 17554119, incorporated 30 October 2026), and the activities now include jarring and labelling honey bought from other beekeepers and creaming honey. The registration declaration says the council must be told of significant changes, including a new operator, within 28 days (28 days from 30 October is 27 November 2026 — ask the council which date applies). Email food.safety@bristol.gov.uk quoting the reference to update the operator, the activities and the phone number (the council's letter has one digit missing compared with the registration email). A draft email was written 2026-11-15.
 
 ## 7. Legal content review — DONE (all pages, confirmed 2026-10-26)
 
@@ -431,7 +431,7 @@ B in the discussion) rather than claim something that isn't yet true.
 none of the above... designed to run entirely on mocked/placeholder data," which described an
 early state the project has long since moved past.)* Most items above are marked **DONE** and
 are in active use with real credentials — real Shopify store, real Sanity project, real domain,
-real email. What genuinely still needs action from you: item 6 (food-business registration),
+real email. What genuinely still needs action from you: item 6 (tell the council the operator is now the limited company),
 item 7's follow-up (show the reviewer the current Privacy Notice, and check the food-information
 wording and the new soap/lip balm ingredient pages were covered), item 11's ongoing review habit (approving
 submitted reviews in Sanity Studio), item 20 (a Click & Drop test order, and legal review of the new Royal Mail

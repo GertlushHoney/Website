@@ -383,8 +383,7 @@ Click & Drop is connected to Shopify (set up by the owner). Still to do or check
    **Test order #1001 placed 2026-11-15** (Bee S3 Creamed, 100% discount code BWLCH100% plus free-shipping code BWLCHSHIP, ends 29 Nov, one use per customer; total £0.00; delivered to the registered office): the order reached Shopify via the Headless channel, Shopify stock for the product dropped from 30 to 29, and the live site recorded the orders/paid webhook (processedWebhookEvent for #1001) — so the webhook URL and secret are confirmed working. Confirmed by the owner (2026-11-15): the confirmation and refund emails arrived (the first at hotmail, in the inbox) and **both test orders (#1001, #1002) appeared in Click & Drop**, so the Shopify-to-Click-&-Drop connection works. Delete or cancel the test orders in Click & Drop too so no label is printed by mistake. Cancel #1001 (restock) or fulfil it. Delete both test codes before launch. Note: Shopify's public Storefront stock figure lagged the admin figure by over a minute.
 2. **Place a small test order** (e.g. a 100% discount code) and confirm it appears in Click & Drop
    within about 10 minutes, then cancel it.
-3. **Experiences:** make sure the Bee Day Experience is not marked "This is a physical product" in
-   Shopify, or it may appear in Click & Drop as a parcel.
+3. **Experiences — fixed 2026-11-19:** the Bee Day Experience product (`experience-bramble-farm`, £45) had "This is a physical product" ticked, which would have added delivery at checkout and sent every booking to Click & Drop as a parcel. The owner unticked it; verified through the Admin API (`requiresShipping` false). One Shopify product serves all dates; dates and places live in Sanity.
 4. The Privacy Notice now names Royal Mail (Click & Drop) as a recipient of delivery details —
    include that paragraph in the next legal review.
 

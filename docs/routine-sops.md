@@ -2,11 +2,12 @@
 
 Written 2026-11-19. Plain steps for the owner. See also `docs/experiences-sop.md` (Bee Day dates).
 
-## Your daily inbox check (admin@)
+## Your daily inbox check
 
-- Subject starting “New … review” — approve or ignore it (see the review SOP).
-- Subject starting “Action needed: overbooked experience” — see the Bee Day SOP.
-- Subject starting “Action needed: hamper order” — see the hamper SOP.
+- admin@: “New … review” (approve or ignore: review SOP), “Action needed: overbooked experience” (Bee Day SOP), “Action needed: hamper order” (hamper SOP), “New Meet the Beekeeper request”.
+- suppliers@: “New Become a Supplier request” (supplier SOP).
+- sales@: “Postcode honey waiting list” (waiting list SOP).
+- hello@: messages from the Contact page (contact SOP), and anything from Shopify or the council.
 
 ## SOP: Adding a new product to the website
 
@@ -97,4 +98,89 @@ This is rare. It happens if the jars chosen do not add up to the hamper size, or
 
 - The customer has paid in full, so always fulfil it; this is only about stock and the choice of honey.
 - A hamper only shows “Choose your own” honeys that are in stock, so overselling a single honey is unlikely.
+
+## SOP: A supplier or beekeeper asks for the form
+
+Two boxes on the site send an email: “Become a Supplier” (for beekeepers with honey to sell) and “Already one of our beekeepers?” (for the Meet the Beekeeper profile).
+
+
+### When it happens
+
+- **Supplier:** an email arrives at suppliers@ with the subject “New Become a Supplier request: name@example.com”.
+- **Beekeeper profile:** an email arrives at admin@ with the subject “New Meet the Beekeeper request: name@example.com”.
+The person has already been sent the right Microsoft form by email. Pressing **Reply** on your heads-up goes straight to them. They are **not** added to your newsletter.
+
+
+### Steps for a supplier
+
+1. Reply within two working days. Thank them and say you will read their form when it arrives.
+2. When they complete it, open Microsoft Forms → “Gert Lush Honey - Become a Supplier” → **Responses**. Read their area, number of colonies, surplus, how they extract and store honey, association and insurance, and when they could supply.
+3. If it looks promising, arrange a call or visit and use the Supplier Review Checklist from the Gert Lush Standard documents.
+4. If you approve them, complete a Batch Acceptance Record when their honey arrives. Then add the honey with the new-product tool (see that SOP) and make sure they have a beekeeper profile.
+5. If they are not suitable, reply kindly and say why. Keep the email.
+
+### Steps for a beekeeper profile
+
+1. Reply to say thanks. When they complete “Meet the Beekeeper”, open it in Microsoft Forms → **Responses**.
+2. Write their profile in Studio under **Beekeeper**.
+3. Send the finished profile to them to check. **Do not publish until they have agreed.**
+
+### Good to know
+
+- Never publish where hives are. A postcode district is enough.
+- Keep their email addresses in your mailbox only; do not add them to marketing lists.
+
+## SOP: Someone joins the postcode waiting list
+
+On the Postcode Honey map, a visitor can ask to be told when honey from their postcode arrives. They get no email back.
+
+
+### When it happens
+
+An email arrives at sales@ with a subject like “Postcode honey waiting list: BS7 (Bishopston)”. Pressing **Reply** goes to the visitor. They are also saved in Shopify as a customer, tagged with that postcode, for example `waitlist:BS7`.
+
+Only people who ticked “Also send me news of new honeys” are also subscribed to marketing emails. Everyone else has only asked about that one postcode.
+
+
+### When honey from that postcode arrives
+
+1. In Shopify, open **Customers** and filter by the tag, for example `waitlist:BS7`.
+2. Write one short, personal email from hello@: honey from their postcode is now available, with a link to the product. Put all the addresses in **Bcc** so nobody sees anyone else’s.
+3. Do not use a Shopify Email campaign for these people unless they ticked the marketing box. Without that, they have only agreed to hear about their postcode.
+4. Afterwards, remove the tag from each customer so they are not contacted twice.
+
+### If someone asks to come off the list
+
+- Find them under **Customers** in Shopify and remove the tag. If they also ask for their details to be deleted, see the data requests SOP.
+
+### Restock alerts work the same way
+
+Someone who asked to be told when a sold-out product is back is tagged `restock:` plus the product’s web address (for example `restock:bees3-honey`). When it is back, email them individually the same way, then remove the tag.
+
+
+## SOP: A message from the Contact page, and data requests
+
+The Contact page sends you an email so a visitor never needs their own email program open.
+
+
+### When it happens
+
+An email arrives at hello@ with a subject like “An order or subscription — via gertlushhoney.co.uk”. The topic is whatever the visitor chose. **Reply** goes straight to them. Their name and message are in the email.
+
+
+### Steps
+
+1. Reply within two working days.
+2. By topic: **Website feedback or a bug**: thank them and tell me what they found. **Honey from a specific postcode**: tell them what you have and suggest the postcode map and waiting list. **An order or subscription**: find the order in Shopify first. **Wholesale or stocking**: reply, then point them to the Stockists page. **Something else**: use your judgement.
+3. Keep the email in your mailbox. It is your record.
+
+### If someone asks you to delete their data, or what you hold
+
+These arrive at gdpr@ or hello@. You must answer within one month.
+
+1. Confirm who they are by replying to the address they wrote from.
+2. In Shopify, open **Customers** and search their email. For “stop emailing me”, change them to **not subscribed**. For “delete my data”, delete the customer. If they have placed orders, Shopify keeps the order records, which you are generally required to keep for your accounts. Ask your adviser if you are unsure.
+3. Delete or ignore any emails of theirs in your mailbox that you do not need to keep.
+4. Reply to say it is done.
+- For anything unusual (a complaint, a solicitor, a request about a child’s data), get advice before answering.
 

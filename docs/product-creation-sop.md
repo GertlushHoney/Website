@@ -166,7 +166,7 @@ Don't consider this done until checked in a running dev server, not just "looks 
 
 ## Other routine jobs
 
-`docs/routine-sops.md` (Word copy: `Gert-Lush-Honey-Routine-SOPs.docx`) has one-page SOPs for adding a product with the new-product tool, approving a customer review and handling a hamper order whose honey stock was not deducted, plus the daily admin@ inbox check.
+`docs/routine-sops.md` (Word copy: `Gert-Lush-Honey-Routine-SOPs.docx`) has one-page SOPs for adding a product with the new-product tool, approving a customer review and handling a hamper order whose honey stock was not deducted, handling a supplier or beekeeper form request, the postcode waiting list, and Contact page messages and data requests, plus the daily inbox check across admin@, suppliers@, sales@ and hello@.
 
 ## Experiences
 

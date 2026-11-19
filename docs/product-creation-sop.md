@@ -164,6 +164,10 @@ Don't consider this done until checked in a running dev server, not just "looks 
    shows up as "Pricing is temporarily unavailable" on the product page rather than a crash, so it's
    easy to miss if you don't actually look.
 
+## Experiences
+
+For adding Bee Day dates, handling overbookings and cancellations, see `docs/experiences-sop.md` (a Word copy for the owner is `Gert-Lush-Honey-Bee-Day-SOP.docx`). The short version: one Shopify product, one Studio entry, dates are added to its "Bookable dates" list — never a second entry for the same product.
+
 ## Known gotchas (from real bugs hit building this site)
 
 - **Handle, not title.** Shopify lookups are always by exact `shopifyHandle` string. A typo in the

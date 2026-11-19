@@ -150,6 +150,8 @@ supported approach instead. Three manual steps, all in your Shopify admin.
    signup form from the `email` param either way, so step 3 is optional polish on top of step 2,
    not a replacement for it.
 
+**Status (2026-11-19):** step 2 (the marketing tick-box) is on — "Email me with news and offers" shows, unticked, at checkout and on the order confirmation page (Settings → Checkout → email marketing options). Step 3 is **done**: the order confirmation template now has a branded paragraph "Want to know when new postcode honey arrives? Sign up here, and tell us what you thought of your honey." linking to `https://www.gertlushhoney.co.uk/thank-you?order=…&email=…&products=…` (the combined link from points 9 and 18, using the real live domain). Shopify blanks links in its template preview, so confirm the real link by opening "View email" on the next test order and clicking it; it only works for visitors once the site password is removed. Step 1 (the `unauthenticated_write_customers` Storefront scope) is confirmed working by the owner's earlier signup tests; re-check it on launch day.
+
 ## 10. Restock alerts on sold-out products (unblocks: "notify me when back in stock")
 
 A sold-out product now shows a "Notify me when it's back" form instead of just a disabled

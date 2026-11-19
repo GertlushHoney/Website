@@ -92,6 +92,8 @@ now sending through Microsoft 365, the review-alert email, and a new "Preventing
 forms" section describing the hashed, auto-deleted IP/email counters) — so the reviewer should see
 the current version. The /fake-honey page is not a legal page but makes claims about the law, and so does /why-buy-british (added 2026-11-09: labelling rule on country of harvest; the "around 14 per cent produced in the UK / around 60 per cent European average" figures are the Bee Farmers' Association's own undated estimate from beefarmers.co.uk/about-bee-farming/what-is-bee-farming, presented as such — no import tonnage or country-share figures are used because they could not be verified against the Food Standards Agency).
 
+**Privacy Notice changed again 2026-11-19:** a sentence was added to "Marketing emails" saying the "sign up here" link in the order confirmation email carries the email address, order number and products in the web address (to pre-fill the form), and the page now says "Last updated: November 2026". The reviewer should see this version too.
+
 **Ask the reviewer this specific question (raised by an external review, 2026-10-26):** "We store
 a persistent localStorage flag only to remember that a visitor has closed or signed up through
 the newsletter popup. It is written only when they do one of those things, and it is described in

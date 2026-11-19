@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <h1 className="text-porcelain mt-3 text-4xl font-bold tracking-tight text-balance">
         Your privacy.
       </h1>
-      <p className="text-porcelain/40 mt-3 text-sm">Last updated: October 2026</p>
+      <p className="text-porcelain/40 mt-3 text-sm">Last updated: November 2026</p>
 
       <div className="text-porcelain/80 mt-8 space-y-6 text-base hyphens-auto sm:text-justify">
         <section>
@@ -85,6 +85,12 @@ export default function PrivacyPage() {
               gdpr@gertlushhoney.co.uk
             </a>{' '}
             and we&apos;ll remove you.
+          </p>
+          <p className="mt-2">
+            The &quot;sign up here&quot; link in your order confirmation email includes your email
+            address, order number and the products you ordered in the web address, so the sign-up
+            form can be filled in for you. We use them only for that, and the form submits nothing
+            until you press the button.
           </p>
           <p className="mt-2">
             If you ask to be notified when a sold-out product is back in stock, that&apos;s

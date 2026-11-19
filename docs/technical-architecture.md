@@ -749,6 +749,8 @@ off — now built:
 
 ## Browser storage and the newsletter popup (2026-10-26)
 
+*Popup wording (2026-11-19):* the newsletter popup is now published in Studio (singleton `newsletterPopup`): heading "Join the hive", text "We’ve just launched. Join the hive and we’ll tell you when a new postcode honey arrives.", button "Join the hive", delay 25 seconds, no discount. The old unpublished draft (heading "Discount ") was removed.
+
 An external review noted that PECR covers local storage as well as cookies (ICO guidance on
 "storage and access technologies"), that the newsletter popup wrote its `localStorage` flag
 (`gert-lush-newsletter-popup-seen`) as soon as the popup *appeared*, and that the Cookie Policy

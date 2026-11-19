@@ -370,6 +370,8 @@ weeks ahead, because once it expires all of these stop silently until a new secr
 (step 3) and set in Vercel (step 5). Also test the Contact form and submit a review once after
 setup.
 
+**Secret expiry (checked 2026-11-19 in Microsoft Entra):** the app is "Gert Lush Website Mailer" (created 21 Oct 2026), with one client secret uploaded 21 Oct 2026 that **expires 20 October 2028**. A two-week reminder is set for 6 October 2028 (and a last-chance one on 19 October) via `Gert-Lush-Mail-Secret-Reminder.ics`. To renew: Entra → App registrations → Gert Lush Website Mailer → Certificates & secrets → New client secret, copy the Value at once, update `MS_GRAPH_CLIENT_SECRET` in Vercel (Production and Preview) and `.env.local`, redeploy, send a test Contact message, then delete the old secret.
+
 6. **Test it** by entering your own address in each box: you should get the invite (honeycomb
    background, gold logo, amber button opening the right form) and the heads-up in the shared inbox.
 

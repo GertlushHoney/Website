@@ -164,6 +164,10 @@ Don't consider this done until checked in a running dev server, not just "looks 
    shows up as "Pricing is temporarily unavailable" on the product page rather than a crash, so it's
    easy to miss if you don't actually look.
 
+## Other routine jobs
+
+`docs/routine-sops.md` (Word copy: `Gert-Lush-Honey-Routine-SOPs.docx`) has one-page SOPs for adding a product with the new-product tool, approving a customer review and handling a hamper order whose honey stock was not deducted, plus the daily admin@ inbox check.
+
 ## Experiences
 
 For adding Bee Day dates, handling overbookings and cancellations, see `docs/experiences-sop.md` (a Word copy for the owner is `Gert-Lush-Honey-Bee-Day-SOP.docx`). The short version: one Shopify product, one Studio entry, dates are added to its "Bookable dates" list — never a second entry for the same product.

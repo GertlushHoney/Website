@@ -86,7 +86,10 @@ describe('isRateLimited', () => {
     const ids = [...fakeClient.docs.keys()]
     expect(ids).toHaveLength(2)
     for (const id of ids) {
-      expect(id).not.toContain('203')
+      // The whole address, not a fragment: the id ends in a time-bucket
+      // number that can contain "203" by chance, which made this flaky.
+      expect(id).not.toContain('203.0.113.9')
+      expect(id).not.toContain('203-0-113-9')
       expect(id.toLowerCase()).not.toContain('alex')
       expect(id.toLowerCase()).not.toContain('example')
     }

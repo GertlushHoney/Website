@@ -20,7 +20,8 @@ export function resolveSiteUrlFrom(value: string | undefined): string {
   if (!value) return FALLBACK_SITE_URL
   try {
     const url = new URL(value)
-    const plausibleHost = /^[a-z0-9-]+(.[a-z0-9-]+)*(:d+)?$/i.test(url.host) && !/https?/i.test(url.hostname)
+    const plausibleHost =
+      /^[a-z0-9-]+(\.[a-z0-9-]+)*(:\d+)?$/i.test(url.host) && !/https?/i.test(url.hostname)
     return plausibleHost ? url.origin : FALLBACK_SITE_URL
   } catch {
     return FALLBACK_SITE_URL

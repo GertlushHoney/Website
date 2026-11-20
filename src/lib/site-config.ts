@@ -12,13 +12,23 @@ const FALLBACK_SITE_URL = 'https://www.gertlushhoney.co.uk'
 // directly in Vercel's env var settings (missing the https:// scheme, stray
 // whitespace) must fall back safely here rather than crash `new URL(...)`
 // wherever this constant gets consumed (metadataBase in particular).
-function resolveSiteUrl(): string {
-  if (!env.NEXT_PUBLIC_SITE_URL) return FALLBACK_SITE_URL
+// Also rejects a value that parses but is plainly wrong. The address pasted
+// twice in Vercel ("https://www.example.co.ukhttps://www.example.co.uk") is a
+// valid URL to the parser, whose origin becomes "https://www.example.co.ukhttps"
+// — and that went out in every canonical link, the sitemap and robots.txt.
+export function resolveSiteUrlFrom(value: string | undefined): string {
+  if (!value) return FALLBACK_SITE_URL
   try {
-    return new URL(env.NEXT_PUBLIC_SITE_URL).origin
+    const url = new URL(value)
+    const plausibleHost = /^[a-z0-9-]+(.[a-z0-9-]+)*(:d+)?$/i.test(url.host) && !/https?/i.test(url.hostname)
+    return plausibleHost ? url.origin : FALLBACK_SITE_URL
   } catch {
     return FALLBACK_SITE_URL
   }
+}
+
+function resolveSiteUrl(): string {
+  return resolveSiteUrlFrom(env.NEXT_PUBLIC_SITE_URL)
 }
 
 export const SITE_URL = resolveSiteUrl()

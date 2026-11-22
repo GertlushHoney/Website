@@ -128,6 +128,7 @@ the frame edge; re-crop with more headroom and re-run, don't just push `--end` u
 | `subscriptionPrice` | **Leave empty** unless a real Shopify Selling Plan already exists for this product (Step 1.5) — setting a price here without a real plan just shows a subscription option that falls back to mailto, which is fine, but don't set it thinking it creates the plan. It doesn't; the plan is a Shopify-side thing. |
 | `shippingWeightGrams` | The packed parcel weight in grams. Delivery is calculated at checkout by weight (free over the threshold) — there is no per-product delivery price any more; the old `deliveryPrice` field was retired 2026-09-06. |
 | `seasons` | Optional. Fine to leave empty — the data layer already handles a product with no seasons set (`coalesce(seasons, [])` in `src/lib/sanity/products.ts`). |
+| `order` | Display order (added 2026-11-22). Lower numbers show first on the honey page, the home page, the postcode map and a beekeeper's page; 0 is first. Honeys with no number come after the numbered ones, A to Z by name. Starting order: Bee S3 0, Bee S3 Creamed 1, Bee S4 2, Bee OX3 3, Bee OX3 Creamed 4. A new honey added without a number goes last, so give it one to place it. |
 | `active` | **Defaults to `true`.** Turn off if you're not ready to publish yet. |
 
 **Merch Product** (`src/sanity/schemaTypes/merchProduct.ts`):

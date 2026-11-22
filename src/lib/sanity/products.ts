@@ -81,7 +81,7 @@ const summaryFields = groq`
 export const getHoneyProducts = unstable_cache(
   async (): Promise<HoneyProductSummary[]> => {
     const result = await sanityFetch<HoneyProductSummary[]>(
-      groq`*[_type == "honeyProduct" && active == true] | order(name asc) { ${summaryFields} }`
+      groq`*[_type == "honeyProduct" && active == true] | order(coalesce(order, 9999) asc, name asc) { ${summaryFields} }`
     )
     return result ?? []
   },
@@ -109,7 +109,7 @@ export type HoneyProductSummaryWithBeekeeper = HoneyProductSummary & {
 export const getHoneyProductsWithBeekeeper = unstable_cache(
   async (): Promise<HoneyProductSummaryWithBeekeeper[]> => {
     const result = await sanityFetch<HoneyProductSummaryWithBeekeeper[]>(
-      groq`*[_type == "honeyProduct" && active == true] | order(name asc) {
+      groq`*[_type == "honeyProduct" && active == true] | order(coalesce(order, 9999) asc, name asc) {
         ${summaryFields},
         beekeeper -> { name, "slug": slug.current },
         "latestSeasonYear": seasons[-1].year,
@@ -128,7 +128,7 @@ export async function getActivePostcodeCodes(): Promise<
   { postcodeCode: string; slug: string; name: string }[]
 > {
   const result = await sanityFetch<{ postcodeCode: string; slug: string; name: string }[]>(
-    groq`*[_type == "honeyProduct" && active == true] { postcodeCode, "slug": slug.current, name }`
+    groq`*[_type == "honeyProduct" && active == true] | order(coalesce(order, 9999) asc, name asc) { postcodeCode, "slug": slug.current, name }`
   )
   return result ?? []
 }

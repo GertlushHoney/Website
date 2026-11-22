@@ -181,6 +181,14 @@ export const honeyProduct = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'order',
+      title: 'Display order (optional)',
+      description:
+        'Lower numbers show first on the honey page, the home page and the postcode map (0 = first). Honeys with no number come after the numbered ones, A to Z by name.',
+      type: 'number',
+      validation: (rule) => rule.integer().min(0),
+    }),
+    defineField({
       name: 'active',
       title: 'Active',
       description: 'Only active products appear on the shop and the postcode map.',

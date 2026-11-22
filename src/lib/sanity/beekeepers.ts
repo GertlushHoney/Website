@@ -57,7 +57,7 @@ export async function getBeekeeperBySlug(slug: string): Promise<BeekeeperProfile
     groq`*[_type == "beekeeper" && slug.current == $slug][0] {
       ${summaryFields},
       bio,
-      "honeyProducts": *[_type == "honeyProduct" && active == true && references(^._id)] {
+      "honeyProducts": *[_type == "honeyProduct" && active == true && references(^._id)] | order(coalesce(order, 9999) asc, name asc) {
         "slug": slug.current,
         name,
         tagline,

@@ -60,19 +60,22 @@ export async function HoneyListing() {
           : 'Postcode honey, sourced from independent beekeepers across Britain.'}
       </p>
 
-      {cards.length > 0 && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link
-            href="/postcode-honey"
-            className="bg-honey-amber text-ink focus-visible:outline-porcelain rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
-          >
-            Choose a honey by postcode
-          </Link>
-          <SurpriseMeButton slugs={cards.map((card) => card.slug)} />
-        </div>
-      )}
-
-      <HoneyRegionFilter cards={cards} />
+      <HoneyRegionFilter
+        cards={cards}
+        toolbar={
+          cards.length > 0 ? (
+            <>
+              <Link
+                href="/postcode-honey"
+                className="bg-honey-amber text-ink focus-visible:outline-porcelain rounded-full px-6 py-2.5 text-sm font-semibold focus-visible:outline focus-visible:outline-offset-4"
+              >
+                Choose a honey by postcode
+              </Link>
+              <SurpriseMeButton slugs={cards.map((card) => card.slug)} />
+            </>
+          ) : null
+        }
+      />
     </div>
   )
 }

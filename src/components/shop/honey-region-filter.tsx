@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
@@ -22,55 +22,74 @@ export type HoneyCard = {
   reviewCount: number
 }
 
-// Filter pills only list regions actually represented among real products —
-// with one or two postcodes live so far, that's honest today (probably just
-// "South West") and grows on its own as more beekeepers/postcodes come on
-// board, without needing to hardcode the full UK region list as options.
-export function HoneyRegionFilter({ cards }: { cards: HoneyCard[] }) {
+// The region filter is one dropdown that sits in the same row as the "Choose
+// a honey by postcode" and "Surprise me" buttons (passed in as `toolbar`).
+// It only lists regions actually represented among real products, with a
+// count of honeys beside each, so it grows on its own as beekeepers and
+// postcodes come on board without a long row of pills building up. A native
+// <select> on purpose: keyboard, screen-reader and phone pickers all work
+// for free however many regions there end up being.
+export function HoneyRegionFilter({
+  cards,
+  toolbar,
+}: {
+  cards: HoneyCard[]
+  toolbar?: ReactNode
+}) {
   const [region, setRegion] = useState<string | 'all'>('all')
 
-  const regions = useMemo(
-    () => Array.from(new Set(cards.map((c) => c.region).filter((r): r is string => Boolean(r)))).sort(),
-    [cards]
-  )
+  const regions = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const card of cards) {
+      if (card.region) counts.set(card.region, (counts.get(card.region) ?? 0) + 1)
+    }
+    return Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  }, [cards])
 
+  const showFilter = regions.length >= 2
   const visibleCards = region === 'all' ? cards : cards.filter((c) => c.region === region)
-
-  if (regions.length < 2) {
-    return <HoneyCardGrid cards={cards} />
-  }
 
   return (
     <>
-      <div className="mt-8 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by UK region">
-        <button
-          type="button"
-          onClick={() => setRegion('all')}
-          aria-pressed={region === 'all'}
-          className={`focus-visible:outline-honey-amber rounded-full border px-4 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2 ${
-            region === 'all'
-              ? 'bg-honey-amber text-ink border-honey-amber'
-              : 'border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain'
-          }`}
-        >
-          All regions
-        </button>
-        {regions.map((r) => (
-          <button
-            key={r}
-            type="button"
-            onClick={() => setRegion(r)}
-            aria-pressed={region === r}
-            className={`focus-visible:outline-honey-amber rounded-full border px-4 py-1.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-offset-2 ${
-              region === r
-                ? 'bg-honey-amber text-ink border-honey-amber'
-                : 'border-porcelain/40 bg-porcelain/10 text-porcelain hover:bg-porcelain/20 hover:border-porcelain'
-            }`}
-          >
-            {r}
-          </button>
-        ))}
-      </div>
+      {(toolbar || showFilter) && (
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          {toolbar}
+          {showFilter && (
+            <label className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:border-porcelain focus-within:outline-honey-amber relative flex items-center gap-2 rounded-full border py-2.5 pr-3 pl-6 text-sm font-semibold transition focus-within:outline focus-within:outline-offset-4">
+              <span className="text-porcelain/60 font-normal">Region</span>
+              <select
+                value={region}
+                onChange={(event) => setRegion(event.target.value)}
+                aria-label="Filter honey by UK region"
+                className="text-porcelain cursor-pointer appearance-none bg-transparent pr-6 font-semibold focus:outline-none"
+              >
+                <option value="all" className="bg-ink text-porcelain">
+                  All regions ({cards.length})
+                </option>
+                {regions.map((r) => (
+                  <option key={r.name} value={r.name} className="bg-ink text-porcelain">
+                    {r.name} ({r.count})
+                  </option>
+                ))}
+              </select>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                className="text-honey-amber pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 8l5 5 5-5" />
+              </svg>
+            </label>
+          )}
+        </div>
+      )}
 
       {visibleCards.length === 0 ? (
         <p className="text-porcelain/60 mt-10 text-sm">No postcode honey from {region} yet — check back soon.</p>

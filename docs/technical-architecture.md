@@ -1081,3 +1081,15 @@ Two independent HTTP Basic Auth gates in `src/middleware.ts`, checked by request
   — see "Image management" above for why `/images` specifically has to be.
 - Either gate no-ops (lets every request through) if its own env vars aren't set, so removing a
   gate is just deleting its two env vars, not editing code.
+
+## Dependency security audit (2026-11-22)
+
+Before launch the packages flagged by `npm audit` were updated: Next.js 16.4.2 to 16.4.6, Sanity and
+`@sanity/vision` to 6.24, `next-sanity` to 13.5, `eslint-config-next` to 16.4.6 and Vitest to 4.1.12.
+That cleared the high-severity `undici` finding and the Next.js advisories. 17 findings remain
+(16 moderate, 1 high: `js-yaml`), all inside Sanity's own command-line tooling (`@sanity/cli` and its
+dependencies) or the Vitest test runner. None is in code that serves visitors, and Sanity has not
+published a fixed version. Do **not** run `npm audit fix --force`: it proposes downgrading Sanity to
+version 5, which breaks the Studio. `package.json` carries an override pinning `smol-toml` under
+`@vercel/frameworks`. A `js-yaml` override was tried and did not apply, so it was left out. Re-run
+`npm audit` after launch and take any newer Sanity release that fixes the rest.

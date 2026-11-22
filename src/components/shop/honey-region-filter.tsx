@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getAreaNameForCode } from '@/lib/postcode-areas'
 import { Stars } from '@/components/product/reviews-section'
+import { RegionDropdown } from '@/components/shop/region-dropdown'
 
 export type HoneyCard = {
   id: string
@@ -26,9 +27,8 @@ export type HoneyCard = {
 // a honey by postcode" and "Surprise me" buttons (passed in as `toolbar`).
 // It only lists regions actually represented among real products, with a
 // count of honeys beside each, so it grows on its own as beekeepers and
-// postcodes come on board without a long row of pills building up. A native
-// <select> on purpose: keyboard, screen-reader and phone pickers all work
-// for free however many regions there end up being.
+// postcodes come on board without a long row of pills building up. See
+// RegionDropdown for the branded list and its keyboard behaviour.
 export function HoneyRegionFilter({
   cards,
   toolbar,
@@ -57,36 +57,15 @@ export function HoneyRegionFilter({
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {toolbar}
           {showFilter && (
-            <label className="border-porcelain/40 bg-porcelain/10 text-porcelain hover:border-porcelain focus-within:outline-honey-amber relative flex items-center gap-2 rounded-full border py-2.5 pr-3 pl-6 text-sm font-semibold transition focus-within:outline focus-within:outline-offset-4">
-              <span className="text-porcelain/60 font-normal">Region</span>
-              <select
-                value={region}
-                onChange={(event) => setRegion(event.target.value)}
-                aria-label="Filter honey by UK region"
-                className="text-porcelain cursor-pointer appearance-none bg-transparent pr-6 font-semibold focus:outline-none"
-              >
-                <option value="all" className="bg-ink text-porcelain">
-                  All regions ({cards.length})
-                </option>
-                {regions.map((r) => (
-                  <option key={r.name} value={r.name} className="bg-ink text-porcelain">
-                    {r.name} ({r.count})
-                  </option>
-                ))}
-              </select>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                className="text-honey-amber pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 8l5 5 5-5" />
-              </svg>
-            </label>
+            <RegionDropdown
+              value={region}
+              onChange={setRegion}
+              ariaLabel="Filter honey by UK region"
+              options={[
+                { value: 'all', label: 'All regions', count: cards.length },
+                ...regions.map((r) => ({ value: r.name, label: r.name, count: r.count })),
+              ]}
+            />
           )}
         </div>
       )}

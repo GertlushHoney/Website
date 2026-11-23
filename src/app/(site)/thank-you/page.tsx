@@ -49,6 +49,14 @@ export default async function ThankYouPage({
         </Link>{' '}
         for the details.
       </p>
+      {/* New sending domain: some inboxes (Outlook and Hotmail especially)
+          put our first emails in Junk until they learn we are genuine. Say so
+          here, where the customer is already waiting for the email. */}
+      <p className="text-porcelain/60 mt-3 text-sm">
+        Can&apos;t see our emails? Check your junk or spam folder and mark them &ldquo;Not
+        junk&rdquo;, and add hello@gertlushhoney.co.uk to your contacts so they reach your inbox
+        next time.
+      </p>
 
       <div className="border-ink-line bg-honeycomb-surface mt-10 rounded-2xl border p-6 sm:p-8">
         {reviewableProducts.length > 0 ? (

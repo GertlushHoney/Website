@@ -480,3 +480,28 @@ Soap, lip balm and candle wording, photos and ingredients are in Sanity and live
    label review).
 6. **Shopify, done 2026-10-30:** legal business name and the Legal notice policy updated with the
    company details.
+
+## 24. Email deliverability: emails landing in junk (opened 2026-11-23)
+
+Some customer and test emails land in junk, mostly at Outlook and Hotmail. Checked on 2026-11-23:
+
+- **Shopify's emails are correctly authenticated.** All 6 DNS records Shopify asked for are in
+  Cloudflare and match (Settings, Notifications, Email domain authentication says Authenticated).
+- **Microsoft 365 signing (DKIM) was off** for `gertlushhoney.co.uk` and `gertlushhoney.com`
+  (status "NoDKIMKeys"). That affects emails the website sends through the mailbox (invites, contact
+  messages). **Done 2026-11-23:** the two CNAME records per domain were added in Cloudflare as
+  DNS only (`selector1._domainkey` and `selector2._domainkey`, pointing at Microsoft's
+  `...d-v1.dkim.mail.microsoft` values for the `.co.uk` domain and `...y-v1...` for the `.com`).
+  Microsoft's page still said "CnameMissing" at first and, once switched on, warned it can take up to
+  4 days. **To finish:** at `security.microsoft.com/dkimv2` check `gertlushhoney.co.uk` shows
+  Enabled/Valid. The `.com` is optional because mail goes out from the `.co.uk` domain.
+- **Likely main cause:** the domain is new, so Outlook and Hotmail treat our first emails with
+  suspicion until real customers mark them "Not junk". A line on the thank-you page now asks
+  customers to check junk and add `hello@gertlushhoney.co.uk` to their contacts (live 2026-11-23).
+- **DMARC** is `p=quarantine`, with reports going to a GoDaddy address nobody reads. Optional: point
+  the `rua` address at `admin@` to see which senders fail.
+- **Still useful:** save one junked email as a file (.eml or .msg) and have the headers read; they
+  state the exact reason.
+- **Order alerts:** `sales@gertlushhoney.co.uk` was added as a recipient in Shopify (Settings,
+  Notifications, Staff notifications, Recipients). Remove the old `gertlushhoney@outlook.com`
+  recipient once an alert has been seen arriving at `sales@`.
